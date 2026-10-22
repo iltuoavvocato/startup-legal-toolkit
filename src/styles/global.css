@@ -2450,3 +2450,36 @@ input[type='range']:focus-visible::-moz-range-thumb {
     display: none;
   }
 }
+
+/* Keep the footer at the bottom on short pages */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+#root > main {
+  flex: 1 0 auto;
+}
+
+.hero-compact {
+  display: flex;
+  align-items: center;
+}
+
+.hero-compact > .container {
+  flex: 1;
+}
+
+main:has(> .hero-compact:only-child) {
+  display: flex;
+  flex-direction: column;
+}
+
+main > .hero-compact:only-child {
+  flex: 1;
+}
+
+.hero-compact .hero-inner {
+  display: block;
+}

@@ -9,7 +9,8 @@ export function PrivacyPage() {
         <p>In breve: questo sito non raccoglie i tuoi dati.</p>
       </PageHero>
       <section className="section section-cream">
-        <div className="container prose">
+        <div className="container">
+          <div className="prose">
           <h2>Nessun cookie, nessun tracciamento</h2>
           <p>
             Questo sito non usa cookie, strumenti di analisi, pixel o altri sistemi di tracciamento, e non
@@ -34,6 +35,7 @@ export function PrivacyPage() {
           </p>
           <h2>Chi gestisce il sito</h2>
           <p>Startup Legal Toolkit è un servizio di ilTuoAvvocato.com, servizi legali online con avvocati iscritti all’Ordine.</p>
+          </div>
         </div>
       </section>
     </>
