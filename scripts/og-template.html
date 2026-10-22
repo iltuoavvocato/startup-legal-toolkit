@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      @font-face { font-family: 'Playfair Display'; src: url('../src/assets/fonts/Playfair.woff2') format('woff2'); font-weight: 400 900; }
+      @font-face { font-family: 'Playfair Display'; src: url('../src/assets/fonts/PlayfairItalic.woff2') format('woff2'); font-weight: 400 900; font-style: italic; }
+      @font-face { font-family: 'Inter'; src: url('../src/assets/fonts/Inter.woff2') format('woff2'); font-weight: 400 700; }
+      * { box-sizing: border-box; margin: 0; }
+      body { width: 1200px; height: 630px; overflow: hidden; font-family: Inter, sans-serif; color: #F5F2EA;
+        background:
+          radial-gradient(900px 500px at 92% -10%, rgba(201,164,92,0.28), transparent 60%),
+          radial-gradient(700px 420px at -10% 120%, rgba(36,63,112,0.9), transparent 60%),
+          linear-gradient(160deg, #0B1730, #10224A); position: relative; }
+      .grid { position: absolute; inset: 0;
+        background-image: linear-gradient(rgba(226,200,142,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(226,200,142,0.07) 1px, transparent 1px);
+        background-size: 60px 60px; -webkit-mask-image: radial-gradient(ellipse at 80% 10%, #000, transparent 70%); }
+      .frame { position: absolute; inset: 28px; border: 1px solid rgba(201,164,92,0.35); border-radius: 18px; }
+      .content { position: absolute; left: 88px; top: 92px; right: 88px; }
+      .logo { height: 30px; display: block; margin-bottom: 64px; }
+      .eyebrow { display: flex; align-items: center; gap: 16px; font-size: 20px; letter-spacing: 0.22em; text-transform: uppercase; color: #E2C88E; font-weight: 600; margin-bottom: 22px; }
+      .eyebrow::before { content: ''; width: 44px; height: 1px; background: currentColor; }
+      h1 { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 104px; line-height: 1.02; letter-spacing: -0.01em; }
+      h1 em { color: #C9A45C; font-weight: 500; }
+      p { margin-top: 30px; font-size: 28px; color: #B8C0D4; max-width: 820px; line-height: 1.4; }
+      .mark { position: absolute; right: 88px; bottom: 76px; width: 120px; height: 120px; }
+      .rule { position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: linear-gradient(90deg, #C9A45C, #E2C88E, #C9A45C); }
+    </style>
+  </head>
+  <body>
+    <div class="grid"></div>
+    <div class="frame"></div>
+    <div class="content">
+      <img class="logo" src="../public/logo-light.svg" alt="" />
+      <div class="eyebrow">Strumenti gratuiti per founder</div>
+      <h1>Startup Legal <em>Toolkit</em></h1>
+      <p>Ripartizione quote, simulatore vesting e checklist dei documenti legali per la tua startup.</p>
+    </div>
+    <svg class="mark" viewBox="0 0 1080 1080" aria-hidden="true">
+      <rect width="1080" height="1080" rx="248" fill="#C9A45C" />
+      <g fill="#0B1730" transform="translate(540 540) scale(0.92) translate(-540 -540)">
+        <polygon points="362.32 541.36 598.73 541.36 363.56 776.52 119.69 776.52 362.32 541.36" />
+        <polygon points="596.24 532.65 832.65 532.65 597.48 297.49 353.61 297.49 596.24 532.65" />
+        <polygon points="839.62 542.37 960.31 663.07 840.86 782.51 600.72 542.37 839.62 542.37" />
+      </g>
+    </svg>
+    <div class="rule"></div>
+  </body>
+</html>

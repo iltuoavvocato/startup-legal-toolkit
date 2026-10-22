@@ -2274,3 +2274,179 @@ input[type='range']:focus-visible::-moz-range-thumb {
     print-color-adjust: exact;
   }
 }
+
+/* ---------- Hero visual (decorative) ---------- */
+
+.hero-visual {
+  display: none;
+}
+
+@media (min-width: 1080px) {
+  .hero-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    column-gap: 4rem;
+  }
+
+  .hero-inner > *:not(.hero-visual) {
+    grid-column: 1;
+  }
+
+  .hero-visual {
+    display: grid;
+    gap: 1rem;
+    grid-column: 2;
+    grid-row: 1 / span 5;
+    align-self: center;
+  }
+}
+
+.hv-card {
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(245, 242, 234, 0.07), rgba(245, 242, 234, 0.03));
+  border: 1px solid rgba(226, 200, 142, 0.22);
+  box-shadow: 0 24px 48px -28px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.hv-vesting {
+  margin-left: 2.5rem;
+}
+
+.hv-quiz {
+  margin-right: 1.5rem;
+}
+
+.hv-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+}
+
+.hv-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.hv-legend,
+.hv-checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.hv-legend span {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 0.5rem;
+}
+
+.hv-checks li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.hv-checks em {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--navy-950);
+}
+
+.hv-checks em.soft {
+  background: rgba(226, 200, 142, 0.18);
+  color: var(--gold-light);
+}
+
+.hv-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.hv-dot-soft {
+  background: rgba(226, 200, 142, 0.5);
+}
+
+/* ---------- Mobile result summary (equity) ---------- */
+
+.mobile-summary {
+  position: fixed;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem 0.6rem 1rem;
+  border-radius: 14px;
+  background: var(--navy-950);
+  border: 1px solid rgba(201, 164, 92, 0.35);
+  box-shadow: 0 16px 32px -12px rgba(11, 23, 48, 0.6);
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    transform 0.3s var(--ease),
+    opacity 0.3s var(--ease);
+}
+
+.mobile-summary:hover {
+  color: var(--ink);
+}
+
+.mobile-summary.is-hidden {
+  transform: translateY(140%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mobile-summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.mobile-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mobile-chip .bar-swatch {
+  box-shadow: 0 0 0 1px rgba(245, 242, 234, 0.4);
+}
+
+.mobile-summary-link {
+  flex: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gold-light);
+}
+
+@media (min-width: 980px) {
+  .mobile-summary {
+    display: none;
+  }
+}

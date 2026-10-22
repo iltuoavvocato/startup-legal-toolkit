@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { CopyButton } from '../components/CopyButton';
 import { CtaPanel } from '../components/CtaPanel';
@@ -81,6 +81,16 @@ export function EquityPage() {
   const { founders, weights, pool } = state;
   const result = useMemo(() => calculateEquity({ founders, weights, poolPercent: pool }), [founders, weights, pool]);
   useSyncQuery(serialize(state));
+  const resultRef = useRef<HTMLElement>(null);
+  const [resultVisible, setResultVisible] = useState(false);
+
+  useEffect(() => {
+    const el = resultRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([entry]) => setResultVisible(Boolean(entry?.isIntersecting)), { threshold: 0.15 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const weightSum = FACTOR_IDS.reduce((s, id) => s + weights[id], 0);
   const names = founders.map((f, i) => f.name.trim() || `Founder ${i + 1}`);
@@ -257,7 +267,13 @@ export function EquityPage() {
           </div>
 
           <div className="tool-results">
-            <section className="card result-card" aria-labelledby="equity-result-title" aria-live="polite">
+            <section
+              ref={resultRef}
+              id="risultato"
+              className="card result-card"
+              aria-labelledby="equity-result-title"
+              aria-live="polite"
+            >
               <h2 id="equity-result-title" className="card-title">
                 Ripartizione indicativa
               </h2>
@@ -356,6 +372,20 @@ export function EquityPage() {
           </div>
         </div>
       </section>
+
+      <a href="#risultato" className={`mobile-summary no-print ${resultVisible ? 'is-hidden' : ''}`} aria-hidden={resultVisible} tabIndex={resultVisible ? -1 : undefined}>
+        <span className="mobile-summary-chips">
+          {slices.map((s) => (
+            <span key={s.label} className="mobile-chip">
+              <span className="bar-swatch" style={{ background: s.color }} aria-hidden="true" />
+              {formatPercent(s.value)}
+            </span>
+          ))}
+        </span>
+        <span className="mobile-summary-link">
+          Risultato <span aria-hidden="true">↓</span>
+        </span>
+      </a>
 
       <section className="section section-white">
         <div className="container">

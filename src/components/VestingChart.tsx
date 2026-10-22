@@ -44,7 +44,7 @@ export function VestingChart({ params, start, leaverMonth, onLeaverChange }: Pro
   const marker = Math.min(leaverMonth, D);
   const markerFraction = schedule[marker]?.fraction ?? 1;
   const mx = x(marker);
-  const labelRight = mx < pad.left + w * 0.62;
+  const labelRight = mx < pad.left + w * (compact ? 0.5 : 0.62);
   const cliff = params.cliffMonths;
 
   const monthFromEvent = (e: PointerEvent<SVGSVGElement>) => {
@@ -101,10 +101,10 @@ export function VestingChart({ params, start, leaverMonth, onLeaverChange }: Pro
           <text
             className="marker-label"
             x={labelRight ? mx + 12 : mx - 12}
-            y={Math.min(y(markerFraction) + (markerFraction > 0.85 ? 22 : -12), y(0) - 10)}
+            y={Math.min(y(markerFraction) + (markerFraction > 0.85 ? 24 : -16), y(0) - 10)}
             textAnchor={labelRight ? 'start' : 'end'}
           >
-            {`Esce al mese ${marker}: ${formatPercent(markerFraction * 100)}`}
+            {compact ? `Mese ${marker}: ${formatPercent(markerFraction * 100)}` : `Esce al mese ${marker}: ${formatPercent(markerFraction * 100)}`}
           </text>
         </g>
         <text className="axis-title" x={pad.left + w} y={height - 6} textAnchor="end">

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ChecklistIcon, PieIcon, TimelineIcon } from '../components/Icons';
+import { HeroVisual } from '../components/HeroVisual';
 import { LawyerCta } from '../components/LawyerCta';
 
 const TOOLS = [
@@ -86,6 +87,7 @@ export function HomePage() {
             </Link>
           </div>
           <p className="hero-note">Nessuna registrazione. Nessun dato salvato: tutto resta nel tuo browser.</p>
+          <HeroVisual />
         </div>
       </section>
 
