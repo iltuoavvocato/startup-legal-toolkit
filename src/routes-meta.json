@@ -1,0 +1,39 @@
+{
+  "routes": [
+    {
+      "path": "/",
+      "title": "Startup Legal Toolkit — Strumenti legali gratuiti per founder | ilTuoAvvocato.com",
+      "description": "Tre strumenti gratuiti per chi fonda una startup: ripartisci le quote tra cofondatori, simula il vesting e scopri quali documenti legali ti servono.",
+      "heading": "Gli strumenti legali per chi fonda una startup"
+    },
+    {
+      "path": "/equity/",
+      "title": "Calcolatore ripartizione quote tra cofondatori | Startup Legal Toolkit",
+      "description": "Calcola una ripartizione indicativa delle quote tra 2–5 cofondatori in base a idea, tempo, capitale, competenze e ruolo. Formula trasparente, gratis.",
+      "heading": "Calcolatore ripartizione quote"
+    },
+    {
+      "path": "/vesting/",
+      "title": "Simulatore vesting per founder: cliff e good/bad leaver | Startup Legal Toolkit",
+      "description": "Simula il vesting delle quote di un founder: durata, cliff e frequenza di maturazione. Scopri cosa succede se un socio esce al mese X.",
+      "heading": "Simulatore vesting"
+    },
+    {
+      "path": "/quiz/",
+      "title": "Quali documenti legali servono alla tua startup? Quiz gratuito | Startup Legal Toolkit",
+      "description": "Rispondi a 7 domande e ricevi una checklist personalizzata: patti tra fondatori, vesting, SAFE, work for equity e proprietà intellettuale.",
+      "heading": "Quali documenti mi servono?"
+    },
+    {
+      "path": "/privacy/",
+      "title": "Privacy | Startup Legal Toolkit",
+      "description": "Nessun cookie, nessun tracciamento, nessun dato inviato: tutti i calcoli del Startup Legal Toolkit avvengono nel tuo browser.",
+      "heading": "Privacy"
+    }
+  ],
+  "notFound": {
+    "title": "Pagina non trovata | Startup Legal Toolkit",
+    "description": "La pagina che cerchi non esiste. Torna agli strumenti legali gratuiti per founder di startup.",
+    "heading": "Pagina non trovata"
+  }
+}
