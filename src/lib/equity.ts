@@ -36,7 +36,7 @@ export const FACTORS: readonly Factor[] = [
   {
     id: 'capitale',
     label: 'Capitale investito',
-    hint: 'Denaro messo (o che verrà messo) nella società, in euro.',
+    hint: 'Denaro versato (o che verrà versato) nella società, in euro.',
     kind: 'euro',
     defaultWeight: 20,
     defaultValue: 0,

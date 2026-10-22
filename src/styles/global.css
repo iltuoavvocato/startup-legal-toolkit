@@ -2483,3 +2483,43 @@ main > .hero-compact:only-child {
 .hero-compact .hero-inner {
   display: block;
 }
+
+/* Playfair defaults to old-style figures: use lining, tabular numerals for data and figures.
+   The decorative step numbers (.reason-num) keep the old-style look. */
+h1,
+h2,
+h3,
+.card-title {
+  font-variant-numeric: lining-nums proportional-nums;
+}
+
+.donut-value,
+.stat-value,
+.example-list strong,
+.formula {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.reason-num {
+  font-variant-numeric: oldstyle-nums;
+}
+
+.date-it {
+  margin-top: 0.1rem;
+}
+
+.date-it strong {
+  color: var(--navy-950);
+  font-weight: 600;
+}
+
+.stat-total {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 0.6rem;
+}
+
+.stat-total strong {
+  color: var(--navy-950);
+  font-variant-numeric: tabular-nums;
+}

@@ -24,7 +24,7 @@ export function PrivacyPage() {
           </p>
           <p>
             Per rendere i risultati condivisibili, alcuni strumenti riportano i valori inseriti nell’indirizzo della
-            pagina (la parte dopo il “?”). Restano lì solo se sei tu a copiare o condividere il link.
+            pagina (la parte dopo il “?”). Non vengono inviati a nessuno: escono dal tuo dispositivo solo se sei tu a condividere il link.
           </p>
           <h2>Link esterni</h2>
           <p>

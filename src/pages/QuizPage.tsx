@@ -49,7 +49,7 @@ export function QuizPage() {
     return (
       <>
         <PageHero eyebrow="Strumento 3 di 3 · risultato" title={<>Quali documenti <em>mi servono?</em></>}>
-          <p>Ecco la tua checklist personalizzata, ordinata per priorità.</p>
+          <p>{recs.length > 0 ? 'Ecco la tua checklist personalizzata, ordinata per priorità.' : 'Ecco cosa emerge dalle tue risposte.'}</p>
         </PageHero>
         <section className="section section-cream tool-section">
           <div className="container narrow">
@@ -65,7 +65,7 @@ export function QuizPage() {
                     vengano ceduti alla società.
                   </p>
                   <p>
-                    Torna a fare il quiz quando le cose cambiano: un nuovo socio, un collaboratore pagato in equity o un
+                    Rifai il quiz quando le cose cambiano: un nuovo socio, un collaboratore pagato in equity o un
                     round di investimento sono i momenti giusti.
                   </p>
                 </div>
@@ -79,7 +79,7 @@ export function QuizPage() {
                       </div>
                       <p>{r.what}</p>
                       <p>
-                        <strong>Perché a te:</strong> {r.why}
+                        <strong>Perché ti riguarda.</strong> {r.why}
                       </p>
                       <ul className="triggers" aria-label="Risposte che lo hanno fatto emergere">
                         {r.triggers.map((t) => (

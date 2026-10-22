@@ -100,7 +100,7 @@ export const DOCUMENTS: Record<DocumentId, { title: string; what: string }> = {
   },
   vesting: {
     title: 'Clausole di vesting (good/bad leaver)',
-    what: 'Regole per cui le quote si “guadagnano” nel tempo: chi lascia presto conserva solo la parte maturata. In una s.r.l. di solito si realizzano con patti parasociali, opzioni call o clausole statutarie.',
+    what: 'Regole in base alle quali le quote maturano nel tempo: chi lascia presto conserva solo la parte maturata. In una s.r.l. di solito si realizzano con patti parasociali, opzioni call o clausole statutarie.',
   },
   safe: {
     title: 'SAFE (o strumento equivalente per investitori)',
@@ -108,7 +108,7 @@ export const DOCUMENTS: Record<DocumentId, { title: string; what: string }> = {
   },
   wfe: {
     title: 'Accordo di work for equity',
-    what: 'Un contratto che regola chi lavora per la startup ricevendo, in tutto o in parte, quote invece di un compenso: quanto, a quali condizioni e con quali tempi.',
+    what: 'Un contratto per chi lavora per la startup ricevendo, in tutto o in parte, quote al posto di un compenso: stabilisce quante quote, a quali condizioni e con quali tempi.',
   },
   ip: {
     title: 'Cessione e tutela della proprietà intellettuale',
@@ -162,8 +162,8 @@ export function getRecommendations(answers: Answers): Recommendation[] {
         'patti',
         'prioritario',
         answers.accordi === 'voce'
-          ? 'Gli accordi presi solo a voce sono difficili da dimostrare e facili da ricordare in modo diverso. Metterli per iscritto adesso, quando siete d’accordo, è molto più semplice che farlo durante un disaccordo.'
-          : 'Siete più fondatori e non c’è ancora nulla di scritto su quote e ruoli. È la base su cui poggiano tutti gli altri documenti.',
+          ? 'Gli accordi presi solo a voce sono difficili da dimostrare e ognuno tende a ricordarli a modo suo. Metterli per iscritto adesso, mentre siete d’accordo, è molto più semplice che farlo durante un disaccordo.'
+          : 'La startup ha più fondatori e non c’è ancora nulla di scritto su quote e ruoli. I patti tra fondatori sono la base su cui poggiano tutti gli altri documenti.',
         ['fondatori', 'accordi'],
       );
     } else {
@@ -184,7 +184,7 @@ export function getRecommendations(answers: Answers): Recommendation[] {
       add(
         'vesting',
         'prioritario',
-        'Siete più fondatori e non avete previsto cosa succede se uno di voi lascia. Senza vesting, chi esce dopo pochi mesi potrebbe tenere tutte le sue quote.',
+        'La startup ha più fondatori e non avete previsto cosa succede se uno di voi lascia. Senza vesting, chi esce dopo pochi mesi potrebbe tenere tutte le sue quote.',
         ['fondatori', 'uscita'],
       );
     } else {
@@ -199,7 +199,7 @@ export function getRecommendations(answers: Answers): Recommendation[] {
     add(
       'vesting',
       'valutare',
-      'Anche chi fonda da solo può sentirsi chiedere dagli investitori un vesting sulle proprie quote, a garanzia del suo impegno nel progetto.',
+      'Anche a chi fonda da solo gli investitori possono chiedere un vesting sulle proprie quote, a garanzia dell’impegno nel progetto.',
       ['fondatori', 'investimenti'],
     );
   }
@@ -208,7 +208,7 @@ export function getRecommendations(answers: Answers): Recommendation[] {
   if (investors || maybeInvestors) {
     const base = investors
       ? 'Pensate di raccogliere investimenti a breve: serve uno strumento chiaro per regolare l’ingresso degli investitori.'
-      : 'Un round è possibile: conoscere in anticipo come funziona uno strumento tipo SAFE vi farà arrivare preparati.';
+      : 'Un round è possibile: sapere in anticipo come funziona uno strumento come il SAFE vi permetterà di arrivare preparati.';
     add(
       'safe',
       investors ? 'prioritario' : 'consigliato',

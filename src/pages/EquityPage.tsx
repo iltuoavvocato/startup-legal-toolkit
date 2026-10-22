@@ -251,7 +251,7 @@ export function EquityPage() {
             <div className="card">
               <h2 className="card-title">3. Riserva per pool / ESOP (facoltativa)</h2>
               <p className="card-intro">
-                Una parte delle quote può essere tenuta da parte per futuri collaboratori chiave. Riduce in proporzione la
+                Puoi accantonare una parte delle quote per futuri collaboratori chiave. La riserva riduce in proporzione la
                 quota di tutti i fondatori.
               </p>
               <Slider
@@ -336,7 +336,7 @@ export function EquityPage() {
                 Per ogni fattore, ciascuno riceve una parte del peso in proporzione a quanto ha portato rispetto al totale del
                 gruppo. I pesi sono normalizzati al 100%. Se per un fattore il totale è zero (per esempio nessuno mette
                 capitale), quel fattore viene escluso e i pesi degli altri sono ricalcolati. Le percentuali sono arrotondate
-                a un decimale con il metodo del resto più alto, così il totale fa sempre 100,0%.
+                a un decimale con il metodo dei resti più alti, così il totale fa sempre 100,0%.
               </p>
               <details className="details">
                 <summary>Dettaglio per fattore</summary>
@@ -403,7 +403,7 @@ export function EquityPage() {
             <li>
               <h3>Abbinalo al vesting</h3>
               <p>
-                Le quote premiano un impegno che in gran parte deve ancora arrivare. Con il vesting si maturano nel tempo.{' '}
+                Le quote premiano un impegno che in gran parte deve ancora arrivare. Con il vesting maturano un po’ alla volta.{' '}
                 <Link to="/vesting/">Prova il simulatore</Link>.
               </p>
             </li>

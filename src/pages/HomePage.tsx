@@ -27,7 +27,7 @@ const TOOLS = [
 const REASONS = [
   {
     title: 'Le quote decise a voce non reggono',
-    text: 'All’inizio siete d’accordo su tutto. Poi cambiano l’impegno, i soldi messi, le aspettative. Un accordo scritto oggi evita discussioni domani, quando sarà più difficile trovarsi d’accordo.',
+    text: 'All’inizio siete d’accordo su tutto. Poi cambiano l’impegno, i soldi messi, le aspettative. Un accordo scritto oggi evita discussioni domani, quando trovare un’intesa sarà più difficile.',
   },
   {
     title: 'Qualcuno potrebbe uscire presto',
@@ -35,7 +35,7 @@ const REASONS = [
   },
   {
     title: 'Il codice scritto prima della società',
-    text: 'Codice, marchio e design creati prima della costituzione, o da un freelance, in genere non appartengono automaticamente alla società. Gli investitori lo verificheranno.',
+    text: 'Codice, marchio e design creati prima della costituzione, o da un freelance, in genere non appartengono automaticamente alla società. E gli investitori, di solito, lo verificano.',
   },
 ];
 
@@ -54,7 +54,7 @@ const DOCS = [
   },
   {
     title: 'Vesting',
-    text: 'Le quote si maturano nel tempo, con un eventuale cliff iniziale e regole diverse per good e bad leaver.',
+    text: 'Le quote maturano nel tempo, con un eventuale cliff iniziale e regole diverse per good e bad leaver.',
   },
   {
     title: 'Cessione IP',
@@ -73,7 +73,7 @@ export function HomePage() {
           </h1>
           <p className="hero-lead">
             Tre strumenti gratuiti per dividere le quote tra soci, simulare il vesting e capire quali documenti ti
-            servono. Per arrivare dall’avvocato con le idee già chiare.
+            servono. Così arrivi dall’avvocato con le idee già chiare.
           </p>
           <div className="hero-actions">
             <Link to="/quiz/" className="btn btn-gold btn-lg">
@@ -95,7 +95,7 @@ export function HomePage() {
         <div className="container">
           <div className="section-head">
             <p className="eyebrow eyebrow-dark">Gli strumenti</p>
-            <h2 id="tools-title">Tre strumenti, cinque minuti</h2>
+            <h2 id="tools-title">Tre strumenti per partire col piede giusto</h2>
           </div>
           <ul className="tool-grid">
             {TOOLS.map(({ to, title, text, Icon }) => (

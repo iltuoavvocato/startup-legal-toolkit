@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_VESTING,
   addMonths,
+  leaverDisplay,
   leaverOutcome,
   normalizeParams,
   parseISODate,
@@ -102,6 +103,38 @@ describe('vestedPercent and schedule', () => {
     expect(s).toHaveLength(25);
     expect(s[0]).toEqual({ month: 0, fraction: 0, percent: 0 });
     expect(s[24]!.percent).toBe(25);
+  });
+});
+
+describe('leaverDisplay', () => {
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+
+  it('makes rounded vested + unvested equal the displayed total', () => {
+    // 25% stake, exit at month 18: exact 9.375 / 15.625 would display as 9,38 + 15,63 = 25,01.
+    const d = leaverDisplay(18, p());
+    expect(d.total).toBe(25);
+    expect(round2(d.vested + d.unvested)).toBe(25);
+    expect(d.vested).toBe(9.38);
+    expect(d.unvested).toBe(15.62);
+    expect(d.vestedOfPackage + d.unvestedOfPackage).toBe(100);
+  });
+
+  it('always adds up for every month, stake and frequency', () => {
+    for (const totalPercent of [1, 7, 12.5, 25, 33, 100]) {
+      for (const frequency of ['mensile', 'trimestrale', 'annuale'] as const) {
+        const params = p({ totalPercent, frequency, durationMonths: 37, cliffMonths: 5 });
+        for (let m = 0; m <= 40; m++) {
+          const d = leaverDisplay(m, params);
+          expect(round2(d.vested + d.unvested)).toBe(d.total);
+          expect(Math.round((d.vestedOfPackage + d.unvestedOfPackage) * 10) / 10).toBe(100);
+        }
+      }
+    }
+  });
+
+  it('handles the boundaries', () => {
+    expect(leaverDisplay(0, p())).toMatchObject({ vested: 0, unvested: 25, vestedOfPackage: 0, unvestedOfPackage: 100 });
+    expect(leaverDisplay(48, p())).toMatchObject({ vested: 25, unvested: 0, vestedOfPackage: 100, unvestedOfPackage: 0 });
   });
 });
 

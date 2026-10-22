@@ -1,3 +1,5 @@
+import { largestRemainder } from './rounding';
+
 export type Frequency = 'mensile' | 'trimestrale' | 'annuale';
 
 export const FREQUENCY_MONTHS: Record<Frequency, number> = {
@@ -88,6 +90,35 @@ export function leaverOutcome(month: number, params: VestingParams): LeaverOutco
   const fraction = vestedFraction(month, p);
   const vested = p.totalPercent * fraction;
   return { month: Math.floor(Math.max(0, month)), vestedFraction: fraction, vestedPercent: vested, unvestedPercent: p.totalPercent - vested };
+}
+
+export interface LeaverDisplay {
+  /** Founder's stake rounded to `decimals`. */
+  total: number;
+  vested: number;
+  unvested: number;
+  /** Share of the package, one decimal; always sums to 100. */
+  vestedOfPackage: number;
+  unvestedOfPackage: number;
+}
+
+/**
+ * Rounded figures for display: vested + unvested always equal the displayed total
+ * (largest-remainder rounding), and the package shares always add up to 100.
+ */
+export function leaverDisplay(month: number, params: VestingParams, decimals = 2): LeaverDisplay {
+  const p = normalizeParams(params);
+  const o = leaverOutcome(month, p);
+  const scale = 10 ** decimals;
+  const total = Math.round(p.totalPercent * scale) / scale;
+  const [vested = 0, unvested = 0] =
+    total > 0 ? largestRemainder([o.vestedPercent, o.unvestedPercent], total, decimals) : [0, 0];
+  const [vestedOfPackage = 0, unvestedOfPackage = 0] = largestRemainder(
+    [o.vestedFraction * 100, (1 - o.vestedFraction) * 100],
+    100,
+    1,
+  );
+  return { total, vested, unvested, vestedOfPackage, unvestedOfPackage };
 }
 
 /** Adds calendar months, clamping the day to the end of the target month (31 gen + 1 → 28/29 feb). */

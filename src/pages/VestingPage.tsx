@@ -13,6 +13,7 @@ import {
   FREQUENCY_MONTHS,
   MAX_DURATION,
   addMonths,
+  leaverDisplay,
   leaverOutcome,
   normalizeParams,
   parseISODate,
@@ -84,15 +85,16 @@ export function VestingPage() {
     (p, i) => i === 0 || p.month === params.cliffMonths || p.month % period === 0 || p.month === params.durationMonths,
   );
   const exitDate = addMonths(start, leaverMonth);
-  const pkg = formatPercent(outcome.vestedFraction * 100);
-  const vested = formatPercent(outcome.vestedPercent, 2, 0);
-  const unvested = formatPercent(outcome.unvestedPercent, 2, 0);
+  const shown = leaverDisplay(leaverMonth, params);
+  const pkg = formatPercent(shown.vestedOfPackage);
+  const vested = formatPercent(shown.vested, 2, 0);
+  const unvested = formatPercent(shown.unvested, 2, 0);
 
   return (
     <>
       <PageHero eyebrow="Strumento 2 di 3" title={<>Simulatore <em>vesting</em></>}>
         <p>
-          Con il vesting le quote di un founder si maturano nel tempo. Imposta durata, cliff e frequenza e scopri cosa
+          Con il vesting le quote di un founder maturano nel tempo. Imposta durata, cliff e frequenza e scopri cosa
           succede se un socio lascia il progetto in un certo mese.
         </p>
       </PageHero>
@@ -127,7 +129,7 @@ export function VestingPage() {
               step={1}
               onChange={(v) => setParams({ cliffMonths: v })}
               display={params.cliffMonths === 0 ? 'nessun cliff' : pluralMonths(params.cliffMonths)}
-              hint="Periodo iniziale in cui non matura nulla; alla sua scadenza matura in un colpo solo quanto accumulato."
+              hint="Periodo iniziale in cui non matura nulla; alla scadenza matura in una volta sola quanto accumulato fino a quel momento."
             />
             <fieldset className="segmented-field">
               <legend>Frequenza di maturazione</legend>
@@ -152,8 +154,12 @@ export function VestingPage() {
                 id={`${id}-start`}
                 type="date"
                 value={state.start}
+                aria-describedby={`${id}-start-it`}
                 onChange={(e) => setState((s) => ({ ...s, start: parseISODate(e.target.value) ? e.target.value : s.start }))}
               />
+              <p id={`${id}-start-it`} className="field-hint date-it">
+                Inizio: <strong>{formatLongDate(start)}</strong>
+              </p>
             </div>
           </fieldset>
 
@@ -225,9 +231,12 @@ export function VestingPage() {
                 <div className="stat stat-unvested">
                   <span className="stat-label">Quote non maturate</span>
                   <strong className="stat-value">{unvested}</strong>
-                  <span className="stat-sub">{formatPercent(100 - outcome.vestedFraction * 100)} del suo pacchetto</span>
+                  <span className="stat-sub">{formatPercent(shown.unvestedOfPackage)} del suo pacchetto</span>
                 </div>
               </div>
+              <p className="stat-total">
+                Totale del founder: <strong>{formatPercent(shown.total, 2, 0)}</strong> della società
+              </p>
               <div className="split-bar" aria-hidden="true">
                 <span style={{ width: `${outcome.vestedFraction * 100}%` }} />
               </div>
@@ -266,7 +275,7 @@ export function VestingPage() {
                   <>
                     <p className="leaver-examples">
                       <strong>Bad leaver</strong>: per esempio dimissioni prima di un termine concordato, violazione del
-                      patto di non concorrenza, giusta causa.
+                      patto di non concorrenza, licenziamento per giusta causa.
                     </p>
                     <p>
                       Le quote non maturate ({unvested}) tornano alla società o agli altri soci. In più, gli accordi possono
