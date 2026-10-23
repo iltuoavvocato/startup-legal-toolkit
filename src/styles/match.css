@@ -482,6 +482,17 @@
   font-variant-numeric: tabular-nums;
 }
 
+.mi-amount {
+  margin-top: 0.35rem;
+  font-weight: 600;
+  color: var(--navy-800);
+  font-variant-numeric: tabular-nums;
+}
+
+.mi-amount + .field-hint {
+  margin-top: 0.1rem;
+}
+
 .mi-error {
   margin: 0.4rem 0 0;
   font-size: 0.85rem;

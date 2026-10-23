@@ -175,6 +175,7 @@ const it = {
     empty: 'Il file è vuoto: scegli un altro PDF.',
     tooBig: (mb: number) => `Il file supera ${mb} MB: carica una versione più leggera.`,
     steps: ['Lettura del deck', 'Individuazione di settore e fase', 'Stima del round', 'Bozza del profilo'],
+    stepsNoDeck: ['Lettura dei dati inseriti', 'Controllo di settore e fase', 'Verifica dell’importo del round', 'Bozza del profilo'],
     fonti: { deck: 'dal deck (simulato)', modulo: 'dal modulo', esempio: 'esempio' },
     demoOneLiner: 'Software che semplifica un processo aziendale ripetitivo per le PMI italiane.',
   },
@@ -215,6 +216,7 @@ const it = {
       more: 'Alcuni aspetti regolamentari sono **da verificare con un avvocato**. [Leggi le note legali](@matchLegal)',
     },
     stepDone: ' (completato)',
+    amount: (formatted: string) => `Importo: ${formatted}`,
     dropzone: {
       label: 'Pitch deck',
       optional: '(facoltativo)',
@@ -227,11 +229,11 @@ const it = {
       hint: (mb: number) => `Solo PDF, fino a ${mb} MB (valore provvisorio). In questo prototipo il file non viene letto né inviato.`,
     },
     agent: {
-      readingData: 'Lettura dei dati inseriti',
       done: ' (fatto)',
       active: ' (in corso)',
       ready: 'Bozza del profilo pronta.',
       note: 'Simulazione: in questo prototipo l’agente non legge davvero il file. I campi sono ricavati dal modulo e dal nome del file.',
+      noteNoDeck: 'Simulazione: il profilo è ricavato solo dai dati che hai inserito nel modulo.',
       skip: 'Salta l’attesa',
     },
     teaser: {
@@ -371,7 +373,7 @@ const it = {
       readingDeck: 'L’agente sta leggendo il deck',
       preparing: 'L’agente sta preparando il profilo',
       reviewTitleDeck: 'L’agente ha letto il deck: controlla il profilo',
-      reviewTitle: 'Controlla il profilo',
+      reviewTitle: 'L’agente ha preparato il profilo: controllalo',
       reviewNote:
         'L’agente propone, tu decidi: correggi quello che non va. Il profilo viene usato solo dopo la tua conferma.',
       startupName: 'Nome della startup',
@@ -649,6 +651,7 @@ const en: MatchMessages = {
     empty: 'The file is empty: choose another PDF.',
     tooBig: (mb: number) => `The file is larger than ${mb} MB: upload a lighter version.`,
     steps: ['Reading the deck', 'Identifying sector and stage', 'Estimating the round', 'Drafting the profile'],
+    stepsNoDeck: ['Reading the details you entered', 'Checking sector and stage', 'Checking the round size', 'Drafting the profile'],
     fonti: { deck: 'from the deck (simulated)', modulo: 'from the form', esempio: 'example' },
     demoOneLiner: 'Software that simplifies a repetitive business process for Italian SMEs.',
   },
@@ -689,6 +692,7 @@ const en: MatchMessages = {
       more: 'Some regulatory aspects **need to be checked with a lawyer**. [Read the legal notes](@matchLegal)',
     },
     stepDone: ' (completed)',
+    amount: (formatted: string) => `Amount: ${formatted}`,
     dropzone: {
       label: 'Pitch deck',
       optional: '(optional)',
@@ -701,11 +705,11 @@ const en: MatchMessages = {
       hint: (mb: number) => `PDF only, up to ${mb} MB (placeholder value). In this prototype the file is neither read nor sent.`,
     },
     agent: {
-      readingData: 'Reading the data you entered',
       done: ' (done)',
       active: ' (in progress)',
       ready: 'Profile draft ready.',
       note: 'Simulation: in this prototype the agent doesn’t actually read the file. The fields come from the form and the file name.',
+      noteNoDeck: 'Simulation: the profile comes only from the details you entered in the form.',
       skip: 'Skip the wait',
     },
     teaser: {
@@ -845,7 +849,7 @@ const en: MatchMessages = {
       readingDeck: 'The agent is reading the deck',
       preparing: 'The agent is drafting the profile',
       reviewTitleDeck: 'The agent has read the deck: check the profile',
-      reviewTitle: 'Check the profile',
+      reviewTitle: 'The agent drafted your profile: check it',
       reviewNote:
         'The agent suggests, you decide: correct anything that’s wrong. The profile is used only after you confirm it.',
       startupName: 'Startup name',

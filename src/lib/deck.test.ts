@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEMO_EXTRACTION, formatFileSize, MAX_DECK_MB, mockExtract, toOneLiner, validateDeck, type StartupForm } from './deck';
+import { agentSteps, DEMO_EXTRACTION, formatFileSize, MAX_DECK_MB, mockExtract, toOneLiner, validateDeck, type StartupForm } from './deck';
 
 const empty: StartupForm = { settore: '', fase: '', regione: '', round: null, descrizione: '' };
 
@@ -78,5 +78,17 @@ describe('formatFileSize', () => {
   it('formats KB and MB in Italian', () => {
     expect(formatFileSize(2048)).toBe('2 KB');
     expect(formatFileSize(1.5 * 1024 * 1024)).toBe('1,5 MB');
+  });
+});
+
+describe('agentSteps', () => {
+  it('mentions reading the deck only when there is one', () => {
+    expect(agentSteps('it', true)[0]).toBe('Lettura del deck');
+    expect(agentSteps('en', true)[0]).toBe('Reading the deck');
+    for (const locale of ['it', 'en'] as const) {
+      const steps = agentSteps(locale, false);
+      expect(steps).toHaveLength(agentSteps(locale, true).length);
+      expect(steps.join(' ')).not.toMatch(/deck/i);
+    }
   });
 });

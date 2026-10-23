@@ -124,7 +124,6 @@ export function MatchStartupPage() {
       descrizione: t.matchDemo.exampleDescription,
     });
     setNames({ nome: EXAMPLE_STARTUP_FORM.nome, founder: EXAMPLE_STARTUP_FORM.founder });
-    setDeck({ name: 'contoverde-deck-seed.pdf', type: 'application/pdf', size: 2_516_582 });
     setErrors({});
     setMessage(u.exampleFilled);
   };

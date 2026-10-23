@@ -30,8 +30,10 @@ export function validateDeck(file: DeckMeta, locale: Locale = 'it'): string | nu
   return null;
 }
 
-export function agentSteps(locale: Locale = 'it'): readonly string[] {
-  return MESSAGES[locale].match.deck.steps;
+/** Processing steps shown while the agent works; without a deck they never mention reading one. */
+export function agentSteps(locale: Locale = 'it', hasDeck = true): readonly string[] {
+  const d = MESSAGES[locale].match.deck;
+  return hasDeck ? d.steps : d.stepsNoDeck;
 }
 
 export const AGENT_STEPS = agentSteps('it');

@@ -1,3 +1,5 @@
+import { useI18n } from '../../i18n/context';
+
 interface Props {
   id: string;
   label: string;
@@ -7,8 +9,16 @@ interface Props {
   error?: string;
 }
 
+/**
+ * Native number input (keeps spinbutton semantics, validation and the numeric keypad), plus a read-out of the
+ * amount with the locale's thousands separators (500.000 € / €500,000) linked via aria-describedby.
+ */
 export function EuroField({ id, label, value, onChange, hint, error }: Props) {
-  const describedBy = [hint ? `${id}-hint` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined;
+  const { t, f } = useI18n();
+  const showAmount = value !== null && value > 0;
+  const describedBy =
+    [showAmount ? `${id}-amount` : '', hint ? `${id}-hint` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') ||
+    undefined;
   return (
     <div className="field mi-field">
       <label htmlFor={id}>{label}</label>
@@ -29,6 +39,11 @@ export function EuroField({ id, label, value, onChange, hint, error }: Props) {
           }}
         />
       </div>
+      {showAmount && (
+        <p className="field-hint mi-amount" id={`${id}-amount`}>
+          {t.match.ui.amount(f.euro(value))}
+        </p>
+      )}
       {hint && (
         <p className="field-hint" id={`${id}-hint`}>
           {hint}

@@ -13,7 +13,7 @@ interface Props {
 export function AgentProcessing({ hasDeck, onDone }: Props) {
   const { locale, t } = useI18n();
   const a = t.match.ui.agent;
-  const steps = agentSteps(locale);
+  const steps = agentSteps(locale, hasDeck);
   const [done, setDone] = useState(0);
   const onDoneRef = useRef(onDone);
   useEffect(() => {
@@ -38,7 +38,7 @@ export function AgentProcessing({ hasDeck, onDone }: Props) {
             <span className="mi-agent-dot" aria-hidden="true">
               {i < done ? '✓' : ''}
             </span>
-            {i === 0 && !hasDeck ? a.readingData : s}
+            {s}
             <span className="sr-only">{i < done ? a.done : i === done ? a.active : ''}</span>
           </li>
         ))}
@@ -46,7 +46,7 @@ export function AgentProcessing({ hasDeck, onDone }: Props) {
       <p className="sr-only" role="status" aria-live="polite">
         {done >= steps.length ? a.ready : `${current}…`}
       </p>
-      <p className="field-hint">{a.note}</p>
+      <p className="field-hint">{hasDeck ? a.note : a.noteNoDeck}</p>
       <button type="button" className="btn btn-text btn-sm" onClick={() => onDoneRef.current()}>
         {a.skip}
       </button>

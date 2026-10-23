@@ -92,6 +92,12 @@ const STATES = {
   'match-startup-results': async (page, base) => {
     await page.goto(`${base}match-investitori/startup/`);
     await page.getByRole('button', { name: 'Usa un esempio' }).click();
+    // Deck path: attach a placeholder PDF (only its name, type and size are used; it is never read).
+    await page.locator('input[type=file]').setInputFiles({
+      name: 'contoverde-deck-seed.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('%PDF-1.4\n%placeholder\n'),
+    });
     await page.getByRole('button', { name: /Fai leggere il deck/ }).click();
     await page.getByRole('button', { name: 'Salta l’attesa' }).click();
     await page.getByRole('button', { name: 'Conferma il profilo' }).click();
@@ -116,8 +122,11 @@ const STATES = {
   'en-match-startup-results': async (page, base) => {
     await page.goto(`${base}en/investor-match/startup/`);
     await page.getByRole('button', { name: 'Use an example' }).click();
-    await page.getByRole('button', { name: /Let the agent read/ }).click();
+    // No-deck path: the button and the agent copy must not mention reading a deck.
+    await page.getByRole('button', { name: 'Draft the profile' }).click();
+    await page.getByRole('heading', { name: 'The agent is drafting the profile' }).waitFor();
     await page.getByRole('button', { name: 'Skip the wait' }).click();
+    await page.getByRole('heading', { name: 'The agent drafted your profile: check it' }).waitFor();
     await page.getByRole('button', { name: 'Confirm the profile' }).click();
     await page.getByRole('heading', { name: /Your matches/ }).waitFor();
     await page.getByRole('button', { name: /Propose your profile/ }).first().click();
