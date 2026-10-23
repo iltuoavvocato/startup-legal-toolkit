@@ -1,12 +1,170 @@
-// Copy for design variant V4 (see src/variants/v4/). Keys must match in it and en.
+// Copy for design variant V4 "Card e swipe" (see src/variants/v4/). Keys must match in it and en.
 const it = {
-  placeholder: 'In preparazione',
+  deck: {
+    region: 'Mazzo di card',
+    progressLabel: 'Avanzamento del mazzo',
+    progress: (n: number, total: number) => `${n} di ${total}`,
+    cardOf: (n: number, total: number) => `Card ${n} di ${total}`,
+    dragHint: 'Trascina la card: a destra per Interessato, a sinistra per Passa. I pulsanti fanno lo stesso.',
+    keys: [
+      { key: '←', label: 'Passa' },
+      { key: '→', label: 'Interessato' },
+      { key: 'U', label: 'Annulla' },
+    ],
+    undone: (name: string) => `Scelta annullata: di nuovo in cima ${name}.`,
+    doneAnnounce: 'Hai visto tutte le card del mazzo.',
+  },
+  card: {
+    thesis: 'Tesi',
+    ticket: 'Ticket',
+    ticketRange: (min: string, max: string) => `${min} – ${max}`,
+    fasi: 'Fasi',
+    based: (regione: string) => `Sede in ${regione}`,
+    parts: 'Il punteggio, parte per parte',
+    partValue: (pts: number, max: number) => `${pts} su ${max}`,
+    match: 'Affinità',
+  },
+  landing: {
+    eyebrow: 'MatchInvStar · una card alla volta',
+    deckTitle: 'Prova il mazzo',
+    deckLead: 'Tre investitori di esempio per la startup di esempio, calcolati adesso dal vero motore di matching.',
+    demoNote: 'Demo: qui non viene proposto né inviato nulla.',
+    liked: (name: string) => `Ti interessa ${name}. Demo: non viene inviato nulla.`,
+    passed: (name: string) => `Hai passato ${name}. Non lo saprà.`,
+    doneTitle: 'Mazzo finito',
+    doneText: (n: number) =>
+      `${n === 1 ? 'Ti interessa 1 investitore' : `Ti interessano ${n} investitori`} su 3. Nei risultati completi “Interessato” propone davvero il profilo, entro il limite mensile.`,
+    ctaResults: 'Apri i match del founder',
+    ctaInvestor: 'Apri la vista investitore',
+    stepLabel: (n: number) => `Passo ${n}`,
+    scrollHint: 'Scorri di lato per vedere tutti i passi.',
+    limitsLead: 'Le regole, prima di iniziare.',
+    optinItem: {
+      title: 'Doppio consenso',
+      text: 'L’intro parte solo se dite sì entrambi. Un no non viene mai comunicato all’altra parte.',
+    },
+    doorsLead: 'Due mazzi diversi, gli stessi dati di esempio fittizi.',
+    founderDoor: 'Per il founder: un investitore per card. Interessato = proponi il profilo.',
+    investorDoor: 'Per l’investitore: una startup anonima per card. Il nome arriva solo con l’intro.',
+  },
+  results: {
+    eyebrow: 'Risultati del founder · card',
+    lead: 'Un investitore per card. “Interessato” propone il tuo profilo, “Passa” lo salta: l’investitore non saprà nulla finché non dite sì entrambi.',
+    passed: (name: string) => `Hai passato ${name}. Non riceverà nulla.`,
+    blocked: 'Limite raggiunto: potrai fare nuove proposte il mese prossimo. Puoi comunque passare le card.',
+    undoLocked: 'Una proposta già inviata non si può ritirare.',
+    alreadySent: 'Profilo già proposto a questo investitore.',
+    doneTitle: 'Hai visto tutti i match',
+    doneText: (sent: number) =>
+      sent === 0
+        ? 'Non hai proposto il profilo a nessun investitore. Puoi ricominciare il mazzo quando vuoi.'
+        : `Hai proposto il profilo a ${sent === 1 ? '1 investitore' : `${sent} investitori`}. Ti scriveremo solo se c’è un interesse reciproco.`,
+    restartNote: 'Ricominciando, le proposte già inviate restano valide e contano per il limite del mese.',
+    summaryTitle: 'Le tue scelte',
+    proposedTitle: (n: number) => `Profilo proposto (${n})`,
+    passedTitle: (n: number) => `Passati (${n})`,
+    noneProposed: 'Nessuna proposta per ora.',
+    nonePassed: 'Nessun investitore passato.',
+    restarted: 'Mazzo ricominciato dalla prima card.',
+  },
+  investor: {
+    eyebrow: 'Vista investitore · card',
+    lead: 'Una startup per card, in forma anonima. “Interessato” invia il tuo interesse, “Passa” la scarta senza che lo sappia.',
+    undoLocked: 'Un interesse già inviato non si può ritirare.',
+    doneTitle: 'Hai visto tutte le startup',
+    doneText: 'Qui sotto le tue scelte. Per gli interessi inviati puoi simulare la risposta della startup.',
+    summaryTitle: 'Le tue scelte',
+    noneInBucket: 'Nessuna.',
+    replyPending: (status: string) => `Nessuna novità visibile. Stato: ${status}.`,
+    introAnnounce: (who: string) => `Intro pronta: ${who}.`,
+    restarted: 'Mazzo ricominciato: tutte le startup sono di nuovo da valutare.',
+    reasons: 'In linea con la tua tesi',
+  },
 };
 
 export type V4Copy = typeof it;
 
 const en: V4Copy = {
-  placeholder: 'In preparation',
+  deck: {
+    region: 'Card deck',
+    progressLabel: 'Deck progress',
+    progress: (n: number, total: number) => `${n} of ${total}`,
+    cardOf: (n: number, total: number) => `Card ${n} of ${total}`,
+    dragHint: 'Drag the card: right for Interested, left for Pass. The buttons do the same.',
+    keys: [
+      { key: '←', label: 'Pass' },
+      { key: '→', label: 'Interested' },
+      { key: 'U', label: 'Undo' },
+    ],
+    undone: (name: string) => `Choice undone: ${name} is back on top.`,
+    doneAnnounce: 'You have seen every card in the deck.',
+  },
+  card: {
+    thesis: 'Thesis',
+    ticket: 'Ticket',
+    ticketRange: (min: string, max: string) => `${min} – ${max}`,
+    fasi: 'Stages',
+    based: (regione: string) => `Based in ${regione}`,
+    parts: 'The score, part by part',
+    partValue: (pts: number, max: number) => `${pts} of ${max}`,
+    match: 'Fit',
+  },
+  landing: {
+    eyebrow: 'MatchInvStar · one card at a time',
+    deckTitle: 'Try the deck',
+    deckLead: 'Three sample investors for the sample startup, computed right now by the real matching engine.',
+    demoNote: 'Demo: nothing is proposed or sent from here.',
+    liked: (name: string) => `You’re interested in ${name}. Demo: nothing is sent.`,
+    passed: (name: string) => `You passed on ${name}. They won’t know.`,
+    doneTitle: 'Deck finished',
+    doneText: (n: number) =>
+      `You’re interested in ${n === 1 ? '1 investor' : `${n} investors`} out of 3. In the full results “Interested” really proposes your profile, within the monthly limit.`,
+    ctaResults: 'Open the founder matches',
+    ctaInvestor: 'Open the investor view',
+    stepLabel: (n: number) => `Step ${n}`,
+    scrollHint: 'Scroll sideways to see every step.',
+    limitsLead: 'The rules, before you start.',
+    optinItem: {
+      title: 'Double opt-in',
+      text: 'The intro only happens if you both say yes. A no is never revealed to the other side.',
+    },
+    doorsLead: 'Two different decks, the same fictional sample data.',
+    founderDoor: 'For founders: one investor per card. Interested = propose your profile.',
+    investorDoor: 'For investors: one anonymous startup per card. The name only comes with the intro.',
+  },
+  results: {
+    eyebrow: 'Founder results · cards',
+    lead: 'One investor per card. “Interested” proposes your profile, “Pass” skips it: the investor learns nothing unless you both say yes.',
+    passed: (name: string) => `You passed on ${name}. They won’t receive anything.`,
+    blocked: 'Limit reached: you can make new proposals next month. You can still pass on cards.',
+    undoLocked: 'A proposal already sent can’t be withdrawn.',
+    alreadySent: 'Profile already proposed to this investor.',
+    doneTitle: 'You’ve seen every match',
+    doneText: (sent: number) =>
+      sent === 0
+        ? 'You haven’t proposed your profile to any investor. You can restart the deck whenever you like.'
+        : `You proposed your profile to ${sent === 1 ? '1 investor' : `${sent} investors`}. We’ll only write to you if the interest is mutual.`,
+    restartNote: 'If you start again, proposals already sent stay valid and count towards this month’s limit.',
+    summaryTitle: 'Your choices',
+    proposedTitle: (n: number) => `Profile proposed (${n})`,
+    passedTitle: (n: number) => `Passed (${n})`,
+    noneProposed: 'No proposals yet.',
+    nonePassed: 'No investors passed.',
+    restarted: 'Deck restarted from the first card.',
+  },
+  investor: {
+    eyebrow: 'Investor view · cards',
+    lead: 'One startup per card, anonymously. “Interested” sends your interest, “Pass” discards it without them knowing.',
+    undoLocked: 'An interest already sent can’t be withdrawn.',
+    doneTitle: 'You’ve seen every startup',
+    doneText: 'Your choices are below. For interests sent you can simulate the startup’s answer.',
+    summaryTitle: 'Your choices',
+    noneInBucket: 'None.',
+    replyPending: (status: string) => `Nothing new to see. Status: ${status}.`,
+    introAnnounce: (who: string) => `Intro ready: ${who}.`,
+    restarted: 'Deck restarted: every startup is back to review.',
+    reasons: 'In line with your thesis',
+  },
 };
 
 export default { it, en };
