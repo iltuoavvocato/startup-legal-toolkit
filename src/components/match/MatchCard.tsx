@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useI18n } from '../../i18n/context';
 import type { Evaluation } from '../../lib/matching';
 import { ScoreMeter } from './ScoreMeter';
 
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function MatchCard({ rank, title, meta, evaluation, children, actions }: Props) {
+  const { t } = useI18n();
   return (
     <li className="mi-match">
       <div className="mi-match-head">
@@ -28,7 +30,7 @@ export function MatchCard({ rank, title, meta, evaluation, children, actions }: 
         <ScoreMeter score={evaluation.score} />
       </div>
       {children}
-      <ul className="mi-reasons" aria-label="Perché è in linea">
+      <ul className="mi-reasons" aria-label={t.match.ui.reasonsLabel}>
         {evaluation.reasons.map((r) => (
           <li key={r}>{r}</li>
         ))}

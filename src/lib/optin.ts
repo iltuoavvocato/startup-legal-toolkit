@@ -1,6 +1,8 @@
 // Double opt-in: an intro happens only if both sides say yes, and a "no" is never revealed to the other side.
-import { formatEuro } from './format';
-import { FASE_LABEL, REGIONE_LABEL, SETTORE_LABEL, TIPO_LABEL, type Investor, type StartupProfile } from './matchTaxonomy';
+import { FORMATTERS } from '../i18n/format';
+import type { Locale } from '../i18n/locales';
+import { MESSAGES } from '../i18n/messages';
+import { labelsFor, type Investor, type StartupProfile } from './matchTaxonomy';
 
 export const PRODUCT_NAME = 'MatchInvStar';
 
@@ -22,11 +24,16 @@ export function transition(state: OptInState, event: OptInEvent): OptInState {
   return TRANSITIONS[state][event] ?? state;
 }
 
-export const STATE_STEPS: { state: OptInState; label: string }[] = [
-  { state: 'proposta', label: 'Proposta all’investitore' },
-  { state: 'attesa-startup', label: 'Richiesta alla startup' },
-  { state: 'intro', label: 'Intro' },
-];
+export function stateSteps(locale: Locale = 'it'): { state: OptInState; label: string }[] {
+  const steps = MESSAGES[locale].match.optin.steps;
+  return [
+    { state: 'proposta', label: steps.proposta },
+    { state: 'attesa-startup', label: steps.attesa },
+    { state: 'intro', label: steps.intro },
+  ];
+}
+
+export const STATE_STEPS = stateSteps('it');
 
 export type SideAction = { event: OptInEvent; label: string; variant: 'primary' | 'secondary' };
 
@@ -40,86 +47,55 @@ export interface SideView {
   conosceNome: boolean;
 }
 
-const NEUTRAL_STARTUP: SideView = {
-  kind: 'stato',
-  titolo: 'Il tuo profilo è attivo',
-  testo: 'Ti scriveremo solo se c’è un interesse reciproco. Nel frattempo non devi fare nulla.',
-  azioni: [],
-  conosceNome: false,
-};
-
-const WAITING_INVESTOR: SideView = {
-  kind: 'stato',
-  titolo: 'Interesse inviato',
-  testo: 'Riceverai un’intro solo se anche la startup accetta. Fino ad allora il nome della startup resta riservato.',
-  azioni: [],
-  conosceNome: false,
-};
-
 /**
  * What each side sees in each state. A "no" is indistinguishable from silence:
  * the startup sees the same thing whether the investor said no or hasn't answered yet,
  * and the investor sees the same thing whether the startup said no or hasn't answered yet.
  */
-export function viewFor(state: OptInState, side: Side): SideView {
-  if (state === 'intro') {
-    return {
-      kind: 'intro',
-      titolo: 'Intro inviata',
-      testo: 'Avete detto sì entrambi: ecco l’email che vi presenta. Da qui in poi la conversazione è vostra.',
-      azioni: [],
-      conosceNome: true,
-    };
-  }
+export function viewFor(state: OptInState, side: Side, locale: Locale = 'it'): SideView {
+  const m = MESSAGES[locale].match.optin;
+  const status = (copy: { titolo: string; testo: string }, conosceNome: boolean): SideView => ({
+    kind: 'stato',
+    ...copy,
+    azioni: [],
+    conosceNome,
+  });
+  if (state === 'intro') return { kind: 'intro', ...m.intro, azioni: [], conosceNome: true };
   if (side === 'investitore') {
     switch (state) {
       case 'proposta':
         return {
           kind: 'teaser',
-          titolo: 'Una startup in linea con la tua tesi',
-          testo: 'Vedi solo settore, regione, fase, importo e una frase di presentazione. Il nome arriva solo con l’intro.',
+          ...m.investorTeaser,
           azioni: [
-            { event: 'INVESTOR_YES', label: 'Sì, mi interessa', variant: 'primary' },
-            { event: 'INVESTOR_NO', label: 'No, grazie', variant: 'secondary' },
+            { event: 'INVESTOR_YES', label: m.actions.investorYes, variant: 'primary' },
+            { event: 'INVESTOR_NO', label: m.actions.investorNo, variant: 'secondary' },
           ],
           conosceNome: false,
         };
       case 'chiusa-investitore':
-        return {
-          kind: 'stato',
-          titolo: 'Va bene, non te la riproporremo',
-          testo: 'La startup non riceverà alcuna notifica del tuo rifiuto.',
-          azioni: [],
-          conosceNome: false,
-        };
+        return status(m.investorClosed, false);
       case 'attesa-startup':
       case 'chiusa-startup':
-        return WAITING_INVESTOR;
+        return status(m.waitingInvestor, false);
     }
   }
   switch (state) {
     case 'attesa-startup':
       return {
         kind: 'richiesta',
-        titolo: 'Un investitore vorrebbe conoscerti',
-        testo: 'Ha già detto sì. Se accetti anche tu, vi mandiamo un’email di presentazione. Se dici di no, non lo saprà.',
+        ...m.startupRequest,
         azioni: [
-          { event: 'STARTUP_YES', label: 'Accetta l’intro', variant: 'primary' },
-          { event: 'STARTUP_NO', label: 'Non ora', variant: 'secondary' },
+          { event: 'STARTUP_YES', label: m.actions.startupYes, variant: 'primary' },
+          { event: 'STARTUP_NO', label: m.actions.startupNo, variant: 'secondary' },
         ],
         conosceNome: true,
       };
     case 'chiusa-startup':
-      return {
-        kind: 'stato',
-        titolo: 'Hai rifiutato l’intro',
-        testo: 'L’investitore non riceverà alcuna notifica del rifiuto.',
-        azioni: [],
-        conosceNome: true,
-      };
+      return status(m.startupClosed, true);
     case 'proposta':
     case 'chiusa-investitore':
-      return NEUTRAL_STARTUP;
+      return status(m.neutralStartup, false);
   }
 }
 
@@ -132,12 +108,16 @@ export interface Teaser {
 }
 
 /** Anonymous teaser: no startup name, no founder name, no contact. */
-export function teaserOf(s: Pick<StartupProfile, 'settore' | 'regione' | 'fase' | 'round' | 'oneLiner'>): Teaser {
+export function teaserOf(
+  s: Pick<StartupProfile, 'settore' | 'regione' | 'fase' | 'round' | 'oneLiner'>,
+  locale: Locale = 'it',
+): Teaser {
+  const L = labelsFor(locale);
   return {
-    settore: SETTORE_LABEL[s.settore],
-    regione: REGIONE_LABEL[s.regione],
-    fase: FASE_LABEL[s.fase],
-    importo: formatEuro(s.round),
+    settore: L.settore[s.settore],
+    regione: L.regione[s.regione],
+    fase: L.fase[s.fase],
+    importo: FORMATTERS[locale].euro(s.round),
     oneLiner: s.oneLiner,
   };
 }
@@ -149,18 +129,20 @@ export interface IntroEmail {
   corpo: string[];
 }
 
-export function introEmail(s: StartupProfile, i: Investor): IntroEmail {
+export function introEmail(s: StartupProfile, i: Investor, locale: Locale = 'it'): IntroEmail {
+  const e = MESSAGES[locale].match.optin.email;
+  const L = labelsFor(locale);
   return {
     da: `${PRODUCT_NAME} <intro@matchinvstar.example>`,
     a: [`${s.founder} <${s.email}>`, `${i.referente} <${i.email}>`],
-    oggetto: `Intro: ${s.nome} ↔ ${i.nome} (via ${PRODUCT_NAME})`,
+    oggetto: e.subject(s.nome, i.nome, PRODUCT_NAME),
     corpo: [
-      `Ciao ${s.founder}, ciao ${i.referente},`,
-      `avete detto sì entrambi, quindi vi presentiamo. ${s.founder} ha fondato ${s.nome} (${SETTORE_LABEL[s.settore]}, ${REGIONE_LABEL[s.regione]}), in fase ${FASE_LABEL[s.fase]}, che cerca ${formatEuro(s.round)}: ${s.oneLiner}`,
-      `${i.referente} segue ${i.nome} (${TIPO_LABEL[i.tipo]}). ${i.tesi}`,
-      'Vi lasciamo continuare in autonomia: rispondete pure a tutti per fissare una prima chiamata.',
-      `Questa email è solo una presentazione: ${PRODUCT_NAME} non dà consulenza sugli investimenti, non valuta la startup e non gestisce denaro.`,
-      `Il team ${PRODUCT_NAME} (nome provvisorio)`,
+      e.greeting(s.founder, i.referente),
+      e.startupLine(s.founder, s.nome, L.settore[s.settore], L.regione[s.regione], L.fase[s.fase], FORMATTERS[locale].euro(s.round), s.oneLiner),
+      e.investorLine(i.referente, i.nome, L.tipo[i.tipo], i.tesi),
+      e.next,
+      e.disclaimer(PRODUCT_NAME),
+      e.signature(PRODUCT_NAME),
     ],
   };
 }
@@ -191,13 +173,9 @@ export function canPropose(c: ProposalCounter, limit = MONTHLY_PROPOSAL_LIMIT): 
 
 export type ConsumeResult = { ok: true; counter: ProposalCounter } | { ok: false; reason: string; counter: ProposalCounter };
 
-export function consume(c: ProposalCounter, limit = MONTHLY_PROPOSAL_LIMIT): ConsumeResult {
+export function consume(c: ProposalCounter, limit = MONTHLY_PROPOSAL_LIMIT, locale: Locale = 'it'): ConsumeResult {
   if (!canPropose(c, limit)) {
-    return {
-      ok: false,
-      counter: c,
-      reason: `Hai raggiunto il limite di ${limit} proposte per questo mese (valore provvisorio).`,
-    };
+    return { ok: false, counter: c, reason: MESSAGES[locale].match.optin.limitReached(limit) };
   }
   return { ok: true, counter: { month: c.month, used: c.used + 1 } };
 }

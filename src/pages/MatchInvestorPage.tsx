@@ -14,30 +14,27 @@ import { PrototypeBanner } from '../components/match/PrototypeBanner';
 import { ScoreExplainer } from '../components/match/ScoreExplainer';
 import { SelectField } from '../components/match/SelectField';
 import { TeaserCard } from '../components/match/TeaserCard';
-import { DEMO_STARTUPS, EXAMPLE_INVESTOR_FORM } from '../data/matchDemo';
+import { demoStartups, EXAMPLE_INVESTOR_FORM } from '../data/matchDemo';
 import { readQuery, useSyncQuery } from '../hooks/useQueryState';
-import { formatEuro } from '../lib/format';
+import { useI18n } from '../i18n/context';
+import { Rich } from '../i18n/Rich';
 import { matchStartups } from '../lib/matching';
 import { ownInvestor, thesisErrors, thesisFromQuery, thesisToQuery, type Thesis } from '../lib/matchQuery';
 import {
-  AREA_LABEL,
   AREE,
-  FASE_LABEL,
   FASI,
   isArea,
   isFase,
   isRegione,
   isSettore,
-  REGIONE_LABEL,
+  labelsFor,
+  optionsOf,
   REGIONI,
-  SETTORE_LABEL,
   SETTORI,
 } from '../lib/matchTaxonomy';
 import { teaserOf } from '../lib/optin';
 
-const STEP_LABELS = ['La tua tesi', 'I tuoi match', 'Doppio consenso'];
 const ITALIA = 'italia';
-const AREA_OPTIONS = [...AREE, { value: ITALIA, label: 'Tutta Italia' }];
 
 interface FormState {
   settori: string[];
@@ -76,6 +73,9 @@ function thesisOf(f: FormState): Thesis | null {
 }
 
 export function MatchInvestorPage() {
+  const { locale, t } = useI18n();
+  const u = t.match.ui.investor;
+  const L = labelsFor(locale);
   const [initial] = useState(() => thesisFromQuery(readQuery()));
   const [form, setForm] = useState<FormState>(() => (initial ? formFromThesis(initial) : EMPTY));
   const [thesis, setThesis] = useState<Thesis | null>(initial);
@@ -93,25 +93,25 @@ export function MatchInvestorPage() {
     headingRef.current?.focus();
   }, [step]);
 
-  const errors = showErrors ? thesisErrors(form) : {};
+  const errors = showErrors ? thesisErrors(form, locale) : {};
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    const t = thesisOf(form);
-    if (!t) {
+    const next = thesisOf(form);
+    if (!next) {
       setShowErrors(true);
-      setMessage('Controlla i campi segnalati.');
+      setMessage(u.checkFields);
       return;
     }
     moved.current = true;
-    setThesis(t);
-    setMessage(`Passo 2 di ${STEP_LABELS.length}: i tuoi match.`);
+    setThesis(next);
+    setMessage(u.stepAnnounce(2, u.steps.length, u.steps[1]!.toLowerCase()));
   };
 
   const edit = () => {
     moved.current = true;
     setThesis(null);
-    setMessage(`Passo 1 di ${STEP_LABELS.length}: la tua tesi.`);
+    setMessage(u.stepAnnounce(1, u.steps.length, u.steps[0]!.toLowerCase()));
   };
 
   const useExample = () => {
@@ -121,11 +121,11 @@ export function MatchInvestorPage() {
       ticketMin: EXAMPLE_INVESTOR_FORM.ticketMin,
       ticketMax: EXAMPLE_INVESTOR_FORM.ticketMax,
       aree: [...EXAMPLE_INVESTOR_FORM.aree],
-      sede: '',
+      sede: EXAMPLE_INVESTOR_FORM.sede,
       nome: EXAMPLE_INVESTOR_FORM.nome,
     });
     setShowErrors(false);
-    setMessage('Modulo compilato con i dati di esempio.');
+    setMessage(t.match.ui.startup.exampleFilled);
   };
 
   const setAree = (next: string[]) => {
@@ -137,56 +137,46 @@ export function MatchInvestorPage() {
   return (
     <>
       <PrototypeBanner />
-      <PageHero
-        eyebrow="Match investitori · investitore"
-        title={
-          <>
-            Startup in linea <em>con la tua tesi</em>
-          </>
-        }
-      >
-        <p>
-          Indica settori, fasi, ticket e aree. Ricevi solo teaser anonimi di startup compatibili: il nome arriva con
-          l’intro, se dite sì entrambi. Prototipo dimostrativo con dati di esempio.
-        </p>
+      <PageHero eyebrow={u.eyebrow} title={<Rich text={u.title} />}>
+        <p>{u.lead}</p>
       </PageHero>
 
       <section className="section section-cream tool-section">
         <div className="container">
           <LiveRegion message={message} />
-          <MatchSteps steps={STEP_LABELS} current={step} label="Passaggi" />
+          <MatchSteps steps={u.steps} current={step} label={t.match.ui.startup.stepsLabel} />
 
           {!thesis ? (
             <form className="card mi-flow-narrow" onSubmit={submit} noValidate>
               <div className="mi-card-head">
                 <div>
                   <h2 className="card-title mi-step-title" tabIndex={-1} ref={headingRef}>
-                    La tua tesi di investimento
+                    {u.formTitle}
                   </h2>
-                  <p>Poche scelte: servono a filtrare e ordinare le startup.</p>
+                  <p>{u.formLead}</p>
                 </div>
                 <button type="button" className="btn btn-outline btn-sm" onClick={useExample}>
-                  Usa un esempio
+                  {t.match.ui.startup.useExample}
                 </button>
               </div>
               {showErrors && Object.keys(errors).length > 0 && (
                 <p className="mi-error mi-error-summary" role="alert">
-                  Mancano alcune informazioni: {Object.values(errors).join(' ')}
+                  {u.missing(Object.values(errors).join(' '))}
                 </p>
               )}
               <ChoiceChips
                 id={`${id}-settori`}
-                legend="Settori"
-                hint="Il primo che scegli conta come settore principale."
-                options={SETTORI}
+                legend={u.settori}
+                hint={u.settoriHint}
+                options={optionsOf(SETTORI, L.settore)}
                 selected={form.settori}
                 onChange={(v) => setForm((f) => ({ ...f, settori: v }))}
                 error={errors.settori}
               />
               <ChoiceChips
                 id={`${id}-fasi`}
-                legend="Fasi"
-                options={FASI}
+                legend={u.fasi}
+                options={optionsOf(FASI, L.fase)}
                 selected={form.fasi}
                 onChange={(v) => setForm((f) => ({ ...f, fasi: v }))}
                 error={errors.fasi}
@@ -194,14 +184,14 @@ export function MatchInvestorPage() {
               <div className="mi-grid-2">
                 <EuroField
                   id={`${id}-min`}
-                  label="Ticket minimo"
+                  label={u.ticketMin}
                   value={form.ticketMin}
                   onChange={(v) => setForm((f) => ({ ...f, ticketMin: v }))}
                   error={errors.ticket && !form.ticketMin ? errors.ticket : undefined}
                 />
                 <EuroField
                   id={`${id}-max`}
-                  label="Ticket massimo"
+                  label={u.ticketMax}
                   value={form.ticketMax}
                   onChange={(v) => setForm((f) => ({ ...f, ticketMax: v }))}
                   error={errors.ticket && form.ticketMin ? errors.ticket : undefined}
@@ -209,8 +199,8 @@ export function MatchInvestorPage() {
               </div>
               <ChoiceChips
                 id={`${id}-aree`}
-                legend="Aree geografiche"
-                options={AREA_OPTIONS}
+                legend={u.aree}
+                options={[...optionsOf(AREE, L.area), { value: ITALIA, label: t.match.taxonomy.allItaly }]}
                 selected={form.aree}
                 onChange={setAree}
                 error={errors.aree}
@@ -218,15 +208,15 @@ export function MatchInvestorPage() {
               <div className="mi-grid-2">
                 <SelectField
                   id={`${id}-sede`}
-                  label="Regione della tua sede (facoltativo)"
+                  label={u.sede}
                   value={form.sede}
-                  placeholder="Non indicata"
-                  options={REGIONI}
+                  placeholder={u.sedePlaceholder}
+                  options={optionsOf(REGIONI, L.regione)}
                   onChange={(v) => setForm((f) => ({ ...f, sede: v }))}
-                  hint="Le startup della stessa regione ottengono qualche punto in più."
+                  hint={u.sedeHint}
                 />
                 <div className="field mi-field">
-                  <label htmlFor={`${id}-nome`}>Nome del veicolo o del gruppo (facoltativo)</label>
+                  <label htmlFor={`${id}-nome`}>{u.name}</label>
                   <input
                     id={`${id}-nome`}
                     type="text"
@@ -236,9 +226,9 @@ export function MatchInvestorPage() {
                 </div>
               </div>
               <div className="mi-form-actions">
-                <p className="field-hint">Nessun dato lascia il tuo browser.</p>
+                <p className="field-hint">{t.match.ui.startup.nothingLeaves}</p>
                 <button type="submit" className="btn btn-navy">
-                  Trova startup in linea <span aria-hidden="true">→</span>
+                  {u.submit} <span aria-hidden="true">→</span>
                 </button>
               </div>
             </form>
@@ -247,11 +237,7 @@ export function MatchInvestorPage() {
           )}
 
           <Disclaimer />
-          <CtaPanel
-            campaign="match"
-            title="Investi in una startup italiana?"
-            text="Per i primi round le startup usano spesso un SAFE adattato al diritto italiano. ilTuoAvvocato.com offre servizi legali online per startup."
-          />
+          <CtaPanel campaign="match" title={u.ctaTitle} text={u.ctaText} />
         </div>
       </section>
     </>
@@ -266,34 +252,37 @@ interface ResultsProps {
 }
 
 function InvestorResults({ thesis, nome, onEdit, headingRef }: ResultsProps) {
-  const investor = ownInvestor(thesis, { nome });
-  const { matches, excluded } = matchStartups(investor, DEMO_STARTUPS);
-  const aree = thesis.aree === 'italia' ? 'Tutta Italia' : thesis.aree.map((a) => AREA_LABEL[a]).join(', ');
+  const { locale, t, f, path } = useI18n();
+  const u = t.match.ui.investor;
+  const L = labelsFor(locale);
+  const investor = ownInvestor(thesis, { nome }, locale);
+  const { matches, excluded } = matchStartups(investor, demoStartups(locale), locale);
+  const aree = thesis.aree === 'italia' ? t.match.taxonomy.allItaly : thesis.aree.map((a) => L.area[a]).join(', ');
 
   return (
     <div>
       <div className="mi-results-bar">
-        <ul className="mi-filters" aria-label="La tua tesi">
+        <ul className="mi-filters" aria-label={u.thesisLabel}>
           <li className="mi-filter">
-            <span>Settori</span> {thesis.settori.map((s) => SETTORE_LABEL[s]).join(', ')}
+            <span>{u.chipSettori}</span> {thesis.settori.map((s) => L.settore[s]).join(', ')}
           </li>
           <li className="mi-filter">
-            <span>Fasi</span> {thesis.fasi.map((f) => FASE_LABEL[f]).join(', ')}
+            <span>{u.chipFasi}</span> {thesis.fasi.map((x) => L.fase[x]).join(', ')}
           </li>
           <li className="mi-filter">
-            <span>Ticket</span> {formatEuro(thesis.ticketMin)}–{formatEuro(thesis.ticketMax)}
+            <span>{u.chipTicket}</span> {f.euro(thesis.ticketMin)}–{f.euro(thesis.ticketMax)}
           </li>
           <li className="mi-filter">
-            <span>Aree</span> {aree}
+            <span>{u.chipAree}</span> {aree}
           </li>
           {thesis.sede && (
             <li className="mi-filter">
-              <span>Sede</span> {REGIONE_LABEL[thesis.sede]}
+              <span>{u.chipSede}</span> {L.regione[thesis.sede]}
             </li>
           )}
           <li>
             <button type="button" className="btn btn-text btn-sm" onClick={onEdit}>
-              Modifica la tesi
+              {u.editThesis}
             </button>
           </li>
         </ul>
@@ -301,15 +290,15 @@ function InvestorResults({ thesis, nome, onEdit, headingRef }: ResultsProps) {
 
       <div className="mi-results-head">
         <h2 tabIndex={-1} ref={headingRef}>
-          I tuoi match: {matches.length} startup
+          {u.resultsTitle(matches.length)}
         </h2>
         <DemoBadge />
       </div>
-      <p className="mi-aside-text">Vedi solo teaser anonimi: il nome della startup arriva con l’intro, se dite sì entrambi.</p>
+      <p className="mi-aside-text">{u.anonymousNote}</p>
 
       {matches.length === 0 ? (
         <div className="card mi-empty">
-          <p>Nessuna startup di esempio è compatibile con questa tesi. Prova ad allargare fasi, aree o ticket.</p>
+          <p>{u.empty}</p>
         </div>
       ) : (
         <ol className="mi-matches">
@@ -317,32 +306,32 @@ function InvestorResults({ thesis, nome, onEdit, headingRef }: ResultsProps) {
             <MatchCard
               key={item.id}
               rank={i + 1}
-              title={`Startup ${SETTORE_LABEL[item.settore]} in ${REGIONE_LABEL[item.regione]}`}
-              meta={`${FASE_LABEL[item.fase]} · cerca ${formatEuro(item.round)}`}
+              title={u.startupTitle(L.settore[item.settore], L.regione[item.regione])}
+              meta={u.startupMeta(L.fase[item.fase], f.euro(item.round))}
               evaluation={evaluation}
               actions={
                 <Link
                   to={{
-                    pathname: '/match-investitori/doppio-consenso/',
+                    pathname: path('matchOptIn'),
                     search: `?${new URLSearchParams({ s: item.id, i: 'tu', ...thesisToQuery(thesis) }).toString()}`,
                   }}
                   state={{ investor: { nome: investor.nome, referente: investor.referente }, sent: true }}
                   className="btn btn-outline btn-sm"
                 >
-                  Simula il doppio consenso <span aria-hidden="true">→</span>
+                  {u.simulate} <span aria-hidden="true">→</span>
                 </Link>
               }
             >
-              <TeaserCard teaser={teaserOf(item)} />
+              <TeaserCard teaser={teaserOf(item, locale)} />
             </MatchCard>
           ))}
         </ol>
       )}
       <ExcludedList
-        noun="startup"
+        summary={t.match.ui.excluded.startups(excluded.length)}
         items={excluded.map((x) => ({
           id: x.item.id,
-          name: `Startup ${SETTORE_LABEL[x.item.settore]} in ${REGIONE_LABEL[x.item.regione]}`,
+          name: u.startupTitle(L.settore[x.item.settore], L.regione[x.item.regione]),
           whyNot: x.evaluation.whyNot,
         }))}
       />

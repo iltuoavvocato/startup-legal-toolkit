@@ -1,9 +1,13 @@
 // Dati di esempio: investitori e startup FITTIZI per il prototipo MatchInvStar (nome provvisorio).
 // Nomi, persone, email e importi sono inventati e non rappresentano dati di mercato.
 // Le email usano il dominio riservato .example (RFC 2606).
+import type { Locale } from '../i18n/locales';
+import { MESSAGES } from '../i18n/messages';
 import type { Investor, StartupProfile } from '../lib/matchTaxonomy';
 
-export const DEMO_LABEL = 'Dati di esempio';
+const T = MESSAGES.it.matchDemo;
+
+export const DEMO_LABEL = MESSAGES.it.match.demoLabel;
 
 export const DEMO_INVESTORS: readonly Investor[] = [
   {
@@ -16,7 +20,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 800_000,
     aree: ['nord-ovest', 'nord-est'],
     sede: 'lombardia',
-    tesi: 'Software per servizi finanziari e infrastrutture B2B, dal seed alla serie A.',
+    tesi: T.investors.i01,
     referente: 'Elena Varisco',
     email: 'elena@ardesia.example',
   },
@@ -30,7 +34,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 100_000,
     aree: 'italia',
     sede: 'piemonte',
-    tesi: 'Gruppo di angel con esperienza operativa nel software per aziende.',
+    tesi: T.investors.i02,
     referente: 'Paolo Bertazzi',
     email: 'paolo@quarzo.example',
   },
@@ -44,7 +48,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 300_000,
     aree: ['nord-ovest'],
     sede: 'liguria',
-    tesi: 'Club deal di imprenditori del Nord-Ovest su fintech e immobiliare digitale.',
+    tesi: T.investors.i03,
     referente: 'Chiara Moltedo',
     email: 'chiara@lanterna.example',
   },
@@ -58,7 +62,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 1_500_000,
     aree: 'italia',
     sede: 'veneto',
-    tesi: 'Investimenti di lungo periodo in aziende con ricavi già avviati, senza vincoli di settore.',
+    tesi: T.investors.i04,
     referente: 'Andrea Zanforlin',
     email: 'andrea@gelso.example',
   },
@@ -72,7 +76,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 2_000_000,
     aree: 'italia',
     sede: 'lazio',
-    tesi: 'Veicolo corporate di un gruppo assicurativo immaginario: insurtech e salute digitale.',
+    tesi: T.investors.i05,
     referente: 'Marco Ciampelli',
     email: 'marco@faro.example',
   },
@@ -86,7 +90,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 80_000,
     aree: ['centro', 'sud-isole'],
     sede: 'toscana',
-    tesi: 'Angel del Centro-Sud interessati a filiera agroalimentare e prodotti di consumo.',
+    tesi: T.investors.i06,
     referente: 'Sara Nencetti',
     email: 'sara@tirreno.example',
   },
@@ -100,7 +104,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 400_000,
     aree: ['sud-isole'],
     sede: 'sardegna',
-    tesi: 'Club deal dedicato a ricerca applicata e salute nelle regioni del Sud e nelle Isole.',
+    tesi: T.investors.i07,
     referente: 'Giovanni Pirastru',
     email: 'giovanni@mirto.example',
   },
@@ -114,7 +118,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 1_200_000,
     aree: 'italia',
     sede: 'lombardia',
-    tesi: 'Ticket concentrati per guidare round seed nel software finanziario.',
+    tesi: T.investors.i08,
     referente: 'Laura Sanvito',
     email: 'laura@betulla.example',
   },
@@ -128,7 +132,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 150_000,
     aree: ['nord-est'],
     sede: 'trentino-alto-adige',
-    tesi: 'Angel del Nord-Est su pagamenti, mobilità e servizi per il territorio.',
+    tesi: T.investors.i09,
     referente: 'Thomas Pedrotti',
     email: 'thomas@adige.example',
   },
@@ -142,7 +146,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 150_000,
     aree: 'italia',
     sede: 'campania',
-    tesi: 'Programma di accelerazione per team alla prima raccolta, di qualsiasi settore.',
+    tesi: T.investors.i10,
     referente: 'Federica Esposti',
     email: 'federica@fucina.example',
   },
@@ -156,7 +160,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 1_000_000,
     aree: ['nord-ovest', 'nord-est', 'centro'],
     sede: 'emilia-romagna',
-    tesi: 'Transizione energetica e mobilità sostenibile, con attenzione alla tecnologia proprietaria.',
+    tesi: T.investors.i11,
     referente: 'Matteo Gualandri',
     email: 'matteo@pervinca.example',
   },
@@ -170,7 +174,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 250_000,
     aree: 'italia',
     sede: 'lazio',
-    tesi: 'Professionisti che co-investono in software per scuole, aziende e servizi finanziari.',
+    tesi: T.investors.i12,
     referente: 'Valeria Proietti',
     email: 'valeria@cedro.example',
   },
@@ -184,7 +188,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 75_000,
     aree: ['centro'],
     sede: 'marche',
-    tesi: 'Medici e docenti che investono nelle prime fasi di progetti su salute e formazione.',
+    tesi: T.investors.i13,
     referente: 'Lucia Carloni',
     email: 'lucia@salvia.example',
   },
@@ -198,7 +202,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 750_000,
     aree: ['nord-ovest', 'centro'],
     sede: 'lombardia',
-    tesi: 'Veicolo corporate di un gruppo immobiliare immaginario: edifici, energia e pagamenti.',
+    tesi: T.investors.i14,
     referente: 'Davide Colombetti',
     email: 'davide@ponte.example',
   },
@@ -212,7 +216,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     ticketMax: 3_000_000,
     aree: 'italia',
     sede: 'emilia-romagna',
-    tesi: 'Famiglia imprenditoriale dell’agroalimentare che investe in aziende in crescita.',
+    tesi: T.investors.i15,
     referente: 'Roberta Malaguti',
     email: 'roberta@ginepro.example',
   },
@@ -226,7 +230,7 @@ export const DEMO_STARTUPS: readonly StartupProfile[] = [
     fase: 'seed',
     regione: 'lombardia',
     round: 500_000,
-    oneLiner: 'Conto aziendale per PMI con riconciliazione automatica di fatture e pagamenti.',
+    oneLiner: T.startups.s01,
     founder: 'Giada Rinaldi',
     email: 'giada@contoverde.example',
   },
@@ -237,7 +241,7 @@ export const DEMO_STARTUPS: readonly StartupProfile[] = [
     fase: 'pre-seed',
     regione: 'emilia-romagna',
     round: 150_000,
-    oneLiner: 'Sensori a basso costo e un’app per l’irrigazione di precisione nei frutteti.',
+    oneLiner: T.startups.s02,
     founder: 'Stefano Govoni',
     email: 'stefano@radicelab.example',
   },
@@ -248,7 +252,7 @@ export const DEMO_STARTUPS: readonly StartupProfile[] = [
     fase: 'seed',
     regione: 'lazio',
     round: 800_000,
-    oneLiner: 'Telemonitoraggio dei pazienti dopo un intervento, integrato con l’ambulatorio.',
+    oneLiner: T.startups.s03,
     founder: 'Irene Massaro',
     email: 'irene@polsino.example',
   },
@@ -259,7 +263,7 @@ export const DEMO_STARTUPS: readonly StartupProfile[] = [
     fase: 'pre-seed',
     regione: 'campania',
     round: 120_000,
-    oneLiner: 'Esercizi adattivi di matematica per le scuole medie, pensati per i docenti.',
+    oneLiner: T.startups.s04,
     founder: 'Ciro Annunziata',
     email: 'ciro@aulaviva.example',
   },
@@ -270,7 +274,7 @@ export const DEMO_STARTUPS: readonly StartupProfile[] = [
     fase: 'serie-a',
     regione: 'piemonte',
     round: 2_500_000,
-    oneLiner: 'Sistemi di accumulo e software di gestione per comunità energetiche.',
+    oneLiner: T.startups.s05,
     founder: 'Alessio Bramante',
     email: 'alessio@voltaria.example',
   },
@@ -281,7 +285,7 @@ export const DEMO_STARTUPS: readonly StartupProfile[] = [
     fase: 'seed',
     regione: 'veneto',
     round: 400_000,
-    oneLiner: 'Gestione digitale dei condomini: assemblee, spese e manutenzioni in un’unica app.',
+    oneLiner: T.startups.s06,
     founder: 'Marta Dalla Valle',
     email: 'marta@tegola.example',
   },
@@ -292,7 +296,7 @@ export const DEMO_STARTUPS: readonly StartupProfile[] = [
     fase: 'seed',
     regione: 'sicilia',
     round: 350_000,
-    oneLiner: 'Navette elettriche a chiamata per le aree industriali, prenotabili dall’app aziendale.',
+    oneLiner: T.startups.s07,
     founder: 'Salvo Lombardo',
     email: 'salvo@scirocco.example',
   },
@@ -303,7 +307,7 @@ export const DEMO_STARTUPS: readonly StartupProfile[] = [
     fase: 'pre-seed',
     regione: 'toscana',
     round: 200_000,
-    oneLiner: 'Previsione della domanda per panifici artigianali, per ridurre gli sprechi.',
+    oneLiner: T.startups.s08,
     founder: 'Niccolò Bartolini',
     email: 'niccolo@lievita.example',
   },
@@ -315,19 +319,31 @@ export const EXAMPLE_STARTUP_FORM = {
   fase: 'seed',
   regione: 'lombardia',
   round: 500_000,
-  descrizione:
-    'Conto aziendale per PMI con riconciliazione automatica di fatture e pagamenti. Abbiamo i primi clienti in prova e cerchiamo il primo round per crescere nel Nord Italia.',
+  descrizione: T.exampleDescription,
   nome: 'Contoverde',
   founder: 'Giada Rinaldi',
 } as const;
 
 /** Values used by "Usa un esempio" on the investor intake. */
 export const EXAMPLE_INVESTOR_FORM = {
-  settori: ['fintech', 'saas-b2b', 'proptech'],
+  settori: ['fintech', 'proptech', 'healthtech', 'agritech', 'foodtech'],
   fasi: ['seed', 'pre-seed'],
-  ticketMin: 50_000,
-  ticketMax: 250_000,
-  aree: ['nord-ovest', 'nord-est'],
+  ticketMin: 25_000,
+  ticketMax: 100_000,
+  aree: ['italia'],
+  sede: 'lombardia',
   nome: 'Rete Angeli Dimostrativa',
   referente: 'Francesca Oddone',
 } as const;
+
+/** Demo investors with theses in the given language (names unchanged). */
+export function demoInvestors(locale: Locale = 'it'): readonly Investor[] {
+  const t = MESSAGES[locale].matchDemo.investors;
+  return DEMO_INVESTORS.map((i) => ({ ...i, tesi: t[i.id as keyof typeof t] }));
+}
+
+/** Demo startups with one-liners in the given language (names unchanged). */
+export function demoStartups(locale: Locale = 'it'): readonly StartupProfile[] {
+  const t = MESSAGES[locale].matchDemo.startups;
+  return DEMO_STARTUPS.map((s) => ({ ...s, oneLiner: t[s.id as keyof typeof t] }));
+}

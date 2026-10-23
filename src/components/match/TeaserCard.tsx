@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/context';
 import type { Teaser } from '../../lib/optin';
 
 interface Props {
@@ -6,32 +7,34 @@ interface Props {
 }
 
 /** Anonymous startup teaser: what an investor sees before both sides agree. */
-export function TeaserCard({ teaser, label = 'Teaser anonimo' }: Props) {
+export function TeaserCard({ teaser, label }: Props) {
+  const { t } = useI18n();
+  const x = t.match.ui.teaser;
   return (
-    <article className="mi-teaser" aria-label={label}>
+    <article className="mi-teaser" aria-label={label ?? x.label}>
       <div className="mi-teaser-name">
         <span className="mi-redacted" aria-hidden="true" />
         <span className="mi-teaser-lock">
           <LockIcon />
-          Nome riservato fino all’intro
+          {x.lock}
         </span>
       </div>
-      <p className="mi-teaser-line">{teaser.oneLiner || 'La frase di presentazione comparirà qui.'}</p>
+      <p className="mi-teaser-line">{teaser.oneLiner || x.placeholder}</p>
       <dl className="mi-facts">
         <div>
-          <dt>Settore</dt>
+          <dt>{x.settore}</dt>
           <dd>{teaser.settore}</dd>
         </div>
         <div>
-          <dt>Fase</dt>
+          <dt>{x.fase}</dt>
           <dd>{teaser.fase}</dd>
         </div>
         <div>
-          <dt>Regione</dt>
+          <dt>{x.regione}</dt>
           <dd>{teaser.regione}</dd>
         </div>
         <div>
-          <dt>Round</dt>
+          <dt>{x.round}</dt>
           <dd>{teaser.importo}</dd>
         </div>
       </dl>

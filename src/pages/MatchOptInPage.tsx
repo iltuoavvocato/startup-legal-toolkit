@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { CtaPanel } from '../components/CtaPanel';
 import { Disclaimer } from '../components/Disclaimer';
 import { PageHero } from '../components/PageHero';
@@ -9,8 +9,10 @@ import { OptInBoard } from '../components/match/OptInBoard';
 import { PrototypeBanner } from '../components/match/PrototypeBanner';
 import { ProposalCounter } from '../components/match/ProposalCounter';
 import { SelectField } from '../components/match/SelectField';
-import { DEMO_INVESTORS, DEMO_STARTUPS } from '../data/matchDemo';
+import { DEMO_INVESTORS, DEMO_STARTUPS, demoInvestors, demoStartups } from '../data/matchDemo';
 import { readQuery, useSyncQuery } from '../hooks/useQueryState';
+import { useI18n } from '../i18n/context';
+import { Rich } from '../i18n/Rich';
 import { evaluate } from '../lib/matching';
 import {
   ownInvestor,
@@ -29,7 +31,7 @@ import {
   counterFor,
   monthKey,
   MONTHLY_PROPOSAL_LIMIT,
-  STATE_STEPS,
+  stateSteps,
   transition,
   type OptInEvent,
   type OptInState,
@@ -59,12 +61,12 @@ function readNavState(raw: unknown): NavState {
   };
 }
 
-const MESSAGES: Record<OptInState, string> = {
-  proposta: 'Proposta inviata: ora tocca all’investitore.',
-  'attesa-startup': 'L’investitore ha detto sì. Ora tocca alla startup.',
-  'chiusa-investitore': 'L’investitore ha detto no. La startup non ne viene informata.',
-  'chiusa-startup': 'La startup ha detto no. L’investitore non ne viene informato.',
-  intro: 'Avete detto sì entrambi: ecco l’email di presentazione.',
+const MESSAGE_KEY: Record<OptInState, 'proposta' | 'attesa' | 'chiusaInvestitore' | 'chiusaStartup' | 'intro'> = {
+  proposta: 'proposta',
+  'attesa-startup': 'attesa',
+  'chiusa-investitore': 'chiusaInvestitore',
+  'chiusa-startup': 'chiusaStartup',
+  intro: 'intro',
 };
 
 const REACHED: Record<OptInState, number> = {
@@ -76,6 +78,8 @@ const REACHED: Record<OptInState, number> = {
 };
 
 export function MatchOptInPage() {
+  const { locale, t } = useI18n();
+  const u = t.match.ui.optinPage;
   const location = useLocation();
   const [setup] = useState(() => {
     const q = readQuery();
@@ -87,10 +91,10 @@ export function MatchOptInPage() {
     return { ownS, ownT, nav, s, i, fromResults: nav.sent === true && (Boolean(ownS) || Boolean(ownT)) };
   });
 
-  const yourStartup: StartupProfile | null = setup.ownS ? ownStartup(setup.ownS, setup.nav.startup) : null;
-  const yourInvestor: Investor | null = setup.ownT ? ownInvestor(setup.ownT, setup.nav.investor) : null;
-  const startups = yourStartup ? [yourStartup, ...DEMO_STARTUPS] : DEMO_STARTUPS;
-  const investors = yourInvestor ? [yourInvestor, ...DEMO_INVESTORS] : DEMO_INVESTORS;
+  const yourStartup: StartupProfile | null = setup.ownS ? ownStartup(setup.ownS, setup.nav.startup, locale) : null;
+  const yourInvestor: Investor | null = setup.ownT ? ownInvestor(setup.ownT, setup.nav.investor, locale) : null;
+  const startups = yourStartup ? [yourStartup, ...demoStartups(locale)] : demoStartups(locale);
+  const investors = yourInvestor ? [yourInvestor, ...demoInvestors(locale)] : demoInvestors(locale);
 
   const month = monthKey(new Date());
   const [startupId, setStartupId] = useState(setup.s);
@@ -107,10 +111,10 @@ export function MatchOptInPage() {
   const moved = useRef(false);
   const id = useId();
 
-  const startup = startups.find((x) => x.id === startupId) ?? DEMO_STARTUPS[0]!;
-  const investor = investors.find((x) => x.id === investorId) ?? DEMO_INVESTORS[0]!;
+  const startup = startups.find((x) => x.id === startupId) ?? startups[0]!;
+  const investor = investors.find((x) => x.id === investorId) ?? investors[0]!;
   const counter = counterFor(month, counters[startup.id]);
-  const evaluation = evaluate(startup, investor);
+  const evaluation = evaluate(startup, investor, 'startup', locale);
 
   useSyncQuery({
     s: startup.id,
@@ -128,11 +132,11 @@ export function MatchOptInPage() {
     else setInvestorId(value);
     setSent(false);
     setState('proposta');
-    setMessage('Nuova coppia selezionata: la proposta non è ancora stata inviata.');
+    setMessage(u.newPair);
   };
 
   const send = () => {
-    const r = consume(counter);
+    const r = consume(counter, MONTHLY_PROPOSAL_LIMIT, locale);
     if (!r.ok) {
       setMessage(r.reason);
       return;
@@ -141,18 +145,18 @@ export function MatchOptInPage() {
     moved.current = true;
     setSent(true);
     setState('proposta');
-    setMessage(MESSAGES.proposta);
+    setMessage(u.messages.proposta);
   };
 
   const onEvent = (e: OptInEvent) => {
     const next = transition(state, e);
     setState(next);
-    setMessage(MESSAGES[next]);
+    setMessage(u.messages[MESSAGE_KEY[next]]);
   };
 
   const restart = () => {
     setState(transition(state, 'RESET'));
-    setMessage('Simulazione ricominciata: la proposta è di nuovo in attesa dell’investitore.');
+    setMessage(u.restarted);
   };
 
   const limitReached = counter.used >= MONTHLY_PROPOSAL_LIMIT;
@@ -160,18 +164,8 @@ export function MatchOptInPage() {
   return (
     <>
       <PrototypeBanner />
-      <PageHero
-        eyebrow="Match investitori · doppio consenso"
-        title={
-          <>
-            L’intro arriva <em>solo se dite sì entrambi</em>
-          </>
-        }
-      >
-        <p>
-          Simula una proposta dal punto di vista di entrambe le parti. L’investitore vede un teaser anonimo; se dice sì,
-          tocca alla startup. Un no non viene mai comunicato all’altra parte.
-        </p>
+      <PageHero eyebrow={u.eyebrow} title={<Rich text={u.title} />}>
+        <p>{u.lead}</p>
       </PageHero>
 
       <section className="section section-cream tool-section">
@@ -181,33 +175,29 @@ export function MatchOptInPage() {
           <div className="mi-results-bar">
             <div className="card">
               <div className="mi-card-head">
-                <h2 className="card-title">Scegli la coppia</h2>
+                <h2 className="card-title">{u.pairTitle}</h2>
                 <DemoBadge />
               </div>
               <div className="mi-scenario">
                 <SelectField
                   id={`${id}-s`}
-                  label="Startup"
+                  label={u.startup}
                   value={startup.id}
-                  options={startups.map((x) => ({ value: x.id, label: x.id === YOUR_ID ? `${x.nome} (tu)` : x.nome }))}
+                  options={startups.map((x) => ({ value: x.id, label: x.id === YOUR_ID ? u.you(x.nome) : x.nome }))}
                   onChange={(v) => choose('s', v)}
                 />
                 <SelectField
                   id={`${id}-i`}
-                  label="Investitore"
+                  label={u.investor}
                   value={investor.id}
-                  options={investors.map((x) => ({ value: x.id, label: x.id === YOUR_ID ? `${x.nome} (tu)` : x.nome }))}
+                  options={investors.map((x) => ({ value: x.id, label: x.id === YOUR_ID ? u.you(x.nome) : x.nome }))}
                   onChange={(v) => choose('i', v)}
                 />
               </div>
               {evaluation.eligible ? (
-                <p className="field-hint">
-                  Affinità {evaluation.score}/100. {evaluation.reasons.slice(0, 2).join('. ')}.
-                </p>
+                <p className="field-hint">{u.fit(evaluation.score, evaluation.reasons.slice(0, 2).join('. '))}</p>
               ) : (
-                <p className="notice">
-                  L’agente non proporrebbe questa coppia: {evaluation.whyNot.join('; ')}. Scegli un’altra coppia.
-                </p>
+                <p className="notice">{u.notProposed(evaluation.whyNot.join('; '))}</p>
               )}
             </div>
             <ProposalCounter counter={counter} limit={MONTHLY_PROPOSAL_LIMIT} />
@@ -215,10 +205,9 @@ export function MatchOptInPage() {
 
           {!sent ? (
             <div className="card mi-flow-narrow">
-              <h2 className="card-title">Proposta non ancora inviata</h2>
+              <h2 className="card-title">{u.notSentTitle}</h2>
               <p className="mi-aside-text">
-                Inviando la proposta, l’investitore riceve il teaser anonimo {startup.id === YOUR_ID ? 'della tua startup' : `di ${startup.nome}`}.
-                Ogni proposta conta per il limite mensile della startup.
+                {u.notSentText(startup.id === YOUR_ID ? u.yourStartup : u.ofStartup(startup.nome))}
               </p>
               <button
                 type="button"
@@ -227,11 +216,11 @@ export function MatchOptInPage() {
                 disabled={!evaluation.eligible || limitReached}
                 aria-describedby={limitReached ? `${id}-limit` : undefined}
               >
-                Invia la proposta <span aria-hidden="true">→</span>
+                {u.send} <span aria-hidden="true">→</span>
               </button>
               {limitReached && (
                 <p className="mi-error" id={`${id}-limit`}>
-                  Hai raggiunto il limite di {MONTHLY_PROPOSAL_LIMIT} proposte per questo mese (valore provvisorio).
+                  {t.match.optin.limitReached(MONTHLY_PROPOSAL_LIMIT)}
                 </p>
               )}
             </div>
@@ -239,40 +228,30 @@ export function MatchOptInPage() {
             <div>
               <div className="mi-results-head">
                 <h2 tabIndex={-1} ref={boardRef}>
-                  Cosa vede ciascuna parte
+                  {u.boardTitle}
                 </h2>
                 <button type="button" className="btn btn-text btn-sm" onClick={restart} disabled={state === 'proposta'}>
-                  Ricomincia la simulazione
+                  {u.restart}
                 </button>
               </div>
-              <ol className="mi-timeline" aria-label="Stato della proposta">
-                {STATE_STEPS.map((s, i) => (
+              <ol className="mi-timeline" aria-label={u.stateLabel}>
+                {stateSteps(locale).map((s, i) => (
                   <li key={s.state} className={i <= REACHED[state] ? 'is-reached' : undefined}>
                     {s.label}
-                    {i === REACHED[state] && <span className="sr-only"> (stato attuale)</span>}
+                    {i === REACHED[state] && <span className="sr-only">{u.current}</span>}
                   </li>
                 ))}
               </ol>
               <OptInBoard state={state} startup={startup} investor={investor} onEvent={onEvent} />
-              <p className="notice mi-board-note">
-                Qui vedi entrambe le parti per capire il meccanismo: nella realtà ciascuno vede solo il proprio riquadro.
-                In questo prototipo le richieste senza risposta non scadono; in una versione reale potrebbero scadere dopo
-                un periodo da definire, e per l’investitore una scadenza sarebbe indistinguibile da un no.
-              </p>
+              <p className="notice mi-board-note">{u.note}</p>
             </div>
           )}
 
           <p className="mi-board-note">
-            <Link to="/match-investitori/startup/">Prova il percorso startup</Link> ·{' '}
-            <Link to="/match-investitori/investitore/">Prova il percorso investitore</Link> ·{' '}
-            <Link to="/match-investitori/note-legali/">Note legali</Link>
+            <Rich text={u.links} />
           </p>
           <Disclaimer />
-          <CtaPanel
-            campaign="match"
-            title="Arrivati all’intro, servono i documenti giusti"
-            text="SAFE, patti tra fondatori, vesting e cessione della proprietà intellettuale: ilTuoAvvocato.com offre servizi legali online per startup."
-          />
+          <CtaPanel campaign="match" title={u.ctaTitle} text={u.ctaText} />
         </div>
       </section>
     </>

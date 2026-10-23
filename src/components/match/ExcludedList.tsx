@@ -1,15 +1,13 @@
 interface Props {
   items: { id: string; name: string; whyNot: string[] }[];
-  noun: string;
+  summary: string;
 }
 
-export function ExcludedList({ items, noun }: Props) {
+export function ExcludedList({ items, summary }: Props) {
   if (!items.length) return null;
   return (
     <details className="details mi-excluded">
-      <summary>
-        Esclusi ({items.length}): perché questi {noun} non compaiono
-      </summary>
+      <summary>{summary}</summary>
       <ul>
         {items.map((x) => (
           <li key={x.id}>

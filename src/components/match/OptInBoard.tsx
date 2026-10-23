@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Investor, StartupProfile } from '../../lib/matchTaxonomy';
-import { TIPO_LABEL } from '../../lib/matchTaxonomy';
+import { useI18n } from '../../i18n/context';
+import { labelsFor } from '../../lib/matchTaxonomy';
 import { introEmail, teaserOf, viewFor, type OptInEvent, type OptInState, type Side, type SideView } from '../../lib/optin';
 import { IntroEmailPreview } from './IntroEmailPreview';
 import { LockIcon, TeaserCard } from './TeaserCard';
@@ -19,13 +20,14 @@ const investorSaidYes = (s: OptInState) => s === 'attesa-startup' || s === 'chiu
  * Each yes lights one half; the intro appears only when both halves are lit.
  */
 export function OptInBoard({ state, startup, investor, onEvent }: Props) {
+  const { locale, t } = useI18n();
   const investorKey = investorSaidYes(state) ? 'on' : state === 'chiusa-investitore' ? 'off' : 'idle';
   const startupKey = state === 'intro' ? 'on' : state === 'chiusa-startup' ? 'off' : 'idle';
 
   return (
     <div className={`mi-board state-${state}`}>
-      <Panel side="investitore" view={viewFor(state, 'investitore')} who={investor.nome} onEvent={onEvent}>
-        <TeaserCard teaser={teaserOf(startup)} label="Teaser anonimo della startup" />
+      <Panel side="investitore" view={viewFor(state, 'investitore', locale)} who={investor.nome} onEvent={onEvent}>
+        <TeaserCard teaser={teaserOf(startup, locale)} label={t.match.ui.board.teaserLabel} />
       </Panel>
 
       <div className="mi-connector" aria-hidden="true">
@@ -36,11 +38,11 @@ export function OptInBoard({ state, startup, investor, onEvent }: Props) {
         <span className={`mi-key key-${startupKey}`} />
       </div>
 
-      <Panel side="startup" view={viewFor(state, 'startup')} who={startup.nome} onEvent={onEvent}>
+      <Panel side="startup" view={viewFor(state, 'startup', locale)} who={startup.nome} onEvent={onEvent}>
         <div className="mi-investor-card">
           <p className="mi-investor-name">{investor.nome}</p>
           <p className="mi-investor-type">
-            {TIPO_LABEL[investor.tipo]} · referente {investor.referente}
+            {t.match.ui.board.investorType(labelsFor(locale).tipo[investor.tipo], investor.referente)}
           </p>
           <p>{investor.tesi}</p>
         </div>
@@ -48,7 +50,7 @@ export function OptInBoard({ state, startup, investor, onEvent }: Props) {
 
       {state === 'intro' && (
         <div className="mi-board-intro">
-          <IntroEmailPreview email={introEmail(startup, investor)} />
+          <IntroEmailPreview email={introEmail(startup, investor, locale)} />
         </div>
       )}
     </div>
@@ -64,7 +66,8 @@ interface PanelProps {
 }
 
 function Panel({ side, view, who, onEvent, children }: PanelProps) {
-  const title = side === 'investitore' ? 'Vista investitore' : 'Vista startup';
+  const { t } = useI18n();
+  const title = side === 'investitore' ? t.match.ui.board.investorView : t.match.ui.board.startupView;
   const headingId = `panel-${side}`;
   return (
     <section className={`mi-panel panel-${side} kind-${view.kind}`} aria-labelledby={headingId}>

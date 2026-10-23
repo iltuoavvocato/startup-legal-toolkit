@@ -1,5 +1,7 @@
 // URL encoding for the matching section. Only enumerated values and amounts go in the URL:
 // names, descriptions and file names never do.
+import type { Locale } from '../i18n/locales';
+import { MESSAGES } from '../i18n/messages';
 import {
   isArea,
   isFase,
@@ -79,42 +81,52 @@ export function thesisFromQuery(q: URLSearchParams): Thesis | null {
   return { settori, fasi, ticketMin, ticketMax, aree, sede: isRegione(sede) ? sede : null };
 }
 
-/** Thesis validation for the investor form; returns Italian error messages keyed by field. */
-export function thesisErrors(t: {
-  settori: string[];
-  fasi: string[];
-  ticketMin: number | null;
-  ticketMax: number | null;
-  aree: string[];
-}): Partial<Record<'settori' | 'fasi' | 'ticket' | 'aree', string>> {
+/** Thesis validation for the investor form; returns error messages keyed by field. */
+export function thesisErrors(
+  t: {
+    settori: string[];
+    fasi: string[];
+    ticketMin: number | null;
+    ticketMax: number | null;
+    aree: string[];
+  },
+  locale: Locale = 'it',
+): Partial<Record<'settori' | 'fasi' | 'ticket' | 'aree', string>> {
+  const m = MESSAGES[locale].match.thesisErrors;
   const errors: Partial<Record<'settori' | 'fasi' | 'ticket' | 'aree', string>> = {};
-  if (!t.settori.length) errors.settori = 'Scegli almeno un settore.';
-  if (!t.fasi.length) errors.fasi = 'Scegli almeno una fase.';
-  if (!t.ticketMin || !t.ticketMax || t.ticketMin <= 0 || t.ticketMax <= 0) errors.ticket = 'Indica il ticket minimo e massimo.';
-  else if (t.ticketMin > t.ticketMax) errors.ticket = 'Il ticket minimo non può superare il massimo.';
-  if (!t.aree.length) errors.aree = 'Scegli almeno un’area, oppure tutta Italia.';
+  if (!t.settori.length) errors.settori = m.settori;
+  if (!t.fasi.length) errors.fasi = m.fasi;
+  if (!t.ticketMin || !t.ticketMax || t.ticketMin <= 0 || t.ticketMax <= 0) errors.ticket = m.ticketMissing;
+  else if (t.ticketMin > t.ticketMax) errors.ticket = m.ticketOrder;
+  if (!t.aree.length) errors.aree = m.aree;
   return errors;
 }
 
 export const YOUR_ID = 'tu';
 
 /** The user's own startup, with in-memory names (or neutral placeholders). */
-export function ownStartup(core: StartupCore, extra?: Partial<Pick<StartupProfile, 'nome' | 'founder' | 'oneLiner'>>): StartupProfile {
+export function ownStartup(
+  core: StartupCore,
+  extra?: Partial<Pick<StartupProfile, 'nome' | 'founder' | 'oneLiner'>>,
+  locale: Locale = 'it',
+): StartupProfile {
+  const m = MESSAGES[locale].match.own;
   return {
     id: YOUR_ID,
     ...core,
-    nome: extra?.nome?.trim() || 'La tua startup',
-    founder: extra?.founder?.trim() || 'Founder',
-    oneLiner: extra?.oneLiner?.trim() || 'Descrizione non indicata.',
+    nome: extra?.nome?.trim() || m.startupName,
+    founder: extra?.founder?.trim() || m.founder,
+    oneLiner: extra?.oneLiner?.trim() || m.noDescription,
     email: 'founder@startup.example',
   };
 }
 
 /** The user's own investor profile built from the thesis. */
-export function ownInvestor(t: Thesis, extra?: { nome?: string; referente?: string }): Investor {
+export function ownInvestor(t: Thesis, extra?: { nome?: string; referente?: string }, locale: Locale = 'it'): Investor {
+  const m = MESSAGES[locale].match.own;
   return {
     id: YOUR_ID,
-    nome: extra?.nome?.trim() || 'Il tuo veicolo di investimento',
+    nome: extra?.nome?.trim() || m.investorName,
     tipo: 'business-angel',
     settori: t.settori,
     fasi: t.fasi,
@@ -122,8 +134,8 @@ export function ownInvestor(t: Thesis, extra?: { nome?: string; referente?: stri
     ticketMax: t.ticketMax,
     aree: t.aree,
     sede: t.sede,
-    tesi: 'Tesi di investimento indicata nel modulo.',
-    referente: extra?.referente?.trim() || 'Investitore',
+    tesi: m.investorThesis,
+    referente: extra?.referente?.trim() || m.investorContact,
     email: 'investitore@esempio.example',
   };
 }

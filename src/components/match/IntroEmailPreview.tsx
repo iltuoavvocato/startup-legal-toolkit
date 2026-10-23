@@ -1,19 +1,22 @@
+import { useI18n } from '../../i18n/context';
 import type { IntroEmail } from '../../lib/optin';
 
 export function IntroEmailPreview({ email }: { email: IntroEmail }) {
+  const { t } = useI18n();
+  const e = t.match.ui.email;
   return (
-    <article className="mi-email" aria-label="Anteprima dell’email di presentazione">
+    <article className="mi-email" aria-label={e.aria}>
       <dl className="mi-email-head">
         <div>
-          <dt>Da</dt>
+          <dt>{e.from}</dt>
           <dd>{email.da}</dd>
         </div>
         <div>
-          <dt>A</dt>
+          <dt>{e.to}</dt>
           <dd>{email.a.join(', ')}</dd>
         </div>
         <div>
-          <dt>Oggetto</dt>
+          <dt>{e.subject}</dt>
           <dd>
             <strong>{email.oggetto}</strong>
           </dd>
@@ -24,7 +27,7 @@ export function IntroEmailPreview({ email }: { email: IntroEmail }) {
           <p key={p}>{p}</p>
         ))}
       </div>
-      <p className="mi-email-foot">Anteprima: nessuna email viene inviata. Nomi e indirizzi sono di esempio.</p>
+      <p className="mi-email-foot">{e.foot}</p>
     </article>
   );
 }

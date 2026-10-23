@@ -1,3 +1,5 @@
+import { useI18n } from '../../i18n/context';
+
 interface Props {
   steps: string[];
   current: number;
@@ -5,6 +7,7 @@ interface Props {
 }
 
 export function MatchSteps({ steps, current, label }: Props) {
+  const { t } = useI18n();
   return (
     <ol className="mi-steps" aria-label={label}>
       {steps.map((s, i) => (
@@ -18,7 +21,7 @@ export function MatchSteps({ steps, current, label }: Props) {
           </span>
           <span className="mi-steps-label">
             {s}
-            {i < current && <span className="sr-only"> (completato)</span>}
+            {i < current && <span className="sr-only">{t.match.ui.stepDone}</span>}
           </span>
         </li>
       ))}

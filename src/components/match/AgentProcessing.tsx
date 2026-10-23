@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { AGENT_STEPS } from '../../lib/deck';
+import { useI18n } from '../../i18n/context';
+import { agentSteps } from '../../lib/deck';
 
 const STEP_MS = 450;
 
@@ -10,6 +11,9 @@ interface Props {
 
 /** Deterministic fake processing: the steps tick in order, then onDone fires. */
 export function AgentProcessing({ hasDeck, onDone }: Props) {
+  const { locale, t } = useI18n();
+  const a = t.match.ui.agent;
+  const steps = agentSteps(locale);
   const [done, setDone] = useState(0);
   const onDoneRef = useRef(onDone);
   useEffect(() => {
@@ -17,37 +21,34 @@ export function AgentProcessing({ hasDeck, onDone }: Props) {
   }, [onDone]);
 
   useEffect(() => {
-    if (done >= AGENT_STEPS.length) {
+    if (done >= steps.length) {
       const t = window.setTimeout(() => onDoneRef.current(), 300);
       return () => window.clearTimeout(t);
     }
     const t = window.setTimeout(() => setDone((d) => d + 1), STEP_MS);
     return () => window.clearTimeout(t);
-  }, [done]);
+  }, [done, steps.length]);
 
-  const current = AGENT_STEPS[Math.min(done, AGENT_STEPS.length - 1)];
+  const current = steps[Math.min(done, steps.length - 1)];
   return (
     <div className="mi-agent">
       <ol className="mi-agent-steps">
-        {AGENT_STEPS.map((s, i) => (
+        {steps.map((s, i) => (
           <li key={s} className={i < done ? 'is-done' : i === done ? 'is-active' : undefined}>
             <span className="mi-agent-dot" aria-hidden="true">
               {i < done ? '✓' : ''}
             </span>
-            {i === 0 && !hasDeck ? 'Lettura dei dati inseriti' : s}
-            <span className="sr-only">{i < done ? ' (fatto)' : i === done ? ' (in corso)' : ''}</span>
+            {i === 0 && !hasDeck ? a.readingData : s}
+            <span className="sr-only">{i < done ? a.done : i === done ? a.active : ''}</span>
           </li>
         ))}
       </ol>
       <p className="sr-only" role="status" aria-live="polite">
-        {done >= AGENT_STEPS.length ? 'Bozza del profilo pronta.' : `${current}…`}
+        {done >= steps.length ? a.ready : `${current}…`}
       </p>
-      <p className="field-hint">
-        Simulazione: in questo prototipo l’agente non legge davvero il file. I campi sono ricavati dal modulo e dal nome
-        del file.
-      </p>
+      <p className="field-hint">{a.note}</p>
       <button type="button" className="btn btn-text btn-sm" onClick={() => onDoneRef.current()}>
-        Salta l’attesa
+        {a.skip}
       </button>
     </div>
   );

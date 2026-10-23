@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DEMO_INVESTORS, DEMO_STARTUPS } from '../data/matchDemo';
+import { DEMO_INVESTORS, DEMO_STARTUPS, EXAMPLE_INVESTOR_FORM } from '../data/matchDemo';
+import { ownInvestor } from './matchQuery';
 import { formatEuro } from './format';
 import type { Investor, StartupProfile } from './matchTaxonomy';
 import { coverage, evaluate, matchInvestors, matchStartups, scoreBand, WEIGHTS } from './matching';
@@ -224,5 +225,20 @@ describe('demo dataset', () => {
     const failed = new Set(excluded.flatMap((e) => e.evaluation.failed));
     expect(failed).toEqual(new Set(['fase', 'settore', 'area', 'ticket']));
     expect(matches[0]?.evaluation.score).toBe(100);
+  });
+
+  it('gives the investor example matches in more than one band', () => {
+    const e = EXAMPLE_INVESTOR_FORM;
+    const investor = ownInvestor({
+      settori: [...e.settori],
+      fasi: [...e.fasi],
+      ticketMin: e.ticketMin,
+      ticketMax: e.ticketMax,
+      aree: 'italia',
+      sede: e.sede,
+    });
+    const bands = new Set(matchStartups(investor, DEMO_STARTUPS).matches.map((m) => scoreBand(m.evaluation.score).band));
+    expect(bands.size).toBeGreaterThan(1);
+    expect(bands).toEqual(new Set(['molto-affine', 'affine', 'da-valutare']));
   });
 });

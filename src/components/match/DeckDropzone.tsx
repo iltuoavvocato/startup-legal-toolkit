@@ -1,4 +1,5 @@
 import { useState, type DragEvent } from 'react';
+import { useI18n } from '../../i18n/context';
 import { formatFileSize, MAX_DECK_MB, validateDeck, type DeckMeta } from '../../lib/deck';
 
 interface Props {
@@ -12,13 +13,15 @@ interface Props {
  * the content is never read, uploaded or turned into a URL.
  */
 export function DeckDropzone({ id, file, onChange }: Props) {
+  const { locale, t } = useI18n();
+  const d = t.match.ui.dropzone;
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const accept = (f: File | undefined) => {
     if (!f) return;
     const meta = { name: f.name, type: f.type, size: f.size };
-    const problem = validateDeck(meta);
+    const problem = validateDeck(meta, locale);
     setError(problem);
     onChange(problem ? null : meta);
   };
@@ -35,17 +38,18 @@ export function DeckDropzone({ id, file, onChange }: Props) {
   return (
     <div className="mi-deck">
       <p className="mi-label" id={`${id}-label`}>
-        Pitch deck <span className="mi-muted">(facoltativo)</span>
+        {d.label} <span className="mi-muted">{d.optional}</span>
       </p>
       {file ? (
         <div className="mi-drop has-file">
           <FileIcon />
           <div className="mi-drop-file">
             <strong>{file.name}</strong>
-            <span>{formatFileSize(file.size)} · resta sul tuo dispositivo</span>
+            <span>{d.kept(formatFileSize(file.size))}</span>
           </div>
           <button type="button" className="btn btn-text btn-sm" onClick={() => onChange(null)}>
-            Rimuovi<span className="sr-only"> il deck {file.name}</span>
+            {d.remove}
+            <span className="sr-only">{d.removeSr(file.name)}</span>
           </button>
         </div>
       ) : (
@@ -74,17 +78,17 @@ export function DeckDropzone({ id, file, onChange }: Props) {
           <label htmlFor={id} className="mi-drop-label">
             <FileIcon />
             <span className="mi-drop-text">
-              <strong className="mi-drop-drag">Trascina qui il PDF</strong>
+              <strong className="mi-drop-drag">{d.drag}</strong>
               <span id={`${id}-cta`}>
-                <span className="mi-drop-or">oppure </span>
-                <span className="mi-drop-pick">scegli il file</span>
+                <span className="mi-drop-or">{d.or}</span>
+                <span className="mi-drop-pick">{d.pick}</span>
               </span>
             </span>
           </label>
         </div>
       )}
       <p className="field-hint" id={hintId}>
-        Solo PDF, fino a {MAX_DECK_MB} MB (valore provvisorio). In questo prototipo il file non viene letto né inviato.
+        {d.hint(MAX_DECK_MB)}
       </p>
       {error && (
         <p className="mi-error" id={errorId} role="alert">

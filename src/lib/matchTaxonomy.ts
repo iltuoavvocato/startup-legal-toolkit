@@ -1,85 +1,87 @@
 // Shared vocabulary for the investor-matching prototype (MatchInvStar, nome provvisorio).
+// Values are stable identifiers (also used in URLs); labels come from the dictionaries (src/i18n/messages/match.ts).
+import type { Locale } from '../i18n/locales';
+import { MESSAGES } from '../i18n/messages';
 
 export const SETTORI = [
-  { value: 'fintech', label: 'Fintech' },
-  { value: 'healthtech', label: 'Healthtech' },
-  { value: 'agritech', label: 'Agritech' },
-  { value: 'cleantech', label: 'Cleantech' },
-  { value: 'saas-b2b', label: 'SaaS B2B' },
-  { value: 'edtech', label: 'Edtech' },
-  { value: 'deeptech', label: 'Deeptech' },
-  { value: 'mobilita', label: 'Mobilità' },
-  { value: 'proptech', label: 'Proptech' },
-  { value: 'foodtech', label: 'Foodtech' },
-  { value: 'consumer', label: 'Consumer' },
+  'fintech',
+  'healthtech',
+  'agritech',
+  'cleantech',
+  'saas-b2b',
+  'edtech',
+  'deeptech',
+  'mobilita',
+  'proptech',
+  'foodtech',
+  'consumer',
 ] as const;
-export type Settore = (typeof SETTORI)[number]['value'];
+export type Settore = (typeof SETTORI)[number];
 
-export const FASI = [
-  { value: 'pre-seed', label: 'Pre-seed' },
-  { value: 'seed', label: 'Seed' },
-  { value: 'serie-a', label: 'Serie A' },
-] as const;
-export type Fase = (typeof FASI)[number]['value'];
+export const FASI = ['pre-seed', 'seed', 'serie-a'] as const;
+export type Fase = (typeof FASI)[number];
 
-export const AREE = [
-  { value: 'nord-ovest', label: 'Nord-Ovest' },
-  { value: 'nord-est', label: 'Nord-Est' },
-  { value: 'centro', label: 'Centro' },
-  { value: 'sud-isole', label: 'Sud e Isole' },
-] as const;
-export type Area = (typeof AREE)[number]['value'];
+export const AREE = ['nord-ovest', 'nord-est', 'centro', 'sud-isole'] as const;
+export type Area = (typeof AREE)[number];
 
 // Regions with their ISTAT macro-area (Sud and Isole merged).
-export const REGIONI = [
-  { value: 'piemonte', label: 'Piemonte', area: 'nord-ovest' },
-  { value: 'valle-aosta', label: 'Valle d’Aosta', area: 'nord-ovest' },
-  { value: 'liguria', label: 'Liguria', area: 'nord-ovest' },
-  { value: 'lombardia', label: 'Lombardia', area: 'nord-ovest' },
-  { value: 'trentino-alto-adige', label: 'Trentino-Alto Adige', area: 'nord-est' },
-  { value: 'veneto', label: 'Veneto', area: 'nord-est' },
-  { value: 'friuli-venezia-giulia', label: 'Friuli-Venezia Giulia', area: 'nord-est' },
-  { value: 'emilia-romagna', label: 'Emilia-Romagna', area: 'nord-est' },
-  { value: 'toscana', label: 'Toscana', area: 'centro' },
-  { value: 'umbria', label: 'Umbria', area: 'centro' },
-  { value: 'marche', label: 'Marche', area: 'centro' },
-  { value: 'lazio', label: 'Lazio', area: 'centro' },
-  { value: 'abruzzo', label: 'Abruzzo', area: 'sud-isole' },
-  { value: 'molise', label: 'Molise', area: 'sud-isole' },
-  { value: 'campania', label: 'Campania', area: 'sud-isole' },
-  { value: 'puglia', label: 'Puglia', area: 'sud-isole' },
-  { value: 'basilicata', label: 'Basilicata', area: 'sud-isole' },
-  { value: 'calabria', label: 'Calabria', area: 'sud-isole' },
-  { value: 'sicilia', label: 'Sicilia', area: 'sud-isole' },
-  { value: 'sardegna', label: 'Sardegna', area: 'sud-isole' },
-] as const satisfies readonly { value: string; label: string; area: Area }[];
-export type Regione = (typeof REGIONI)[number]['value'];
+export const AREA_DI = {
+  piemonte: 'nord-ovest',
+  'valle-aosta': 'nord-ovest',
+  liguria: 'nord-ovest',
+  lombardia: 'nord-ovest',
+  'trentino-alto-adige': 'nord-est',
+  veneto: 'nord-est',
+  'friuli-venezia-giulia': 'nord-est',
+  'emilia-romagna': 'nord-est',
+  toscana: 'centro',
+  umbria: 'centro',
+  marche: 'centro',
+  lazio: 'centro',
+  abruzzo: 'sud-isole',
+  molise: 'sud-isole',
+  campania: 'sud-isole',
+  puglia: 'sud-isole',
+  basilicata: 'sud-isole',
+  calabria: 'sud-isole',
+  sicilia: 'sud-isole',
+  sardegna: 'sud-isole',
+} as const satisfies Record<string, Area>;
+export type Regione = keyof typeof AREA_DI;
+export const REGIONI = Object.keys(AREA_DI) as Regione[];
 
-export const TIPI_INVESTITORE = [
-  { value: 'business-angel', label: 'Business angel' },
-  { value: 'club-deal', label: 'Club deal' },
-  { value: 'micro-vc', label: 'Micro-VC' },
-  { value: 'cvc', label: 'Corporate VC' },
-  { value: 'family-office', label: 'Family office' },
-  { value: 'acceleratore', label: 'Acceleratore' },
-] as const;
-export type TipoInvestitore = (typeof TIPI_INVESTITORE)[number]['value'];
+export const TIPI_INVESTITORE = ['business-angel', 'club-deal', 'micro-vc', 'cvc', 'family-office', 'acceleratore'] as const;
+export type TipoInvestitore = (typeof TIPI_INVESTITORE)[number];
 
-function labelMap<T extends string>(list: readonly { value: T; label: string }[]): Record<T, string> {
-  return Object.fromEntries(list.map((x) => [x.value, x.label])) as Record<T, string>;
+export interface Labels {
+  settore: Record<Settore, string>;
+  fase: Record<Fase, string>;
+  area: Record<Area, string>;
+  regione: Record<Regione, string>;
+  tipo: Record<TipoInvestitore, string>;
 }
 
-export const SETTORE_LABEL = labelMap<Settore>(SETTORI);
-export const FASE_LABEL = labelMap<Fase>(FASI);
-export const AREA_LABEL = labelMap<Area>(AREE);
-export const REGIONE_LABEL = labelMap<Regione>(REGIONI);
-export const TIPO_LABEL = labelMap<TipoInvestitore>(TIPI_INVESTITORE);
-export const AREA_DI = Object.fromEntries(REGIONI.map((r) => [r.value, r.area])) as Record<Regione, Area>;
+export function labelsFor(locale: Locale = 'it'): Labels {
+  const t = MESSAGES[locale].match.taxonomy;
+  return { settore: t.settori, fase: t.fasi, area: t.aree, regione: t.regioni, tipo: t.tipi };
+}
 
-export const isSettore = (v: unknown): v is Settore => SETTORI.some((x) => x.value === v);
-export const isFase = (v: unknown): v is Fase => FASI.some((x) => x.value === v);
-export const isArea = (v: unknown): v is Area => AREE.some((x) => x.value === v);
-export const isRegione = (v: unknown): v is Regione => REGIONI.some((x) => x.value === v);
+/** {value, label} options for selects and chips, in the given order. */
+export function optionsOf<T extends string>(values: readonly T[], labels: Record<T, string>): { value: T; label: string }[] {
+  return values.map((value) => ({ value, label: labels[value] }));
+}
+
+// Italian labels (default locale).
+export const SETTORE_LABEL = labelsFor('it').settore;
+export const FASE_LABEL = labelsFor('it').fase;
+export const AREA_LABEL = labelsFor('it').area;
+export const REGIONE_LABEL = labelsFor('it').regione;
+export const TIPO_LABEL = labelsFor('it').tipo;
+
+export const isSettore = (v: unknown): v is Settore => SETTORI.includes(v as Settore);
+export const isFase = (v: unknown): v is Fase => FASI.includes(v as Fase);
+export const isArea = (v: unknown): v is Area => AREE.includes(v as Area);
+export const isRegione = (v: unknown): v is Regione => typeof v === 'string' && Object.prototype.hasOwnProperty.call(AREA_DI, v);
 
 export interface Investor {
   id: string;

@@ -1,13 +1,8 @@
-import { formatEuro, formatPercent } from './format';
-import {
-  AREA_DI,
-  AREA_LABEL,
-  FASE_LABEL,
-  REGIONE_LABEL,
-  SETTORE_LABEL,
-  type Investor,
-  type StartupProfile,
-} from './matchTaxonomy';
+import { FORMATTERS } from '../i18n/format';
+import type { Locale } from '../i18n/locales';
+import { MESSAGES } from '../i18n/messages';
+import type { ReasonCtx } from '../i18n/messages/match';
+import { AREA_DI, labelsFor, type Investor, type StartupProfile } from './matchTaxonomy';
 
 /** Maximum points per part; they sum to 100. */
 export const WEIGHTS = { settore: 30, ticket: 30, fase: 20, area: 20 } as const;
@@ -20,13 +15,14 @@ export const AREA_POINTS = { stessaRegione: 20, area: 14, italia: 8 } as const;
 
 export type ScoreBand = 'molto-affine' | 'affine' | 'da-valutare';
 export const SCORE_BANDS: { band: ScoreBand; min: number; label: string }[] = [
-  { band: 'molto-affine', min: 80, label: 'Molto affine' },
-  { band: 'affine', min: 60, label: 'Affine' },
-  { band: 'da-valutare', min: 0, label: 'Da valutare' },
+  { band: 'molto-affine', min: 80, label: MESSAGES.it.match.bands['molto-affine'] },
+  { band: 'affine', min: 60, label: MESSAGES.it.match.bands.affine },
+  { band: 'da-valutare', min: 0, label: MESSAGES.it.match.bands['da-valutare'] },
 ];
 
-export function scoreBand(score: number): (typeof SCORE_BANDS)[number] {
-  return SCORE_BANDS.find((b) => score >= b.min) ?? SCORE_BANDS[SCORE_BANDS.length - 1]!;
+export function scoreBand(score: number, locale: Locale = 'it'): (typeof SCORE_BANDS)[number] {
+  const band = SCORE_BANDS.find((b) => score >= b.min) ?? SCORE_BANDS[SCORE_BANDS.length - 1]!;
+  return { ...band, label: MESSAGES[locale].match.bands[band.band] };
 }
 
 export type Perspective = 'startup' | 'investitore';
@@ -48,20 +44,35 @@ export interface Evaluation {
   whyNot: string[];
 }
 
-const list = (items: string[]) => items.join(', ');
-
 /** Share of the round the investor can cover with its maximum ticket (0–1). */
 export function coverage(s: Pick<StartupProfile, 'round'>, i: Pick<Investor, 'ticketMax'>): number {
   if (s.round <= 0) return 0;
   return Math.min(i.ticketMax, s.round) / s.round;
 }
 
-/** Evaluates one startup–investor pair. Pure and deterministic. */
-export function evaluate(s: StartupProfile, i: Investor, perspective: Perspective = 'startup'): Evaluation {
-  const forStartup = perspective === 'startup';
-  const settore = SETTORE_LABEL[s.settore];
-  const fase = FASE_LABEL[s.fase];
+/** Evaluates one startup–investor pair. Pure and deterministic; `locale` only changes the wording. */
+export function evaluate(
+  s: StartupProfile,
+  i: Investor,
+  perspective: Perspective = 'startup',
+  locale: Locale = 'it',
+): Evaluation {
+  const L = labelsFor(locale);
+  const f = FORMATTERS[locale];
+  const R = MESSAGES[locale].match.reasons[perspective];
   const area = AREA_DI[s.regione];
+  const cov = coverage(s, i);
+  const ctx: ReasonCtx = {
+    settore: L.settore[s.settore],
+    fase: L.fase[s.fase],
+    fasi: i.fasi.map((x) => L.fase[x]).join(', '),
+    regione: L.regione[s.regione],
+    area: L.area[area],
+    min: f.euro(i.ticketMin),
+    max: f.euro(i.ticketMax),
+    round: f.euro(s.round),
+    pct: f.percent(cov * 100, 0),
+  };
 
   const failed: FilterId[] = [];
   const whyNot: string[] = [];
@@ -69,31 +80,19 @@ export function evaluate(s: StartupProfile, i: Investor, perspective: Perspectiv
   // Hard filters, in a fixed order.
   if (!i.fasi.includes(s.fase)) {
     failed.push('fase');
-    whyNot.push(
-      forStartup
-        ? `Non investe in fase ${fase} (investe in: ${list(i.fasi.map((f) => FASE_LABEL[f]))})`
-        : `È in fase ${fase}, fuori dalle fasi che hai scelto`,
-    );
+    whyNot.push(R.notFase(ctx));
   }
   if (i.settori !== 'tutti' && !i.settori.includes(s.settore)) {
     failed.push('settore');
-    whyNot.push(forStartup ? `Non investe nel settore ${settore}` : `Il settore ${settore} non è tra quelli che hai scelto`);
+    whyNot.push(R.notSettore(ctx));
   }
   if (i.aree !== 'italia' && !i.aree.includes(area)) {
     failed.push('area');
-    whyNot.push(
-      forStartup
-        ? `Non investe in ${AREA_LABEL[area]}`
-        : `Ha sede in ${REGIONE_LABEL[s.regione]} (${AREA_LABEL[area]}), fuori dalle aree che hai scelto`,
-    );
+    whyNot.push(R.notArea(ctx));
   }
   if (i.ticketMin > s.round) {
     failed.push('ticket');
-    whyNot.push(
-      forStartup
-        ? `Ticket minimo di ${formatEuro(i.ticketMin)}, superiore al round di ${formatEuro(s.round)}`
-        : `Cerca ${formatEuro(s.round)}, meno del tuo ticket minimo di ${formatEuro(i.ticketMin)}`,
-    );
+    whyNot.push(R.notTicket(ctx));
   }
 
   // Parts of the score.
@@ -105,7 +104,6 @@ export function evaluate(s: StartupProfile, i: Investor, perspective: Perspectiv
         : i.settori.includes(s.settore)
           ? SETTORE_POINTS.secondario
           : 0;
-  const cov = coverage(s, i);
   const ticketPts = WEIGHTS.ticket * Math.min(1, cov / LEAD_COVERAGE);
   const fasePts = i.fasi[0] === s.fase ? FASE_POINTS.principale : i.fasi.includes(s.fase) ? FASE_POINTS.secondaria : 0;
   const areaPts =
@@ -123,55 +121,18 @@ export function evaluate(s: StartupProfile, i: Investor, perspective: Perspectiv
 
   const reasons: string[] = [];
   if (eligible) {
-    // Settore
-    if (i.settori === 'tutti') {
-      reasons.push(forStartup ? 'Investitore generalista: valuta tutti i settori' : `Settore ${settore}: valuti tutti i settori`);
-    } else if (settorePts === SETTORE_POINTS.principale) {
-      reasons.push(forStartup ? `Il settore ${settore} è il suo focus principale` : `Settore ${settore}: il tuo focus principale`);
-    } else {
-      reasons.push(forStartup ? `Investe anche nel settore ${settore}` : `Settore ${settore}: tra quelli che segui`);
-    }
-    // Ticket
-    const range = `${formatEuro(i.ticketMin)} a ${formatEuro(i.ticketMax)}`;
-    if (cov >= 1) {
-      reasons.push(
-        forStartup
-          ? `Ticket da ${range}: potrebbe coprire l’intero round`
-          : `Round di ${formatEuro(s.round)}: potresti coprirlo per intero`,
-      );
-    } else if (cov >= LEAD_COVERAGE) {
-      reasons.push(
-        forStartup
-          ? `Ticket da ${range}: potrebbe guidare il round`
-          : `Round di ${formatEuro(s.round)}: potresti guidarlo (fino al ${formatPercent(cov * 100, 0)})`,
-      );
-    } else {
-      reasons.push(
-        forStartup
-          ? `Ticket da ${range}: può coprire fino al ${formatPercent(cov * 100, 0)} del round`
-          : `Round di ${formatEuro(s.round)}: il tuo ticket ne copre fino al ${formatPercent(cov * 100, 0)}`,
-      );
-    }
-    // Fase
     reasons.push(
-      fasePts === FASE_POINTS.principale
-        ? forStartup
-          ? `Investe soprattutto in fase ${fase}`
-          : `Fase ${fase}: la tua fase principale`
-        : forStartup
-          ? `Investe anche in fase ${fase}`
-          : `Fase ${fase}: tra quelle che segui`,
+      i.settori === 'tutti'
+        ? R.generalist(ctx)
+        : settorePts === SETTORE_POINTS.principale
+          ? R.settoreMain(ctx)
+          : R.settoreOther(ctx),
     );
-    // Area
-    if (areaPts === AREA_POINTS.stessaRegione) {
-      reasons.push(`Ha sede in ${REGIONE_LABEL[s.regione]}, come te`);
-    } else if (areaPts === AREA_POINTS.area) {
-      reasons.push(
-        forStartup ? `Investe in ${AREA_LABEL[area]}` : `Ha sede in ${REGIONE_LABEL[s.regione]} (${AREA_LABEL[area]})`,
-      );
-    } else {
-      reasons.push(forStartup ? 'Investe in tutta Italia' : `Ha sede in ${REGIONE_LABEL[s.regione]}: investi in tutta Italia`);
-    }
+    reasons.push(cov >= 1 ? R.ticketFull(ctx) : cov >= LEAD_COVERAGE ? R.ticketLead(ctx) : R.ticketPart(ctx));
+    reasons.push(fasePts === FASE_POINTS.principale ? R.faseMain(ctx) : R.faseOther(ctx));
+    reasons.push(
+      areaPts === AREA_POINTS.stessaRegione ? R.sameRegion(ctx) : areaPts === AREA_POINTS.area ? R.area(ctx) : R.italia(ctx),
+    );
   }
 
   return { eligible, score, parts, reasons, failed, whyNot };
@@ -208,11 +169,11 @@ function rank<T extends { nome: string; id: string }>(rows: Ranked<T>[]): MatchR
 }
 
 /** Startup side: which investors fit this startup. */
-export function matchInvestors(s: StartupProfile, investors: readonly Investor[]): MatchResult<Investor> {
-  return rank(investors.map((i) => ({ item: i, evaluation: evaluate(s, i, 'startup') })));
+export function matchInvestors(s: StartupProfile, investors: readonly Investor[], locale: Locale = 'it'): MatchResult<Investor> {
+  return rank(investors.map((i) => ({ item: i, evaluation: evaluate(s, i, 'startup', locale) })));
 }
 
 /** Investor side: which startups fit this thesis. */
-export function matchStartups(i: Investor, startups: readonly StartupProfile[]): MatchResult<StartupProfile> {
-  return rank(startups.map((s) => ({ item: s, evaluation: evaluate(s, i, 'investitore') })));
+export function matchStartups(i: Investor, startups: readonly StartupProfile[], locale: Locale = 'it'): MatchResult<StartupProfile> {
+  return rank(startups.map((s) => ({ item: s, evaluation: evaluate(s, i, 'investitore', locale) })));
 }

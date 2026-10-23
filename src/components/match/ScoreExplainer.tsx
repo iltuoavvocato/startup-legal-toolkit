@@ -1,61 +1,48 @@
-import { formatPercent } from '../../lib/format';
-import { AREA_POINTS, FASE_POINTS, LEAD_COVERAGE, SCORE_BANDS, SETTORE_POINTS, WEIGHTS } from '../../lib/matching';
+import { useI18n } from '../../i18n/context';
+import { AREA_POINTS, FASE_POINTS, LEAD_COVERAGE, SCORE_BANDS, SETTORE_POINTS, WEIGHTS, scoreBand } from '../../lib/matching';
 
 export function ScoreExplainer() {
+  const { locale, t, f } = useI18n();
+  const x = t.match.ui.explainer;
   return (
     <details className="details mi-explainer">
-      <summary>Come calcoliamo l’affinità</summary>
-      <p>
-        Prima i filtri: compaiono solo gli abbinamenti con fase, settore e area compatibili e con un ticket minimo non
-        superiore al round. Poi un punteggio da 0 a 100, somma di quattro parti:
-      </p>
+      <summary>{x.summary}</summary>
+      <p>{x.intro}</p>
       <div className="table-scroll">
         <table className="data-table mi-table">
           <thead>
             <tr>
-              <th scope="col">Parte</th>
-              <th scope="col">Max</th>
-              <th scope="col">Come</th>
+              <th scope="col">{x.head.part}</th>
+              <th scope="col">{x.head.max}</th>
+              <th scope="col">{x.head.how}</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <th scope="row">Settore</th>
+              <th scope="row">{x.rows.settore}</th>
               <td>{WEIGHTS.settore}</td>
-              <td>
-                {SETTORE_POINTS.principale} se è il settore principale, {SETTORE_POINTS.secondario} se è tra gli altri,{' '}
-                {SETTORE_POINTS.generalista} per un investitore generalista
-              </td>
+              <td>{x.settore(SETTORE_POINTS.principale, SETTORE_POINTS.secondario, SETTORE_POINTS.generalista)}</td>
             </tr>
             <tr>
-              <th scope="row">Ticket</th>
+              <th scope="row">{x.rows.ticket}</th>
               <td>{WEIGHTS.ticket}</td>
-              <td>
-                In proporzione alla parte di round che il ticket massimo può coprire; punteggio pieno da{' '}
-                {formatPercent(LEAD_COVERAGE * 100, 0)} in su
-              </td>
+              <td>{x.ticket(f.percent(LEAD_COVERAGE * 100, 0))}</td>
             </tr>
             <tr>
-              <th scope="row">Fase</th>
+              <th scope="row">{x.rows.fase}</th>
               <td>{WEIGHTS.fase}</td>
-              <td>
-                {FASE_POINTS.principale} se è la fase principale, {FASE_POINTS.secondaria} altrimenti
-              </td>
+              <td>{x.fase(FASE_POINTS.principale, FASE_POINTS.secondaria)}</td>
             </tr>
             <tr>
-              <th scope="row">Area</th>
+              <th scope="row">{x.rows.area}</th>
               <td>{WEIGHTS.area}</td>
-              <td>
-                {AREA_POINTS.stessaRegione} stessa regione, {AREA_POINTS.area} stessa macro-area, {AREA_POINTS.italia} se
-                investe in tutta Italia
-              </td>
+              <td>{x.area(AREA_POINTS.stessaRegione, AREA_POINTS.area, AREA_POINTS.italia)}</td>
             </tr>
           </tbody>
         </table>
       </div>
       <p className="small-note">
-        Fasce: {SCORE_BANDS.map((b) => `${b.label} da ${b.min}`).join(', ')}. A parità di punteggio conta la copertura
-        del ticket, poi l’ordine alfabetico. Pesi e soglie sono valori provvisori.
+        {x.bands(SCORE_BANDS.map((b) => x.band(scoreBand(b.min, locale).label, b.min)).join(', '))}
       </p>
     </details>
   );

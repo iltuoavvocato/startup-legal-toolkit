@@ -1,10 +1,9 @@
+import { useI18n } from '../../i18n/context';
 import { remaining, type ProposalCounter as Counter } from '../../lib/optin';
 
-const monthName = new Intl.DateTimeFormat('it-IT', { month: 'long' });
-
-function monthLabel(key: string): string {
+function monthDate(key: string): Date {
   const [y, m] = key.split('-').map(Number);
-  return monthName.format(new Date(y ?? 2000, (m ?? 1) - 1, 1));
+  return new Date(y ?? 2000, (m ?? 1) - 1, 1);
 }
 
 interface Props {
@@ -13,32 +12,27 @@ interface Props {
 }
 
 export function ProposalCounter({ counter, limit }: Props) {
+  const { t, f } = useI18n();
+  const c = t.match.ui.counter;
   const left = remaining(counter, limit);
   return (
     <div className="mi-counter">
       <p className="mi-counter-text">
-        <strong>
-          {counter.used} di {limit}
-        </strong>{' '}
-        proposte usate a {monthLabel(counter.month)}
-        <span className="pill mi-provv">valore provvisorio</span>
+        <strong>{c.used(counter.used, limit)}</strong> {c.usedIn(f.monthName(monthDate(counter.month)))}
+        <span className="pill mi-provv">{c.provisional}</span>
       </p>
       <div
         className="progress mi-counter-bar"
         role="progressbar"
-        aria-label="Proposte usate questo mese"
+        aria-label={c.aria}
         aria-valuemin={0}
         aria-valuemax={limit}
         aria-valuenow={counter.used}
-        aria-valuetext={`${counter.used} di ${limit}`}
+        aria-valuetext={c.used(counter.used, limit)}
       >
         <span style={{ width: `${Math.min(100, (counter.used / limit) * 100)}%` }} />
       </div>
-      <p className="field-hint">
-        {left > 0
-          ? `Puoi proporre il tuo profilo ad altri ${left} investitori questo mese.`
-          : 'Limite raggiunto: potrai fare nuove proposte il mese prossimo.'}
-      </p>
+      <p className="field-hint">{left > 0 ? c.left(left) : c.none}</p>
     </div>
   );
 }
