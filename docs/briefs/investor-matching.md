@@ -1,0 +1,318 @@
+# Investor matching: implementation plan (step 1)
+
+Source brief: `/workspace/cc-matching/brief.md`. Branch `feature/investor-matching`, this worktree only.
+This is a front-end **prototype**: no backend, no network, no storage, and no LLM. The "agent" is a
+deterministic mock. Product working name **MatchInvStar** (always shown as "nome provvisorio"). All UI copy is in Italian.
+
+---
+
+## 0. What I found in the repo (conventions to follow)
+
+- **Pages** are flat in `src/pages/*Page.tsx`. Every tool page is `PageHero` (navy, `h1#page-title` focusable) → `section.section-cream.tool-section` → `.container` → `.card`s → `Disclaimer` → `CtaPanel`.
+- **Layout** (`src/components/Layout.tsx`): a `NAV` array (header and footer), `usePageMeta(routeKey(pathname))`, focus moves to `#page-title` on navigation, and the UTM campaign comes from `pathname.includes(...)`.
+- **Meta and prerender**: `src/routes-meta.json` → `metaFor()` (runtime) and `scripts/prerender.mjs` (writes `dist/<path>/index.html` with `mkdirSync recursive`, so nested paths work), plus the sitemap (priority 0.8 by default). Nothing else needs to change for new routes.
+- **URL state**: `src/hooks/useQueryState.ts` exports `readQuery()` (seeds state once) and `useSyncQuery(params|null)` (replaceState, skips the first render). The brief calls it "useQueryState", but the real API is these two functions.
+- **Logic**: pure TS in `src/lib/*.ts` with `*.test.ts` next to each file. The Vitest include is `src/**/*.test.ts`. There are 46 tests today, all passing. Formatting helpers are in `src/lib/format.ts` (`formatEuro`, `formatPercent`, `it-IT`).
+- **Styles**: one `src/styles/global.css` (about 2500 lines) with tokens (`--navy-*`, `--gold`, `--gold-dark`, `--cream`, `--line`, `--radius 14px`, `--shadow`) and reusable classes: `.card`, `.card-title`, `.field`, `.input-affix`, `.segmented`, `.option` (radio card), `.pill`, `.badge`, `.notice`, `.details`, `.prose`, `.actions`, `.btn-{gold,navy,outline,ghost,text}`, `.progress`, `.stat-grid`, `.two-col`. A reduced-motion block already exists.
+- **TS** is strict with `noUncheckedIndexedAccess`. ESLint runs with `--max-warnings 0` and `react-refresh/only-export-components`, so pages and components must export components only and data goes in `lib`/`data`.
+- **Screenshots** (`scripts/screenshots.mjs`): `PAGES` [name, path] plus `STATES` functions. The script fails on console errors, external requests or horizontal overflow, so it doubles as the 390px overflow check.
+
+## 1. Routes
+
+All routes use a trailing slash, like the existing ones. Each is added to `src/routes-meta.json` with an Italian title and description, and to `App.tsx`.
+
+| Route | Page | Content |
+|---|---|---|
+| `/match-investitori/` | `MatchLandingPage` | Idea, the 4 steps, legal limits, two CTAs, prototype banner |
+| `/match-investitori/startup/` | `MatchStartupPage` | Intake + deck → agent → profile confirmation → "I tuoi match" (investors) |
+| `/match-investitori/investitore/` | `MatchInvestorPage` | Thesis intake → "I tuoi match" (anonymous startups) |
+| `/match-investitori/doppio-consenso/` | `MatchOptInPage` | Double opt-in simulator and monthly counter |
+| `/match-investitori/note-legali/` | `MatchLegalPage` | Full legal limits and "Da verificare con un avvocato" |
+
+Suggested meta:
+- Landing: "Match con investitori (prototipo) | Startup Legal Toolkit" / "Prototipo dimostrativo di MatchInvStar: un agente propone match tra startup e investitori, con intro solo dopo il doppio consenso."
+- Each of the other routes gets a short, specific title and description in the same style.
+
+**State per route**
+- Startup flow steps (`dati` → `analisi` → `profilo` → `match`) live in in-memory React state. Once the profile is confirmed, `useSyncQuery` mirrors **only enumerated fields** to the URL (`?settore=fintech&fase=seed&regione=lombardia&round=500000`), so results can be shared and reloaded straight into the `match` step. The free-text description, file name and founder name are **never** put in the URL (data minimisation).
+- Investor flow works the same way: `?settori=fintech.saas&fasi=seed&min=25000&max=150000&aree=nord-ovest`.
+- Opt-in simulator: `?s=<startupId>&i=<investorId>` (demo IDs, or `s=tu` plus the enumerated profile params when you arrive from your own results). The opt-in state itself stays in memory.
+
+## 2. Files
+
+**New**
+```
+src/lib/matchTaxonomy.ts      settori, fasi, regioni (20) → macro-aree, investor types; Italian labels
+src/lib/matching.ts           filters, score, reasons, ranking (both directions)
+src/lib/matching.test.ts
+src/lib/optin.ts              opt-in state machine, per-side views, monthly limit
+src/lib/optin.test.ts
+src/lib/deck.ts               validateDeck(meta), mockExtract(meta, form), AGENT_STEPS, introEmail()
+src/lib/deck.test.ts
+src/data/matchDemo.ts         DEMO_INVESTORS (15), DEMO_STARTUPS (8), DEMO_LABEL = 'Dati di esempio'
+src/pages/MatchLandingPage.tsx
+src/pages/MatchStartupPage.tsx
+src/pages/MatchInvestorPage.tsx
+src/pages/MatchOptInPage.tsx
+src/pages/MatchLegalPage.tsx
+src/components/match/*.tsx    (see §3)
+src/styles/match.css          all classes prefixed `mi-`; imported by the match pages only
+```
+The Vitest include `src/**/*.test.ts` already picks up the new tests. If `src/data/matchDemo.ts` gets a sanity test (unique IDs, valid enums), it goes in `src/data/matchDemo.test.ts`.
+
+**Touched (additive only)**
+- `src/App.tsx`: 5 `<Route>`s.
+- `src/routes-meta.json`: 5 entries appended.
+- `src/components/Layout.tsx`: one `NAV` item (see decision D1). Campaign detection gains `'match'` before the `'home'` fallback.
+- `src/site.ts`: `ToolCampaign` gains `'match'`. Existing campaigns are unchanged.
+- `src/pages/HomePage.tsx`: one new band *after* the tools grid ("Nuovo · prototipo"). The 3-card grid and "Tre strumenti…" copy stay untouched, so the copy stays accurate.
+- `scripts/screenshots.mjs`: 5 `PAGES` and 3 `STATES` (see §8).
+- `README.md`: a routes row, a decisions entry and TODOs (later step).
+
+**Not touched**: `global.css` selectors (new CSS lives only in `match.css`), `prerender.mjs`, `vite.config.ts`, `.github/`, `vercel.json`, `useQueryState.ts`, existing `lib`, and the other pages.
+
+## 3. Components (`src/components/match/`)
+
+| Component | Role |
+|---|---|
+| `PrototypeBanner` | Full-width strip under the header: "Prototipo dimostrativo · MatchInvStar (nome provvisorio). Nessun dato viene inviato: tutto resta nel tuo browser." Links to the legal notes. On every match page. |
+| `MatchSteps` | Section stepper (`<ol>` with `aria-current="step"`): Dati e deck · Profilo · Match · Doppio consenso. |
+| `DemoBadge` | `pill` "Dati di esempio" on every list or card with demo data. |
+| `ChoiceChips` | Multi-select checkbox chips inside `fieldset/legend` (settori, fasi, aree). Single-select variant uses the existing `.segmented`. |
+| `DeckDropzone` | `<label>` wrapping a visually hidden `<input type=file accept="application/pdf,.pdf">`, plus drag and drop as an enhancement. Shows name and size and a "Rimuovi" button. Errors are tied to the input with `aria-describedby`. Never uses `FileReader`, `arrayBuffer` or object URLs. |
+| `AgentProcessing` | Deterministic 4-step "L'agente sta leggendo il deck" checklist (setTimeout ≈ 450 ms per step, cleared on unmount). Announced through `aria-live="polite"`, with a "Salta" button. |
+| `ProfileReview` | Editable extracted fields. Each field is tagged "dal deck (simulato)" or "dal modulo". Primary action: "Conferma il profilo". Note: "L'agente propone, tu decidi: niente viene usato senza la tua conferma." |
+| `TeaserCard` | The anonymous teaser (settore, regione, fase, importo, one-liner, no names). Reused in the startup intake preview, investor results and the opt-in screen. |
+| `MatchCard` | Rank, name (startup side) or teaser (investor side), `ScoreMeter`, reasons list and actions. |
+| `ScoreMeter` | "82/100" in text, a thin bar (`aria-hidden`) and a label (Molto affine / Affine / Da valutare). |
+| `FilterChips` | Summary of the active hard filters plus a "Modifica" button (back to the intake, values kept). |
+| `ExcludedList` | `<details>` "Esclusi (n): perché non compaiono" with why-not strings. |
+| `OptInBoard` | Two-column board, investor view and startup view, with the "doppia chiave" connector (§6). |
+| `IntroEmailPreview` | `<article>` styled as an email: Da / A / Oggetto / body, signed "via MatchInvStar". |
+| `ProposalCounter` | "3 di 5 proposte usate a ottobre" plus the "valore provvisorio" tag and a progress bar (existing `.progress`). |
+| `LegalLimits` | Compact block (landing and the bottom of each page) with the five limits and a link to the legal notes. |
+
+## 4. Data model (`matchTaxonomy.ts`, `matchDemo.ts`)
+
+```ts
+type Settore = 'fintech' | 'healthtech' | 'agritech' | 'cleantech' | 'saas-b2b' | 'edtech'
+             | 'deeptech' | 'mobilita' | 'proptech' | 'foodtech' | 'consumer';
+type Fase = 'pre-seed' | 'seed' | 'serie-a';
+type Regione = 'piemonte' | 'lombardia' | … ;        // 20 regions, Italian labels
+type Area = 'nord-ovest' | 'nord-est' | 'centro' | 'sud-isole';
+const AREA_DI: Record<Regione, Area>;                 // ISTAT macro-areas (sud + isole merged)
+type TipoInvestitore = 'business-angel' | 'club-deal' | 'micro-vc' | 'cvc' | 'family-office' | 'acceleratore';
+
+interface Investor {
+  id: string; nome: string; tipo: TipoInvestitore;
+  settori: Settore[] | 'tutti';     // array: settori[0] is the main focus
+  fasi: Fase[];                     // fasi[0] is the main stage
+  ticketMin: number; ticketMax: number;   // € per operation
+  aree: Area[] | 'italia';
+  sede: Regione;
+  tesi: string;                     // one Italian sentence
+  referente: string; email: string; // fictional, on the reserved `.example` TLD (RFC 2606), e.g. nome@fondo.example
+}
+
+interface StartupProfile {
+  id: string; nome: string; settore: Settore; fase: Fase; regione: Regione;
+  round: number;                    // € sought
+  oneLiner: string;                 // max 140 characters, shown in the teaser
+  founder: string; email: string;   // fictional for demos; for "tu" the founder types a name (in memory only)
+}
+```
+- **Demo data**: 15 investors (about 4 business angels, 3 club deals, 3 micro-VCs, 2 CVCs, 2 family offices, 1 accelerator) and 8 startups. All names are invented. I'll keep them clearly fictional and generic (place or nature words plus a type, e.g. "Club Deal Lanterna") and avoid anything that sounds like a known firm or person. They can't be checked against real registries offline, so the "Dati di esempio" label is the safeguard. Ticket values are illustrative and are not market data. The file header and UI say "Dati di esempio".
+- The dataset is designed so the default demo ("Usa un esempio": fintech, seed, Lombardia, 500.000 €) yields about 6 matches across all three labels and about 9 exclusions covering **every** filter. That makes both lists meaningful.
+
+## 5. Matching algorithm (`matching.ts`)
+
+One pairwise core used in both directions:
+```ts
+evaluate(s: StartupProfile, i: Investor): Evaluation
+  // { eligible, score, parts: {settore, fase, ticket, area}, reasons: string[], whyNot: string[] }
+matchInvestors(s, investors): { matches: Ranked<Investor>[]; excluded: Excluded<Investor>[] }
+matchStartups(i, startups):  { matches: Ranked<StartupProfile>[]; excluded: Excluded<StartupProfile>[] }
+```
+The `perspective` ('startup' | 'investitore') only changes how reasons are worded.
+
+**Hard filters** (all must pass; each failure adds a why-not):
+1. **Fase**: `s.fase ∈ i.fasi`
+2. **Settore**: `i.settori === 'tutti' || s.settore ∈ i.settori`
+3. **Area**: `i.aree === 'italia' || AREA_DI[s.regione] ∈ i.aree`
+4. **Ticket ∩ round**: the investor's range `[ticketMin, ticketMax]` must overlap `(0, round]`, which means `i.ticketMin ≤ s.round`. Inputs are validated as `round > 0` and `min ≤ max`.
+
+**Score (0–100), integer**, `score = round(P_settore + P_fase + P_ticket + P_area)`:
+
+| Part | Max | Rule |
+|---|---|---|
+| Settore | 30 | 30 if `settori[0]` (main focus) · 20 if elsewhere in the list · 15 if `'tutti'` (generalist) |
+| Ticket | 30 | `coverage = min(ticketMax, round) / round` → `30 × min(1, coverage / 0.4)`. Covering ≥ 40% of the round (a potential lead) earns full points. |
+| Fase | 20 | 20 if `fasi[0]` (main stage) · 12 otherwise |
+| Area | 20 | 20 if `i.sede === s.regione` · 14 if the startup's macro-area ∈ `aree` · 8 if only `'italia'` |
+
+Labels: ≥ 80 "Molto affine", 60–79 "Affine", < 60 "Da valutare". The weights, the 0.4 threshold and the label bands are exported constants (`WEIGHTS`, `LEAD_COVERAGE`, `SCORE_BANDS`) and are explained on the results page in a "Come calcoliamo l'affinità" `<details>`, mirroring the equity page's "Come calcoliamo".
+
+**Ordering** (fully deterministic): score ↓, then `P_ticket` ↓, then `P_settore` ↓, then name with `localeCompare('it')`, then `id`. Excluded entries: number of failed filters ↑, then name, then id. The input array order never affects the output.
+
+**Reason strings** (startup perspective; the investor perspective mirrors them, e.g. "Fintech: il tuo settore principale"):
+- Settore: "Il fintech è il suo settore principale" · "Investe anche nel fintech" · "Investitore generalista: valuta tutti i settori"
+- Fase: "Investe soprattutto in fase seed" · "Investe anche in fase seed"
+- Ticket: "Ticket da 25.000 € a 100.000 €: può coprire fino al 20% del round" · "Ticket fino a 600.000 €: potrebbe guidare il round" (coverage ≥ 0.4) · "…potrebbe coprire l'intero round" (coverage = 1)
+- Area: "Ha sede in Lombardia, come te" · "Investe nel Nord-Ovest" · "Investe in tutta Italia"
+
+Reasons come in a fixed order (settore, ticket, fase, area). Numbers use `formatEuro` and `formatPercent(…, 0)`.
+
+**Why-not strings**:
+- "Non investe in fase serie A (investe in: pre-seed, seed)"
+- "Non investe nel settore edtech"
+- "Non investe in Sud e Isole"
+- "Ticket minimo di 250.000 €, superiore al round di 150.000 €"
+
+## 6. Double opt-in state machine and monthly limit (`optin.ts`)
+
+```
+            INVESTOR_YES              STARTUP_YES
+ proposta ───────────────▶ attesa-startup ───────────▶ intro
+    │                           │
+    │ INVESTOR_NO               │ STARTUP_NO
+    ▼                           ▼
+ chiusa-investitore          chiusa-startup
+```
+- `transition(state, event): OptInState` is pure. Invalid events are **no-ops** (they return the same state), and `RESET` returns to `proposta` from any state.
+- `viewFor(state, side: 'investitore' | 'startup'): SideView` (`{ titolo, testo, azioni[], mostraIntro, rivelaNome… }`) is the "who sees what" contract:
+
+| State | Investor sees | Startup sees |
+|---|---|---|
+| `proposta` | Anonymous teaser + "Sì, mi interessa" / "No, grazie" | "Il tuo profilo è attivo. Ti scriveremo solo se c'è un interesse reciproco." (neutral) |
+| `attesa-startup` | "Interesse inviato. Riceverai un'intro solo se anche la startup accetta." | Investor name, type and thesis + "Accetta l'intro" / "Non ora" |
+| `chiusa-investitore` | "Ok, non ti riproporremo questa startup." | **Identical to `proposta`** |
+| `chiusa-startup` | **Identical to `attesa-startup`** | "Hai rifiutato. L'investitore non riceverà alcuna notifica del rifiuto." |
+| `intro` | Intro email preview | Intro email preview |
+
+  The core invariant (tested): a "no" can't be told apart from silence on the other side.
+- `introEmail(startup, investor)`: oggetto "Intro: {startup} ↔ {investitore} (via MatchInvStar)" and a short Italian body. It introduces both parties by their fictional names, says both agreed, contains no investment advice, and closes with "Il team MatchInvStar (nome provvisorio)".
+- **Monthly limit**: `MONTHLY_PROPOSAL_LIMIT = 5` (exported, commented "valore provvisorio"). `ProposalCounter = { month: 'YYYY-MM', used: number }`.
+  `counterFor(month, prev?)` resets on a month change. `remaining(c, limit)`, `canPropose(c, limit)`, `consume(c, limit) → { ok: true, counter } | { ok: false, reason }`.
+  The month is **injected** (no `Date` inside the lib), which keeps tests deterministic. The UI passes the current `YYYY-MM`.
+  Default meaning: max N proposals the agent sends **on behalf of one startup** per calendar month (decision D4). From the startup results, "Proponi a questo investitore" consumes one. The 6th is disabled with "Hai raggiunto il limite di 5 proposte per questo mese (valore provvisorio)." The simulator page shows the same counter.
+
+## 7. Deck mock (`deck.ts`)
+
+- `validateDeck({ name, type, size })`: PDF only (`type === 'application/pdf'` or `.pdf`) and size ≤ `MAX_DECK_MB = 20` (placeholder). Returns an Italian error string or `null`.
+- `AGENT_STEPS`: ["Lettura del deck", "Individuazione di settore e fase", "Stima del round", "Bozza del profilo"].
+- `mockExtract(meta | null, form)`: deterministic. Form values win. Missing fields are inferred from file-name keywords (e.g. `fintech`, `seed`, `serie-a`, `milano` → lombardia), then from a fixed demo extraction. The one-liner comes from the description (trimmed to 140 characters at a word boundary) or a fixed demo sentence. Each field carries `fonte: 'deck' | 'modulo' | 'esempio'`. The copy says plainly that this is a simulation: "In questo prototipo l'agente non legge davvero il file: i campi sono ricavati dal modulo e dal nome del file."
+
+## 8. Tests
+
+**`matching.test.ts`**
+- Every filter excludes on its own (fase, settore, area, ticket) and produces the right why-not.
+- Ticket edge: `ticketMin === round` is eligible; `round + 1` is excluded.
+- Generalist (`'tutti'`) passes the settore filter and gets 15 points; `'italia'` passes the area filter and gets 8.
+- Score: a perfect investor gets 100. Each part is checked at its tiers (30/20/15, 20/12, 20/14/8), and coverage 0.2 gives 15 ticket points. The score is always an integer in 0–100 across the whole demo dataset.
+- Ordering: ties broken by ticket part, then name, then id. **A shuffled input gives the same output.** Excluded entries are sorted.
+- Reasons: fixed order, Italian number formatting (`500.000 €`, `20%`), "potrebbe guidare il round" at coverage ≥ 0.4.
+- Both directions: `matchStartups(i)` includes startup S iff `matchInvestors(S)` includes i, with the same score.
+- Demo sanity: unique IDs, valid enums, `min ≤ max`; the default demo gives ≥ 1 match in every label band and ≥ 1 exclusion per filter.
+
+**`optin.test.ts`**
+- Happy path to `intro`. Each "no" path. Invalid events are no-ops (e.g. `STARTUP_YES` in `proposta`, anything after `intro` except RESET). RESET works from every state.
+- `viewFor(chiusa-investitore,'startup')` deep-equals `viewFor(proposta,'startup')`. `viewFor(chiusa-startup,'investitore')` deep-equals `viewFor(attesa-startup,'investitore')`.
+- The investor never sees the startup name before `intro`. `introEmail` contains both names and "via MatchInvStar".
+- Limit: `consume` succeeds 5 times and fails on the 6th. A new month resets the counter. `remaining` is never negative. A custom limit works.
+
+**`deck.test.ts`**
+- Rejects non-PDF and files over the size limit; accepts `.PDF` in uppercase.
+- `mockExtract` is deterministic: same input, same output. Form values beat file-name keywords, and keywords beat the demo default. The one-liner is ≤ 140 characters, and the `fonte` tags are correct.
+
+**Gates**: `npm run lint`, `npm test` (46 existing tests plus the new ones), `npm run build`, `npm run screenshots`.
+
+New screenshot `STATES`:
+- `match-startup-results`: "Usa un esempio", then "Analizza il deck", then "Salta", then "Conferma il profilo"
+- `match-investor-results`
+- `match-optin-intro`: both "Sì"
+
+## 9. UI and design approach
+
+**Direction**: the brief pins the look to the existing toolkit, so there's no new palette or fonts. I'll use the same tokens, Playfair headings, Inter UI, navy hero, cream tool sections and white cards. Linear/Stripe-level polish comes from discipline: a tight 8px spacing rhythm, consistent card hierarchy (a primary card with `--shadow`, nested items flat with a `--line` border), tabular numbers for scores and euros (`font-variant-numeric: tabular-nums`) and restrained motion.
+
+**One memorable element**: the **"doppia chiave"** on the opt-in screen. Investor and startup panels face each other, joined by a connector with a lock glyph. Each "Sì" turns one half of the connector gold. Only when both halves are gold does the intro email unfold between them, as the single orchestrated motion of the section (disabled with `prefers-reduced-motion`). A "no" leaves the connector grey and quiet. That visually expresses the rule that a no is never revealed. Everything else stays calm.
+
+Copy and typography restraint: no extra eyebrows beyond the house `PageHero` one. Numbered markers appear only where the content really is a sequence (the 4 steps, the stepper). Gold text on cream/white uses `--gold-dark` for AA contrast. Gold on navy is fine.
+
+| Screen | Desktop (≥ 980px) | Mobile (390px) |
+|---|---|---|
+| **Landing** | Prototype banner → navy hero (one-line idea, two CTAs "Sono una startup" / "Sono un investitore") → cream: the 4 steps as a horizontal sequence on a gold hairline → white: two "door" cards (startup / investor) with what each provides → `LegalLimits` (5 short items + link) → Disclaimer → CtaPanel (campaign `match`) | Steps become a vertical timeline. Doors stack. CTAs are full width. |
+| **Startup intake** | `MatchSteps` on top. Two columns, 7/5: form on the left (settore select, fase `.segmented`, regione select, round `input-affix €`, one-liner textarea with a 140-character counter, `DeckDropzone`, "Usa un esempio" as a `btn-text` at the top right of the card). On the right, a sticky "Cosa vede l'investitore" live `TeaserCard` preview, with no name (it teaches the privacy model). | Single column. The teaser preview moves below the form as an open `.details`. The dropzone becomes a "Scegli il PDF" button (drag hint hidden on touch). |
+| **Agent processing** | One centred card: the 4 steps tick from muted to done (✓ in gold-dark), short status line, "Salta" | Same, full width |
+| **Profile review** | Two-column grid of editable fields with `fonte` pills. Footer bar: "Indietro" / "Conferma il profilo" | One column, sticky bottom action bar (like the equity mobile bar; respects safe-area) |
+| **Results** (both sides) | `FilterChips` row + `ProposalCounter` on the right. A ranked list of `MatchCard`s (rank number, name or teaser, score block on the right, 2–4 reasons with check glyphs, actions "Proponi" / "Simula il doppio consenso"). `ExcludedList` below, then the "Come calcoliamo l'affinità" details. `DemoBadge` on the list header. | Cards full width with the score block above the reasons. Chips wrap. The counter moves under the chips. |
+| **Opt-in simulator** | Scenario picker (demo pair select) + counter. The `OptInBoard`: investor panel, connector, startup panel; the intro email appears below the connector, spanning both. A state timeline (`proposta → … → intro`) as small text steps. "Ricomincia la simulazione". | Panels stack (investor on top, a vertical connector, then the startup). Each panel has a sticky label "Vista investitore" / "Vista startup" so both sides stay visible at once (no tabs: seeing both is the point). |
+| **Legal notes** | `.prose` layout like the privacy page, with a highlighted `.notice` "Da verificare con un avvocato" listing | Same |
+
+## 10. Accessibility
+
+- One `h1` per page through `PageHero` (`#page-title`, so the Layout focus behaviour just works).
+- On every internal step change, focus moves to the step heading (`tabIndex=-1`, the quiz pattern) and a visually hidden `aria-live="polite"` region announces "Passo 2 di 4: conferma il profilo". Opt-in state changes are announced as well ("L'investitore ha detto sì. Ora tocca alla startup.").
+- All inputs have visible `<label>`s. Groups use `fieldset/legend`. Errors use `aria-describedby` plus `aria-invalid`, and the submit-time summary has `role="alert"`. The ticket min ≤ max check is shown inline.
+- The dropzone is a native file input (keyboard and screen reader for free); drag and drop is only an enhancement. Chips are native checkboxes styled like `.option` with `:has(:focus-visible)` rings.
+- The score is always in text ("82 su 100, molto affine"); bars are `aria-hidden`. The stepper uses `aria-current="step"`. Buttons are real `<button>`s, and disabled states come with an explanation in text.
+- AA contrast (gold-dark on light backgrounds), 44px touch targets, `prefers-reduced-motion` turns off the connector/intro animation and the processing pulse, and nothing overflows at 390px (checked by the screenshots script).
+
+## 11. Legal copy outline
+
+`LegalLimits` (landing and the end of each page) and `MatchLegalPage`. Careful, generic wording ("in genere", "da verificare"):
+
+1. **Cosa fa**: a directory and introduction service only. It shows profiles and makes an intro when both sides agree. It does not judge the merit of a startup or an investment.
+2. **Cosa non fa**: no advice on investments (no recommendation to invest or not). It does not receive, hold or transfer money or financial instruments. There are no public fundraising pages and no public offer: teasers are shown only to individual registered investors, never published.
+3. **Come guadagna**: fixed fees, no success fee, no percentage on the amount raised. No amounts are shown (prices are not defined).
+4. **L'agente** (AI Act, transparency): users are told the matches come from an automated system. In this prototype it's a deterministic simulation with no AI. Human oversight: the agent only proposes; the founder confirms the profile and both sides decide on the intro.
+5. **Dati personali** (GDPR): a real version would process founder and investor data. It would need a legal basis, an information notice, minimisation (the teaser has no names), retention periods and, in some cases, a DPIA. In this prototype nothing leaves the browser and the PDF is not read.
+6. **Da verificare con un avvocato** (explicit list): Regolamento (UE) 2020/1503 sui fornitori di servizi di crowdfunding; Consob rules and supervision; TUF art. 18 (investment services and activities reserved to authorised entities) and whether the introduction activity could fall within them; GDPR; AI Act.
+7. **Prima di una versione reale**: it needs a backend, investor identification, and a privacy and regulatory review. Link to ilTuoAvvocato through `LawyerCta campaign="match"`. Mention only the services already allowed (e.g. SAFE).
+
+`Disclaimer` ("Strumento indicativo: non sostituisce una consulenza legale.") appears on every new page, near the results or decisions and in the footer. "Dati di esempio" appears on every demo surface.
+
+## 12. Keeping existing pages unchanged
+
+- Every change to shared files is **additive**: new routes, new meta entries, a NAV item, one `ToolCampaign` member and one new Home band. No existing component props, `global.css` selectors, lib functions or copy change. Match styles live in `match.css` under the `mi-` prefix, so they can't cascade into other pages.
+- The NOINDEX flag works as before because `prerender.mjs` is untouched and new routes inherit the site-wide tag.
+- **Regression checks**:
+  - The 46 existing tests stay green.
+  - Build before and after, then `diff` each existing route's prerendered `<head>` and body fallback in `dist/{,equity,vesting,quiz,privacy}/index.html` and `404.html` (only asset hashes may differ).
+  - Build with `NOINDEX=true` and confirm `robots.txt` has no Sitemap line and every page has the noindex meta.
+  - Compare existing-page screenshots before and after (only the header/footer nav and the Home band may differ).
+  - Check the header at 900, 1024 and 1440px for nav fit.
+
+## 13. Open decisions for Vincenzo
+
+- **D1 Nav entry**: there's limited room in the desktop header between 900 and about 1060px (4 links plus the CTA). Proposal: add "Investitori" (short label) to `NAV`. If it doesn't fit at 900px, hide `brand-sub` only in that range. Alternative: footer link and Home band only, with no header change.
+- **D2 Route slug**: `/match-investitori/` (proposed) vs `/investitori/` or `/matchinvstar/`. The name is provisional, so a generic slug avoids renaming later.
+- **D3 What the startup sees at the second key**: proposed: the startup stays anonymous until both say yes, but when the startup is asked it sees the investor's name, type and thesis (the investor has already said yes). Alternative: both stay anonymous until the intro.
+- **D4 Monthly limit scope**: proposed: 5 proposals per startup per month. Alternatives: teasers received per investor per month, or both. The value stays "valore provvisorio".
+- **D5 Expiry**: should a pending request expire (e.g. after N days) so the investor sees "nessuna intro" instead of an indefinite wait? This isn't in the prototype; I'd show only a text note if you want it.
+- **D6 Score weights**: settore 30 · ticket 30 · fase 20 · area 20, and "lead" at 40% coverage. These are product choices; please confirm or adjust.
+- **D7 Geography granularity**: the startup picks one of 20 regions and the investor picks macro-areas or "tutta Italia". Is that fine, or do you want investors outside Italy or EU (excluded for now)?
+- **D8 UTM campaign**: add `utm_campaign=match` for lawyer CTAs from the section, or reuse `home`?
+- **D9 Privacy page**: it currently says "ripartizione quote, vesting e quiz". Add one sentence saying the deck in the prototype never leaves the browser? This touches an existing page's copy, so I won't do it by default.
+- **D10 Taxonomy**: is the list of 11 sectors and 3 stages OK? (Pre-seed / seed / serie A; is "serie A" relevant for this audience?)
+- **D11 Home placement**: a separate "prototipo" band below the 3 tools (proposed, so "Tre strumenti" stays true) vs a 4th tool card plus copy changes.
+
+### Decisioni (default scelto, da confermare con Vincenzo)
+
+| # | Default scelto, da confermare con Vincenzo |
+|---|---|
+| D1 | "Investitori" added to `NAV`, only if it fits at 900px (`brand-sub` hidden in that range only if necessary). Header checked at 900/1024/1440. |
+| D2 | Slug `/match-investitori/`. |
+| D3 | As proposed: the startup stays anonymous until both say yes; the startup sees the investor's name, type and thesis when asked. |
+| D4 | As proposed: 5 proposals **per startup per month** (`MONTHLY_PROPOSAL_LIMIT`, valore provvisorio). |
+| D5 | No expiry logic: text note only. |
+| D6 | Weights as proposed: settore 30 · ticket 30 · fase 20 · area 20; lead coverage 40%. |
+| D7 | As proposed: 20 regions (startup) / 4 macro-areas or "tutta Italia" (investor); Italy only. |
+| D8 | `utm_campaign=match`. |
+| D9 | Privacy page **not** changed. |
+| D10 | Taxonomy as proposed (11 sectors; pre-seed / seed / serie A). |
+| D11 | Separate home band below the 3 tools. |
+
+---
+
+**Build order (step 2, after approval)**: taxonomy + demo data → `matching.ts` + tests → `optin.ts`/`deck.ts` + tests → shared match components and `match.css` → pages (landing → startup → investor → opt-in → legal) → routes/meta/nav/home band → screenshots and visual QA at 1440 and 390 → regression diff → README.
