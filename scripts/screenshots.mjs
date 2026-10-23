@@ -108,6 +108,22 @@ async function waitForCompareFrames(page) {
   }
 }
 
+async function expectText(page, name, needles) {
+  const text = await page.locator('main').innerText();
+  for (const n of needles) if (!text.includes(n)) problems.push(`${name}: missing "${n}"`);
+}
+
+/** Sample deck → read on the device → agent checklist → "Cosa abbiamo trovato nel deck" / "What we found in your deck". */
+async function openDeckReview(page, base, lang) {
+  const it = lang === 'it';
+  await page.goto(`${base}${it ? 'match-investitori/startup/' : 'en/investor-match/startup/'}`);
+  await page.getByRole('button', { name: it ? 'Prova con un deck di esempio' : 'Try a sample deck' }).click();
+  await page.getByText(it ? /pagine lette sul tuo dispositivo/ : /pages read on your device/).waitFor();
+  await page.getByRole('button', { name: it ? /Fai leggere il deck/ : /Let the agent read the deck/ }).click();
+  await page.getByRole('button', { name: it ? 'Salta l’attesa' : 'Skip the wait' }).click();
+  await page.getByRole('heading', { name: it ? 'Cosa abbiamo trovato nel deck' : 'What we found in your deck' }).waitFor();
+}
+
 const STATES = {
   // Design variants: the interactions work on the real engine, and a startup's "no" is never revealed.
   'variant-v4-investor-swiped': async (page, base) => {
@@ -180,20 +196,48 @@ const STATES = {
     }
     await page.getByRole('heading', { name: /La tua checklist/ }).waitFor();
   },
-  'match-startup-results': async (page, base) => {
+  // Deck flow with the fictional sample deck: read locally by pdf.js, findings reviewed, then results.
+  'match-startup-deck-read': async (page, base) => {
     await page.goto(`${base}match-investitori/startup/`);
-    await page.getByRole('button', { name: 'Usa un esempio' }).click();
-    // Deck path: attach a placeholder PDF (only its name, type and size are used; it is never read).
-    await page.locator('input[type=file]').setInputFiles({
-      name: 'contoverde-deck-seed.pdf',
-      mimeType: 'application/pdf',
-      buffer: Buffer.from('%PDF-1.4\n%placeholder\n'),
-    });
-    await page.getByRole('button', { name: /Fai leggere il deck/ }).click();
-    await page.getByRole('button', { name: 'Salta l’attesa' }).click();
+    await page.getByRole('button', { name: 'Prova con un deck di esempio' }).click();
+    await page.getByText(/8 pagine lette sul tuo dispositivo/).waitFor();
+    await expectText(page, 'match-startup-deck-read', ['Il file non lascia il tuo browser: viene letto qui, sul tuo dispositivo.']);
+  },
+  'match-startup-deck-review': async (page, base) => {
+    await openDeckReview(page, base, 'it');
+    await expectText(page, 'match-startup-deck-review', [
+      'Il file non lascia il tuo browser: viene letto qui, sul tuo dispositivo.',
+      'Agritech',
+      'Dal deck, pagina 7',
+      'Bari (Puglia)',
+    ]);
+    const stepper = await page.locator('.mi-steps').innerText();
+    if (!stepper.includes('Lettura del deck')) problems.push('match-startup-deck-review: stepper lacks "Lettura del deck"');
+  },
+  'match-startup-results': async (page, base) => {
+    await openDeckReview(page, base, 'it');
+    // Nothing is applied silently: before any choice the tally says every finding is pending.
+    await expectText(page, 'match-startup-results (review)', ['0 da usare']);
+    await page.getByRole('button', { name: 'Usa tutti i suggerimenti' }).click();
+    await page.getByRole('button', { name: 'Applica le scelte e continua' }).click();
+    await page.getByRole('heading', { name: /Controlla il profilo/ }).waitFor();
     await page.getByRole('button', { name: 'Conferma il profilo' }).click();
     await page.getByRole('heading', { name: /I tuoi match/ }).waitFor();
+    await expectText(page, 'match-startup-results', ['L’agente ha usato il tuo deck per:', '(dal tuo deck, p. 7)', 'MRR 18.000']);
     await page.getByRole('button', { name: /Proponi il profilo/ }).first().click();
+  },
+  // A file that isn't a readable PDF: clear message and fallback to the form, no deck-reading copy afterwards.
+  'match-startup-deck-error': async (page, base) => {
+    await page.goto(`${base}match-investitori/startup/`);
+    await page.getByRole('button', { name: 'Usa un esempio' }).click();
+    await page.locator('input[type=file]').setInputFiles({
+      name: 'deck-rotto.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('%PDF-1.4\n%placeholder, not a real PDF\n'),
+    });
+    await page.getByText('Non riusciamo a leggere questo PDF').waitFor();
+    await expectText(page, 'match-startup-deck-error', ['Puoi continuare senza deck']);
+    if (!(await page.getByRole('button', { name: 'Prepara il profilo' }).isVisible())) problems.push('match-startup-deck-error: no fallback to the form-only flow');
   },
   // No deck uploaded: neither the stepper nor the agent checklist may say the deck is being read.
   'match-startup-agent-nodeck': async (page, base) => {
@@ -237,6 +281,23 @@ const STATES = {
     await page.getByRole('heading', { name: 'The agent is drafting the profile' }).waitFor();
     await expectNoDeckCopy(page, 'en-match-startup-agent-nodeck', 'Analysing your details', /reading the deck/i);
   },
+  'en-match-startup-deck-review': async (page, base) => {
+    await openDeckReview(page, base, 'en');
+    await expectText(page, 'en-match-startup-deck-review', [
+      'The file doesn’t leave your browser: it’s read here, on your device.',
+      'Healthtech',
+      'From the deck, page 7',
+      'Naples (Campania)',
+    ]);
+  },
+  'en-match-startup-deck-results': async (page, base) => {
+    await openDeckReview(page, base, 'en');
+    await page.getByRole('button', { name: 'Use all suggestions' }).click();
+    await page.getByRole('button', { name: 'Apply my choices and continue' }).click();
+    await page.getByRole('button', { name: 'Confirm the profile' }).click();
+    await page.getByRole('heading', { name: /Your matches/ }).waitFor();
+    await expectText(page, 'en-match-startup-deck-results', ['The agent used your deck for:', '(from your deck, p. 7)', 'ARR']);
+  },
   'en-match-optin-intro': async (page, base) => {
     await page.goto(`${base}en/investor-match/double-opt-in/`);
     await page.getByRole('button', { name: /Send the proposal/ }).click();
@@ -264,8 +325,10 @@ try {
     page.on('console', (msg) => msg.type() === 'error' && problems.push(`[${vpName}] console: ${msg.text()}`));
     page.on('pageerror', (err) => problems.push(`[${vpName}] pageerror: ${err.message}`));
     page.on('request', (req) => {
-      if (!req.url().startsWith(new URL(base).origin) && !req.url().startsWith('data:'))
+      if (!req.url().startsWith(new URL(base).origin) && !req.url().startsWith('data:') && !req.url().startsWith('blob:'))
         problems.push(`[${vpName}] external request: ${req.url()}`);
+      // Nothing is ever sent: only GETs of same-origin assets (pages, scripts, the pdf.js worker, the sample deck).
+      if (req.method() !== 'GET') problems.push(`[${vpName}] ${req.method()} request: ${req.url()}`);
     });
 
     const shoot = async (name) => {
@@ -403,6 +466,6 @@ if (problems.length) {
   process.exitCode = 1;
 } else {
   console.log(
-    `\n${files.length} screenshots, no console errors, no external requests, no horizontal overflow, no cookies, correct <html lang>, language switcher OK.`,
+    `\n${files.length} screenshots, no console errors, no external or non-GET requests, no horizontal overflow, no cookies, correct <html lang>, language switcher OK.`,
   );
 }

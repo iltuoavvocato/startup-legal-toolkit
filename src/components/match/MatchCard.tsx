@@ -9,10 +9,12 @@ interface Props {
   meta: ReactNode;
   evaluation: Evaluation;
   children?: ReactNode;
+  /** Shown under the reasons (e.g. deck signals the agent mentions). */
+  footnote?: ReactNode;
   actions?: ReactNode;
 }
 
-export function MatchCard({ rank, title, meta, evaluation, children, actions }: Props) {
+export function MatchCard({ rank, title, meta, evaluation, children, footnote, actions }: Props) {
   const { t } = useI18n();
   return (
     <li className="mi-match">
@@ -35,6 +37,7 @@ export function MatchCard({ rank, title, meta, evaluation, children, actions }: 
           <li key={r}>{r}</li>
         ))}
       </ul>
+      {footnote}
       {actions && <div className="mi-match-actions">{actions}</div>}
     </li>
   );

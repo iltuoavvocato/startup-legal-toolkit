@@ -7,10 +7,12 @@ const STEP_MS = 450;
 interface Props {
   hasDeck: boolean;
   onDone: () => void;
+  /** What each step found (shown once the step is done), e.g. "8 pagine". */
+  details?: readonly (string | undefined)[];
 }
 
-/** Deterministic fake processing: the steps tick in order, then onDone fires. */
-export function AgentProcessing({ hasDeck, onDone }: Props) {
+/** The agent's checklist: the steps tick in order, then onDone fires. With a deck, each step shows what was read. */
+export function AgentProcessing({ hasDeck, onDone, details }: Props) {
   const { locale, t } = useI18n();
   const a = t.match.ui.agent;
   const steps = agentSteps(locale, hasDeck);
@@ -38,7 +40,10 @@ export function AgentProcessing({ hasDeck, onDone }: Props) {
             <span className="mi-agent-dot" aria-hidden="true">
               {i < done ? '✓' : ''}
             </span>
-            {s}
+            <span>
+              {s}
+              {i < done && details?.[i] && <span className="mi-agent-detail">{details[i]}</span>}
+            </span>
             <span className="sr-only">{i < done ? a.done : i === done ? a.active : ''}</span>
           </li>
         ))}

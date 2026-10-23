@@ -5,6 +5,8 @@ import { Disclaimer } from '../components/Disclaimer';
 import { PageHero } from '../components/PageHero';
 import { AgentProcessing } from '../components/match/AgentProcessing';
 import { DeckDropzone } from '../components/match/DeckDropzone';
+import { DeckFindingsReview } from '../components/match/DeckFindingsReview';
+import { useDeckReader } from '../components/match/useDeckReader';
 import { DemoBadge } from '../components/match/DemoBadge';
 import { EuroField } from '../components/match/EuroField';
 import { ExcludedList } from '../components/match/ExcludedList';
@@ -21,7 +23,27 @@ import { demoInvestors, EXAMPLE_STARTUP_FORM } from '../data/matchDemo';
 import { readQuery, useSyncQuery } from '../hooks/useQueryState';
 import { useI18n } from '../i18n/context';
 import { Rich } from '../i18n/Rich';
-import { fonteLabels, mockExtract, startupFlowSteps, type DeckMeta, type Extraction, type Fonte, type StartupForm } from '../lib/deck';
+import {
+  draftExtraction,
+  fonteLabels,
+  startupFlowSteps,
+  type AcceptedDeck,
+  type DeckMeta,
+  type Extraction,
+  type Fonte,
+  type StartupForm,
+} from '../lib/deck';
+import { countFindings } from '../lib/deckExtract';
+import {
+  annotateReasons,
+  applyDecisions,
+  deckSignals,
+  deckSources,
+  findingText,
+  sourcesSummary,
+  type Decisions,
+  type DeckSources,
+} from '../lib/deckSignals';
 import { matchInvestors } from '../lib/matching';
 import { ownStartup, startupFromQuery, startupToQuery, type StartupCore } from '../lib/matchQuery';
 import {
@@ -38,8 +60,9 @@ import {
 } from '../lib/matchTaxonomy';
 import { canPropose, consume, counterFor, monthKey, MONTHLY_PROPOSAL_LIMIT, teaserOf } from '../lib/optin';
 
-type Step = 'dati' | 'analisi' | 'profilo' | 'match';
-const STEPS: Step[] = ['dati', 'analisi', 'profilo', 'match'];
+type Step = 'dati' | 'analisi' | 'trovato' | 'profilo' | 'match';
+const STEPS_DECK: Step[] = ['dati', 'analisi', 'trovato', 'profilo', 'match'];
+const STEPS_NO_DECK: Step[] = ['dati', 'analisi', 'profilo', 'match'];
 const DESCR_MAX = 600;
 
 interface Draft {
@@ -51,6 +74,13 @@ interface Draft {
   round: number | null;
   oneLiner: string;
   fonti: Partial<Record<keyof Extraction, Fonte>>;
+  /** Deck page for fields taken from the deck. */
+  pagine: Partial<Record<keyof Extraction, number>>;
+}
+
+interface DeckInfo {
+  sources: DeckSources;
+  signals: string[];
 }
 
 const EMPTY_FORM: StartupForm = { settore: '', fase: '', regione: '', round: null, descrizione: '' };
@@ -70,6 +100,9 @@ function draftFrom(x: Extraction, names: { nome: string; founder: string }): Dra
       round: x.round.fonte,
       oneLiner: x.oneLiner.fonte,
     },
+    pagine: Object.fromEntries(
+      (['settore', 'fase', 'regione', 'round', 'oneLiner'] as const).flatMap((k) => (x[k].page ? [[k, x[k].page]] : [])),
+    ),
   };
 }
 
@@ -88,6 +121,10 @@ export function MatchStartupPage() {
   const [step, setStep] = useState<Step>(initial ? 'match' : 'dati');
   const [form, setForm] = useState<StartupForm>(EMPTY_FORM);
   const [deck, setDeck] = useState<DeckMeta | null>(null);
+  const reader = useDeckReader();
+  const [decisions, setDecisions] = useState<Decisions>({});
+  const [accepted, setAccepted] = useState<AcceptedDeck | null>(null);
+  const [deckInfo, setDeckInfo] = useState<DeckInfo>({ sources: {}, signals: [] });
   const [names, setNames] = useState({ nome: '', founder: '' });
   const [draft, setDraft] = useState<Draft | null>(null);
   const [profile, setProfile] = useState<StartupProfile | null>(() =>
@@ -108,13 +145,31 @@ export function MatchStartupPage() {
     headingRef.current?.focus();
   }, [step]);
 
-  const stepLabels = startupFlowSteps(locale, Boolean(deck));
+  const read = reader.state;
+  // "With a deck" means a deck that was actually read; a failed read falls back to the form-only flow.
+  const hasDeck = read.status === 'ready';
+  const busyReading = read.status === 'loading' || read.status === 'reading';
+  const STEPS = hasDeck ? STEPS_DECK : STEPS_NO_DECK;
+  const stepLabels = startupFlowSteps(locale, hasDeck);
 
   const go = (next: Step) => {
     moved.current = true;
     setStep(next);
     const n = STEPS.indexOf(next);
     setMessage(u.stepAnnounce(n + 1, STEPS.length, stepLabels[n]!));
+  };
+
+  const pickDeck = (file: File) => {
+    setDeck({ name: file.name, type: file.type, size: file.size });
+    setDecisions({});
+    setAccepted(null);
+    void reader.read(file);
+  };
+  const removeDeck = () => {
+    setDeck(null);
+    setDecisions({});
+    setAccepted(null);
+    reader.reset();
   };
 
   const useExample = () => {
@@ -132,6 +187,10 @@ export function MatchStartupPage() {
 
   const submitData = (e: FormEvent) => {
     e.preventDefault();
+    if (busyReading) {
+      setMessage(u.waitReading);
+      return;
+    }
     if (form.round !== null && form.round <= 0) {
       setErrors({ round: u.roundError });
       return;
@@ -141,7 +200,20 @@ export function MatchStartupPage() {
   };
 
   const finishAnalysis = () => {
-    setDraft(draftFrom(mockExtract(deck, form, locale), names));
+    if (hasDeck) {
+      go('trovato');
+      return;
+    }
+    setAccepted(null);
+    setDraft(draftFrom(draftExtraction(form, null, locale), names));
+    go('profilo');
+  };
+
+  const applyFindings = () => {
+    if (read.status !== 'ready') return;
+    const a = applyDecisions(read.findings, decisions, locale);
+    setAccepted(a);
+    setDraft(draftFrom(draftExtraction(form, a, locale), names));
     go('profilo');
   };
 
@@ -155,6 +227,8 @@ export function MatchStartupPage() {
     }
     setErrors({});
     setProfile(ownStartup(core, { nome: draft.nome, founder: draft.founder, oneLiner: draft.oneLiner }, locale));
+    const deckUsed = hasDeck ? accepted : null;
+    setDeckInfo({ sources: deckSources(core, deckUsed), signals: deckSignals(deckUsed, locale) });
     setProposed([]);
     go('match');
   };
@@ -170,6 +244,7 @@ export function MatchStartupPage() {
         round: profile.round,
         oneLiner: profile.oneLiner === own.noDescription ? '' : profile.oneLiner,
         fonti: {},
+        pagine: {},
       });
     }
     go('profilo');
@@ -185,6 +260,28 @@ export function MatchStartupPage() {
     setProposed((p) => [...p, investorId]);
     setMessage(u.proposalSent(investorName, MONTHLY_PROPOSAL_LIMIT - r.counter.used));
   };
+
+  const sourceHint = (k: keyof Extraction): string | undefined => {
+    const fonte = draft?.fonti[k];
+    if (!fonte) return undefined;
+    const page = draft?.pagine[k];
+    return fonte === 'deck' && page ? u.sourceDeck(page) : u.source(fonti[fonte]);
+  };
+
+  // What the agent's checklist reports for a read deck: pages, then what each step found.
+  const agentDetails = (() => {
+    if (read.status !== 'ready') return undefined;
+    const x = read.findings;
+    const a = t.match.ui.agent;
+    const found = (keys: ('settore' | 'fase' | 'regione' | 'round' | 'team')[]) =>
+      keys.flatMap((k) => {
+        const v = x[k];
+        return v ? [findingText(k, v, locale)] : [];
+      });
+    const step2 = found(['settore', 'fase', 'regione']);
+    const step3 = [...found(['round', 'team']), ...(x.traction.length ? [a.tractionFound(x.traction.length)] : [])];
+    return [a.pagesRead(read.pages), step2.join(' · ') || '—', step3.join(' · ') || '—', a.found(countFindings(x))];
+  })();
 
   const stepIndex = STEPS.indexOf(step);
   const previewTeaser = teaserOf(
@@ -285,12 +382,12 @@ export function MatchStartupPage() {
                       {u.descrHint}
                     </p>
                   </div>
-                  <DeckDropzone id={`${id}-deck`} file={deck} onChange={setDeck} />
+                  <DeckDropzone id={`${id}-deck`} file={deck} read={read} onPick={pickDeck} onRemove={removeDeck} />
                 </div>
                 <div className="mi-form-actions">
-                  <p className="field-hint">{u.nothingLeaves}</p>
-                  <button type="submit" className="btn btn-navy">
-                    {deck ? u.submitDeck : u.submitNoDeck} <span aria-hidden="true">→</span>
+                  <p className="field-hint">{busyReading ? u.waitReading : u.nothingLeaves}</p>
+                  <button type="submit" className="btn btn-navy" aria-disabled={busyReading || undefined}>
+                    {hasDeck ? u.submitDeck : u.submitNoDeck} <span aria-hidden="true">→</span>
                   </button>
                 </div>
               </form>
@@ -309,16 +406,28 @@ export function MatchStartupPage() {
           {step === 'analisi' && (
             <div className="card mi-flow-narrow">
               <h2 className="card-title mi-step-title" tabIndex={-1} ref={headingRef}>
-                {deck ? u.readingDeck : u.preparing}
+                {hasDeck ? u.readingDeck : u.preparing}
               </h2>
-              <AgentProcessing hasDeck={Boolean(deck)} onDone={finishAnalysis} />
+              <AgentProcessing hasDeck={hasDeck} onDone={finishAnalysis} details={agentDetails} />
             </div>
+          )}
+
+          {step === 'trovato' && read.status === 'ready' && (
+            <DeckFindingsReview
+              findings={read.findings}
+              form={form}
+              decisions={decisions}
+              onDecisions={setDecisions}
+              onBack={() => go('dati')}
+              onContinue={applyFindings}
+              headingRef={headingRef}
+            />
           )}
 
           {step === 'profilo' && draft && (
             <form className="card mi-flow-narrow" onSubmit={confirmProfile} noValidate>
               <h2 className="card-title mi-step-title" tabIndex={-1} ref={headingRef}>
-                {deck ? u.reviewTitleDeck : u.reviewTitle}
+                {hasDeck ? u.reviewTitleDeck : u.reviewTitle}
               </h2>
               <p className="notice mi-review-note">{u.reviewNote}</p>
               {errors.review && (
@@ -360,7 +469,7 @@ export function MatchStartupPage() {
                   value={draft.settore}
                   options={settoreOptions}
                   onChange={(v) => setDraft({ ...draft, settore: v })}
-                  hint={draft.fonti.settore ? u.source(fonti[draft.fonti.settore]) : undefined}
+                  hint={sourceHint('settore')}
                 />
                 <SelectField
                   id={`${id}-r-regione`}
@@ -368,7 +477,7 @@ export function MatchStartupPage() {
                   value={draft.regione}
                   options={regioneOptions}
                   onChange={(v) => setDraft({ ...draft, regione: v })}
-                  hint={draft.fonti.regione ? u.source(fonti[draft.fonti.regione]) : undefined}
+                  hint={sourceHint('regione')}
                 />
               </div>
               <SegmentedField
@@ -378,13 +487,13 @@ export function MatchStartupPage() {
                 value={draft.fase}
                 onChange={(v) => setDraft({ ...draft, fase: v })}
               />
-              {draft.fonti.fase && <p className="field-hint mi-legend-hint">{u.source(fonti[draft.fonti.fase])}</p>}
+              {draft.fonti.fase && <p className="field-hint mi-legend-hint">{sourceHint('fase')}</p>}
               <EuroField
                 id={`${id}-r-round`}
                 label={u.round}
                 value={draft.round}
                 onChange={(v) => setDraft({ ...draft, round: v })}
-                hint={draft.fonti.round ? u.source(fonti[draft.fonti.round]) : undefined}
+                hint={sourceHint('round')}
               />
               <div className="field mi-field">
                 <div className="mi-counter-line">
@@ -403,12 +512,28 @@ export function MatchStartupPage() {
                 />
                 <p className="field-hint" id={`${id}-r-line-hint`}>
                   {u.oneLinerHint}
-                  {draft.fonti.oneLiner && u.oneLinerSource(fonti[draft.fonti.oneLiner])}
+                  {draft.fonti.oneLiner && (draft.fonti.oneLiner === 'deck' && draft.pagine.oneLiner ? ` ${u.sourceDeck(draft.pagine.oneLiner)}.` : u.oneLinerSource(fonti[draft.fonti.oneLiner]))}
                 </p>
               </div>
+              {hasDeck && accepted && (accepted.team || accepted.traction.length > 0) && (
+                <div className="mi-extras">
+                  <p className="mi-extras-title">
+                    {u.extrasTitle} <span className="mi-muted">{u.extrasNote}</span>
+                  </p>
+                  <ul>
+                    {[...(accepted.team ? [{ value: deckSignals({ team: accepted.team, traction: [] }, locale)[0]!, page: accepted.team.page }] : []), ...accepted.traction].map(
+                      (x) => (
+                        <li key={x.value}>
+                          {x.value} <span className="mi-muted">({t.match.ui.findings.page(x.page)})</span>
+                        </li>
+                      ),
+                    )}
+                  </ul>
+                </div>
+              )}
               <div className="mi-form-actions">
-                <button type="button" className="btn btn-text" onClick={() => go('dati')}>
-                  <span aria-hidden="true">←</span> {u.back}
+                <button type="button" className="btn btn-text" onClick={() => go(hasDeck ? 'trovato' : 'dati')}>
+                  <span aria-hidden="true">←</span> {hasDeck ? t.match.ui.findings.title : u.back}
                 </button>
                 <button type="submit" className="btn btn-navy">
                   {u.confirm} <span aria-hidden="true">→</span>
@@ -425,6 +550,7 @@ export function MatchStartupPage() {
               onPropose={propose}
               onEdit={editProfile}
               headingRef={headingRef}
+              deckInfo={deckInfo}
             />
           )}
 
@@ -444,9 +570,10 @@ interface ResultsProps {
   onPropose: (id: string, name: string) => void;
   onEdit: () => void;
   headingRef: RefObject<HTMLHeadingElement>;
+  deckInfo: DeckInfo;
 }
 
-function Results({ profile, counter, proposed, onPropose, onEdit, headingRef }: ResultsProps) {
+function Results({ profile, counter, proposed, onPropose, onEdit, headingRef, deckInfo }: ResultsProps) {
   const { locale, t, f, path } = useI18n();
   const u = t.match.ui.startup;
   const L = labelsFor(locale);
@@ -496,6 +623,10 @@ function Results({ profile, counter, proposed, onPropose, onEdit, headingRef }: 
         <DemoBadge />
       </div>
 
+      {Object.keys(deckInfo.sources).length > 0 && (
+        <p className="notice mi-deck-used">{u.deckUsed(sourcesSummary(deckInfo.sources, locale))}</p>
+      )}
+
       {matches.length === 0 ? (
         <div className="card mi-empty">
           <p>{u.empty}</p>
@@ -510,7 +641,10 @@ function Results({ profile, counter, proposed, onPropose, onEdit, headingRef }: 
                 rank={i + 1}
                 title={item.nome}
                 meta={`${L.tipo[item.tipo]}${item.sede ? u.based(L.regione[item.sede]) : ''}`}
-                evaluation={evaluation}
+                evaluation={{ ...evaluation, reasons: annotateReasons(evaluation.reasons, deckInfo.sources, locale) }}
+                footnote={
+                  deckInfo.signals.length > 0 ? <p className="mi-deck-signals">{u.deckSignals(deckInfo.signals.join(' · '))}</p> : undefined
+                }
                 actions={
                   sent ? (
                     <>
