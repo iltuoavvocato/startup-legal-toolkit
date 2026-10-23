@@ -29,6 +29,9 @@ const PAGES = [
   ['match-investor', 'match-investitori/investitore/'],
   ['match-optin', 'match-investitori/doppio-consenso/'],
   ['match-legal', 'match-investitori/note-legali/'],
+  ['en-home', 'en/'],
+  ['en-equity', 'en/equity/'],
+  ['en-match', 'en/investor-match/'],
 ];
 
 async function pressTimes(locator, key, n) {
@@ -101,6 +104,31 @@ const STATES = {
     await page.getByRole('button', { name: 'Trova startup in linea' }).click();
     await page.getByRole('heading', { name: /I tuoi match/ }).waitFor();
   },
+  'en-quiz-result': async (page, base) => {
+    await page.goto(`${base}en/quiz/`);
+    const picks = ['Three or more', 'No, not yet', 'Only verbally', 'Yes', 'Yes', 'Yes', 'No'];
+    for (const label of picks) {
+      await page.getByRole('radio', { name: label, exact: true }).check();
+      await page.locator('.quiz-nav button[type=submit]').click();
+    }
+    await page.getByRole('heading', { name: /Your checklist/ }).waitFor();
+  },
+  'en-match-startup-results': async (page, base) => {
+    await page.goto(`${base}en/investor-match/startup/`);
+    await page.getByRole('button', { name: 'Use an example' }).click();
+    await page.getByRole('button', { name: /Let the agent read/ }).click();
+    await page.getByRole('button', { name: 'Skip the wait' }).click();
+    await page.getByRole('button', { name: 'Confirm the profile' }).click();
+    await page.getByRole('heading', { name: /Your matches/ }).waitFor();
+    await page.getByRole('button', { name: /Propose your profile/ }).first().click();
+  },
+  'en-match-optin-intro': async (page, base) => {
+    await page.goto(`${base}en/investor-match/double-opt-in/`);
+    await page.getByRole('button', { name: /Send the proposal/ }).click();
+    await page.getByRole('button', { name: 'Yes, I’m interested' }).click();
+    await page.getByRole('button', { name: 'Accept the intro' }).click();
+    await page.getByRole('article', { name: /Preview of the introduction email/ }).waitFor();
+  },
   'match-optin-intro': async (page, base) => {
     await page.goto(`${base}match-investitori/doppio-consenso/`);
     await page.getByRole('button', { name: /Invia la proposta/ }).click();
@@ -135,6 +163,14 @@ try {
       await page.waitForTimeout(150);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       if (overflow > 0) problems.push(`[${vpName}] ${name}: horizontal overflow of ${overflow}px`);
+      // Privacy: no cookies ever; localStorage may only hold the language preference (written by the switcher).
+      const storage = await page.evaluate(() => ({ cookie: document.cookie, keys: Object.keys(window.localStorage) }));
+      if (storage.cookie) problems.push(`[${vpName}] ${name}: cookie set (${storage.cookie})`);
+      const extra = storage.keys.filter((k) => k !== 'lang');
+      if (extra.length) problems.push(`[${vpName}] ${name}: unexpected localStorage keys ${extra.join(', ')}`);
+      const lang = await page.evaluate(() => document.documentElement.lang);
+      const expected = name.startsWith('en-') ? 'en' : 'it';
+      if (lang !== expected) problems.push(`[${vpName}] ${name}: <html lang="${lang}">, expected "${expected}"`);
       const file = join(OUT, `${name}-${vpName}.png`);
       // Fixed elements would be painted mid-page in a full-page capture: hide them here (captured separately).
       await page.screenshot({ path: file, fullPage: true, style: '.mobile-summary { display: none !important; }' });
@@ -166,6 +202,28 @@ try {
     }
     await context.close();
   }
+
+  // Language switcher: equivalent page, stored preference, and the redirect from "/" only.
+  {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await context.newPage();
+    await page.goto(`${base}vesting/`);
+    if ((await page.evaluate(() => Object.keys(window.localStorage).length)) !== 0) problems.push('switcher: storage not empty before use');
+    await page.getByRole('group', { name: 'Lingua' }).getByRole('link', { name: 'English' }).click();
+    await page.waitForURL(/\/en\/vesting\/$/);
+    const stored = await page.evaluate(() => window.localStorage.getItem('lang'));
+    if (stored !== 'en') problems.push(`switcher: expected lang=en in localStorage, got ${stored}`);
+    await page.goto(`${base}quiz/`);
+    if (!page.url().endsWith('/quiz/')) problems.push('switcher: an explicit Italian URL was redirected');
+    await page.goto(base);
+    await page.waitForURL(/\/en\/$/);
+    await page.getByRole('group', { name: 'Language' }).getByRole('link', { name: 'Italiano' }).click();
+    await page.waitForURL((u) => u.pathname === new URL(base).pathname);
+    await page.goto(base);
+    await page.waitForTimeout(200);
+    if (new URL(page.url()).pathname !== new URL(base).pathname) problems.push('switcher: "/" redirected after choosing Italian');
+    await context.close();
+  }
 } finally {
   await browser.close();
   stop();
@@ -176,5 +234,7 @@ if (problems.length) {
   console.log('\nIssues found:\n' + problems.map((p) => `  - ${p}`).join('\n'));
   process.exitCode = 1;
 } else {
-  console.log(`\n${files.length} screenshots, no console errors, no external requests, no horizontal overflow.`);
+  console.log(
+    `\n${files.length} screenshots, no console errors, no external requests, no horizontal overflow, no cookies, correct <html lang>, language switcher OK.`,
+  );
 }

@@ -46,7 +46,9 @@ npm run og           # re-render public/og-image.png from scripts/og-template.ht
 
 `npm run screenshots` uses Chrome at its default install location (`channel: 'chrome'`). Set
 `CHROME_PATH=/path/to/chromium` to use a different binary. The script also fails if it detects console errors,
-external requests or horizontal overflow.
+external requests, horizontal overflow, any cookie, a `localStorage` key other than `lang`, or a wrong `<html lang>`.
+It captures English pages too (files prefixed `en-`). At the end it clicks the language switcher and checks the
+equivalent page, the stored preference and the redirect, which happens only from `/`.
 
 Fonts are generated at dev time by `scripts/build-fonts.sh`, which needs Python with `fonttools` and `brotli`. The WOFF2
 files in `src/assets/fonts/` are committed, so a normal build needs no Python.
