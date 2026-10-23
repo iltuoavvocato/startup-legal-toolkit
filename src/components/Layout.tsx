@@ -9,6 +9,7 @@ const NAV = [
   { to: '/equity/', label: 'Ripartizione quote' },
   { to: '/vesting/', label: 'Vesting' },
   { to: '/quiz/', label: 'Quali documenti?' },
+  { to: '/match-investitori/', label: 'Investitori' },
 ];
 
 function routeKey(pathname: string): string {

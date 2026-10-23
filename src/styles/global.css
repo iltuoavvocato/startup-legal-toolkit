@@ -503,6 +503,13 @@ main:focus {
   }
 }
 
+/* Narrow desktop: make room for the fourth nav item without wrapping. */
+@media (min-width: 900px) and (max-width: 959px) {
+  .brand-sub {
+    display: none;
+  }
+}
+
 /* ---------- Hero ---------- */
 
 .hero,

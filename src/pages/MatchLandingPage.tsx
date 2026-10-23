@@ -5,7 +5,6 @@ import { PageHero } from '../components/PageHero';
 import { LegalLimits } from '../components/match/LegalLimits';
 import { PrototypeBanner } from '../components/match/PrototypeBanner';
 import { MONTHLY_PROPOSAL_LIMIT } from '../lib/optin';
-import '../styles/match.css';
 
 const STEPS = [
   {

@@ -116,6 +116,24 @@ export function HomePage() {
         </div>
       </section>
 
+      <section className="section section-cream mi-section-tight" aria-labelledby="match-band-title">
+        <div className="container">
+          <div className="mi-home-band">
+            <div>
+              <span className="mi-banner-tag">Prototipo dimostrativo</span>
+              <h2 id="match-band-title">Match con investitori, con doppio consenso</h2>
+              <p>
+                MatchInvStar (nome provvisorio): un agente propone startup e investitori in linea, e l’intro arriva solo se
+                dite sì entrambi. Da provare con dati di esempio.
+              </p>
+            </div>
+            <Link to="/match-investitori/" className="btn btn-gold">
+              Scopri come funziona <span aria-hidden="true" className="btn-arrow">→</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="section section-white" aria-labelledby="why-title">
         <div className="container">
           <div className="section-head">

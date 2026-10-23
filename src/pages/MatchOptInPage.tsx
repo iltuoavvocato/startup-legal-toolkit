@@ -35,7 +35,6 @@ import {
   type OptInState,
   type ProposalCounter as Counter,
 } from '../lib/optin';
-import '../styles/match.css';
 
 interface NavState {
   startup?: { nome?: string; founder?: string; oneLiner?: string };

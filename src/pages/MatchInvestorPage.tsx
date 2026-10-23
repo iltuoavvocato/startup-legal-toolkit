@@ -34,7 +34,6 @@ import {
   SETTORI,
 } from '../lib/matchTaxonomy';
 import { teaserOf } from '../lib/optin';
-import '../styles/match.css';
 
 const STEP_LABELS = ['La tua tesi', 'I tuoi match', 'Doppio consenso'];
 const ITALIA = 'italia';

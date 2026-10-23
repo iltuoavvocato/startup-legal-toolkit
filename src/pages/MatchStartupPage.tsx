@@ -38,7 +38,6 @@ import {
   type StartupProfile,
 } from '../lib/matchTaxonomy';
 import { canPropose, consume, counterFor, monthKey, MONTHLY_PROPOSAL_LIMIT, teaserOf } from '../lib/optin';
-import '../styles/match.css';
 
 type Step = 'dati' | 'analisi' | 'profilo' | 'match';
 const STEPS: Step[] = ['dati', 'analisi', 'profilo', 'match'];

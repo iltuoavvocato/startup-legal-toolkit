@@ -3,7 +3,6 @@ import { CtaPanel } from '../components/CtaPanel';
 import { Disclaimer } from '../components/Disclaimer';
 import { PageHero } from '../components/PageHero';
 import { PrototypeBanner } from '../components/match/PrototypeBanner';
-import '../styles/match.css';
 
 export function MatchLegalPage() {
   return (
