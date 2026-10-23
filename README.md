@@ -10,11 +10,12 @@ them to a lawyer at [iltuoavvocato.com](https://iltuoavvocato.com):
 | `/vesting/`  | **Simulatore vesting**: stake, duration, cliff, monthly/quarterly/annual frequency, step chart with a draggable leaver marker, good/bad leaver explanation |
 | `/quiz/`     | **Quali documenti mi servono?**: 7 questions, then a personalized checklist from the 5 documents with priority badges |
 | `/privacy/`  | Privacy notes (no cookies, no tracking, no data sent anywhere) |
+| `/match-investitori/…` | **Match investitori** (prototype, see below): landing, `startup/`, `investitore/`, `doppio-consenso/`, `note-legali/` |
 | anything else | Styled 404 |
 
 Every tool page shows the disclaimer *"Strumento indicativo: non sostituisce una consulenza legale."* (next to
 the result and in the footer). Every "Parla con un avvocato" CTA links to
-`https://iltuoavvocato.com/?utm_source=toolkit&utm_medium=referral&utm_campaign=<home|equity|vesting|quiz>`.
+`https://iltuoavvocato.com/?utm_source=toolkit&utm_medium=referral&utm_campaign=<home|equity|vesting|quiz|match>`.
 
 ## Stack
 
@@ -101,6 +102,32 @@ In the Aruba DNS panel for `iltuoavvocato.com`, add a **CNAME** record for the s
 
 If you use an apex domain instead of a subdomain, follow each provider's A/ALIAS instructions.
 
+## Match investitori (prototype)
+
+A **front-end-only prototype** of agentic startup–investor matching with **double opt-in**. Working name
+**MatchInvStar** (nome provvisorio). Every page shows a "Prototipo dimostrativo" banner and the disclaimer. All
+investors and startups are fictional and labelled "Dati di esempio" (`src/data/matchDemo.ts`; emails use the reserved
+`.example` domain). The full plan and the default decisions are in `docs/briefs/investor-matching.md`.
+
+- **Startup flow** (`/match-investitori/startup/`): settore, fase, regione, round, descrizione and an optional PDF deck
+  (drag and drop or file picker). The deck is **never read or uploaded**: only its name, type and size are used. A
+  deterministic "l'agente ha letto il deck" step (`src/lib/deck.ts`) drafts the profile from the form and the file name.
+  The founder confirms or edits it, then sees ranked investors with score, reasons and exclusions, and can make up to
+  `MONTHLY_PROPOSAL_LIMIT = 5` proposals a month (placeholder, "valore provvisorio").
+- **Investor flow** (`/match-investitori/investitore/`): settori, fasi, ticket min/max and aree, then anonymous teasers of
+  matching startups.
+- **Matching** (`src/lib/matching.ts`): hard filters (fase, settore, area, ticket minimo ≤ round). Then score =
+  settore (30) + ticket coverage (30, full from 40% of the round) + fase (20) + area (20), rounded to an integer.
+  Ordering is deterministic: score, then ticket part, then sector part, then name, then id. Italian reasons and why-not strings.
+- **Double opt-in** (`src/lib/optin.ts`): `proposta → attesa-startup → intro`, or a closed state on either no.
+  `viewFor(state, side)` guarantees that a "no" looks exactly like no answer to the other side (tested).
+- **URL state**: only enumerated values and amounts go in the query string (never names, descriptions or file names).
+  Step state and the monthly counter live in memory. There is no storage and there are no network calls.
+
+**A real double opt-in with real investor data requires a backend** (accounts, investor identification, sending
+proposals and emails) **and a privacy and regulatory review** (Regolamento (UE) 2020/1503, Consob, TUF art. 18, GDPR,
+AI Act). Neither is built here; see `/match-investitori/note-legali/`.
+
 ## Decisions
 
 - **Quiz**: the optional 8th question (third-party code, content or data) was dropped because it doesn't map cleanly to one of the five allowed services. There are 7 questions.
@@ -110,6 +137,10 @@ If you use an apex domain instead of a subdomain, follow each provider's A/ALIAS
 - **Percent format**: Italian style without a space (`62,5%`), via `Intl.NumberFormat('it-IT')`.
 - **Inter** is pinned to optical size 14 and weight 400–700 to keep the font small (46 KB). Playfair keeps its full weight axis.
 - On mobile, a compact fixed bar on the equity page shows the live split and links to the result card. It hides once the card is in view.
+- **Match investitori**: the default decisions (D1–D11) are recorded in `docs/briefs/investor-matching.md` and still need
+  Vincenzo's confirmation. The header gets an "Investitori" item. To keep the nav on one line, the "Startup Legal Toolkit"
+  subtitle is hidden between 900 and 959px only. Match styles live in `src/styles/match.css` (all classes `mi-`),
+  loaded after `global.css`. The privacy page is unchanged.
 
 ## TODO
 
@@ -117,4 +148,7 @@ If you use an apex domain instead of a subdomain, follow each provider's A/ALIAS
 - [ ] Add operator details to the privacy page if needed (legal entity name, address, P.IVA). These were left out on purpose and should not be invented.
 - [ ] Have a lawyer at ilTuoAvvocato review the legal copy (quiz explanations, good/bad leaver text).
 - [ ] Optionally link the CTAs to specific service pages on iltuoavvocato.com instead of the home page.
+- [ ] Match investitori: confirm the default decisions with Vincenzo (`docs/briefs/investor-matching.md`, "Decisioni").
+- [ ] Match investitori: have a lawyer review the legal notes and the "Da verificare con un avvocato" list before any real version.
+- [ ] Match investitori: a real version needs a backend and a privacy/regulatory review; the product name, the score weights, the monthly limit and fees are provisional.
 - [ ] Optionally add a real SSR/hydration step if richer pre-rendered content is wanted for SEO.

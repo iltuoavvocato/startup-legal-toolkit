@@ -982,6 +982,12 @@
   background: #fffdf8;
 }
 
+@media (min-width: 760px) {
+  .mi-match .mi-facts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .mi-reasons {
   list-style: none;
   margin: 1rem 0 0;

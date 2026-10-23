@@ -316,3 +316,20 @@ Copy and typography restraint: no extra eyebrows beyond the house `PageHero` one
 ---
 
 **Build order (step 2, after approval)**: taxonomy + demo data → `matching.ts` + tests → `optin.ts`/`deck.ts` + tests → shared match components and `match.css` → pages (landing → startup → investor → opt-in → legal) → routes/meta/nav/home band → screenshots and visual QA at 1440 and 390 → regression diff → README.
+
+## Implementation notes (step 2)
+
+These are the differences from the plan above, decided while building:
+- `src/lib/matchQuery.ts` (+ tests) holds the URL encoding and decoding and the investor form validation.
+- `Investor.sede` is `Regione | null`. The investor form asks for the base region as an optional field, so there's no
+  same-region bonus when it's missing.
+- `match.css` is imported once in `src/main.tsx` **after** `global.css`. Importing it from pages put it before the
+  global styles in the bundle.
+- D1 outcome: at 900–939px the 4-item nav wrapped, so `.brand-sub` is hidden at 900–959px only (one additive rule in
+  `global.css`). Checked at 899/900/930/959/960/1024/1440.
+- Profile review shows the source of each field as text ("Fonte: dal deck (simulato)", "dal modulo", "esempio").
+- Opt-in simulator: a pair the agent wouldn't propose (a filter fails) can't be sent, and the reason is shown.
+- Regression: the prerendered HTML of `/`, `/equity/`, `/vesting/`, `/quiz/`, `/privacy/`, `404.html` and `robots.txt`
+  is identical to the baseline (default and `NOINDEX=true` builds, asset hashes normalised). The existing CSS is
+  identical apart from the one additive header rule. In screenshots of existing pages, only the header and footer nav
+  rows differ, plus the new band on Home.

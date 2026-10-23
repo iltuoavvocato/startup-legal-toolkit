@@ -24,6 +24,11 @@ const PAGES = [
   ['quiz', 'quiz/'],
   ['privacy', 'privacy/'],
   ['404', 'pagina-che-non-esiste/'],
+  ['match', 'match-investitori/'],
+  ['match-startup', 'match-investitori/startup/'],
+  ['match-investor', 'match-investitori/investitore/'],
+  ['match-optin', 'match-investitori/doppio-consenso/'],
+  ['match-legal', 'match-investitori/note-legali/'],
 ];
 
 async function pressTimes(locator, key, n) {
@@ -80,6 +85,28 @@ const STATES = {
       await page.locator('.quiz-nav button[type=submit]').click();
     }
     await page.getByRole('heading', { name: /La tua checklist/ }).waitFor();
+  },
+  'match-startup-results': async (page, base) => {
+    await page.goto(`${base}match-investitori/startup/`);
+    await page.getByRole('button', { name: 'Usa un esempio' }).click();
+    await page.getByRole('button', { name: /Fai leggere il deck/ }).click();
+    await page.getByRole('button', { name: 'Salta l’attesa' }).click();
+    await page.getByRole('button', { name: 'Conferma il profilo' }).click();
+    await page.getByRole('heading', { name: /I tuoi match/ }).waitFor();
+    await page.getByRole('button', { name: /Proponi il profilo/ }).first().click();
+  },
+  'match-investor-results': async (page, base) => {
+    await page.goto(`${base}match-investitori/investitore/`);
+    await page.getByRole('button', { name: 'Usa un esempio' }).click();
+    await page.getByRole('button', { name: 'Trova startup in linea' }).click();
+    await page.getByRole('heading', { name: /I tuoi match/ }).waitFor();
+  },
+  'match-optin-intro': async (page, base) => {
+    await page.goto(`${base}match-investitori/doppio-consenso/`);
+    await page.getByRole('button', { name: /Invia la proposta/ }).click();
+    await page.getByRole('button', { name: 'Sì, mi interessa' }).click();
+    await page.getByRole('button', { name: 'Accetta l’intro' }).click();
+    await page.getByRole('article', { name: /Anteprima dell’email/ }).waitFor();
   },
 };
 
