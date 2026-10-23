@@ -1,6 +1,6 @@
 import meta from './routes-meta.json';
 
-export type ToolCampaign = 'home' | 'equity' | 'vesting' | 'quiz';
+export type ToolCampaign = 'home' | 'equity' | 'vesting' | 'quiz' | 'match';
 
 export const LAWYER_URL = 'https://iltuoavvocato.com/';
 

@@ -29,6 +29,36 @@
       "title": "Privacy | Startup Legal Toolkit",
       "description": "Nessun cookie, nessun tracciamento, nessun dato inviato: tutti i calcoli del Startup Legal Toolkit avvengono nel tuo browser.",
       "heading": "Privacy"
+    },
+    {
+      "path": "/match-investitori/",
+      "title": "Match con investitori (prototipo) | Startup Legal Toolkit",
+      "description": "Prototipo dimostrativo di MatchInvStar: un agente propone match tra startup e investitori, con intro solo dopo il doppio consenso.",
+      "heading": "Gli investitori giusti, solo se vi scegliete entrambi"
+    },
+    {
+      "path": "/match-investitori/startup/",
+      "title": "Trova investitori per il tuo round (prototipo) | Startup Legal Toolkit",
+      "description": "Inserisci settore, fase, regione e importo del round: l’agente prepara il profilo, tu lo confermi e ricevi i match con le motivazioni.",
+      "heading": "Trova gli investitori in linea con il tuo round"
+    },
+    {
+      "path": "/match-investitori/investitore/",
+      "title": "Startup in linea con la tua tesi (prototipo) | Startup Legal Toolkit",
+      "description": "Indica settori, fasi, ticket e aree di interesse e ricevi teaser anonimi di startup compatibili, con un punteggio di affinità.",
+      "heading": "Startup in linea con la tua tesi"
+    },
+    {
+      "path": "/match-investitori/doppio-consenso/",
+      "title": "Simulatore del doppio consenso (prototipo) | Startup Legal Toolkit",
+      "description": "Simula una proposta tra startup e investitore: l’intro arriva solo se entrambi dicono sì e un no non viene mai comunicato.",
+      "heading": "L’intro arriva solo se dite sì entrambi"
+    },
+    {
+      "path": "/match-investitori/note-legali/",
+      "title": "Limiti e note legali del match investitori | Startup Legal Toolkit",
+      "description": "Servizio di sola directory e presentazione: nessuna consulenza sugli investimenti, nessun denaro gestito. Cosa va verificato con un avvocato.",
+      "heading": "Limiti e note legali"
     }
   ],
   "notFound": {

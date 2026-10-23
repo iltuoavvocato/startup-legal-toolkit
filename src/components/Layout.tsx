@@ -40,7 +40,9 @@ export function Layout({ children }: { children: ReactNode }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [menuOpen]);
 
-  const campaign = pathname.includes('equity')
+  const campaign = pathname.includes('match-investitori')
+    ? 'match'
+    : pathname.includes('equity')
     ? 'equity'
     : pathname.includes('vesting')
       ? 'vesting'
