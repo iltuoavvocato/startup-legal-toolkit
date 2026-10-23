@@ -12,6 +12,12 @@ const NOSCRIPT = {
   en: 'To use the interactive tools, please enable JavaScript.',
 };
 
+// Same text as the `disclaimer` string in src/i18n/messages/common.ts (a test keeps them in sync).
+export const DISCLAIMER = {
+  it: 'Strumento indicativo: non sostituisce una consulenza legale.',
+  en: 'Indicative tool: not a substitute for legal advice.',
+};
+
 export function normalizeBase(raw) {
   let base = (raw ?? '/').trim() || '/';
   if (!base.startsWith('/')) base = `/${base}`;
@@ -33,8 +39,30 @@ export function pages(meta) {
   );
 }
 
+/** The single 404.html: Italian by default, with the English copy alongside for /en/… paths. */
 export function notFoundPage(meta) {
-  return { ...meta.notFound.it, path: null, locale: 'it', noindex: true, alternates: null };
+  return { ...meta.notFound.it, path: null, locale: 'it', noindex: true, alternates: null, notFound: { it: meta.notFound.it, en: meta.notFound.en } };
+}
+
+/**
+ * Inline script for the Italian home only. If the visitor chose English earlier with the switcher
+ * (localStorage "lang"), it leaves for /en/ before the body is parsed, so no Italian is ever painted.
+ * Crawlers have no stored preference, so the prerendered Italian page is what they see.
+ */
+export function homeRedirectScript(base) {
+  const home = JSON.stringify(base);
+  const en = JSON.stringify(`${base}en/`);
+  return `<script>(function(){try{var p=location.pathname;if((p===${home}||p===${home}+'index.html')&&localStorage.getItem('lang')==='en')location.replace(${en}+location.search+location.hash)}catch(e){}})()</script>`;
+}
+
+/**
+ * Inline script for 404.html (served for every unknown path): on /en/… it switches <html lang> and the title
+ * to English before paint, and a class on <html> shows only the matching copy of the static fallback.
+ */
+export function notFoundLocaleScript(base, titles) {
+  const b = JSON.stringify(base);
+  const title = JSON.stringify(titles.en);
+  return `<script>(function(){var p=location.pathname,b=${b},d=document.documentElement,en=p===b+'en'||p.indexOf(b+'en/')===0;d.lang=en?'en':'it';d.classList.add(en?'nf-en':'nf-it');if(en)document.title=${title}})()</script><style>.nf-it [data-nf=en],.nf-en [data-nf=it]{display:none}</style>`;
 }
 
 /**
@@ -86,13 +114,26 @@ export function fallbackBody({ heading, description, locale = 'it' }) {
   return `<main style="max-width:44rem;margin:0 auto;padding:4rem 1.25rem;font-family:system-ui,sans-serif;color:#0B1730"><h1>${esc(heading)}</h1><p>${esc(description)}</p><noscript><p>${NOSCRIPT[locale]}</p></noscript></main>`;
 }
 
+/** Static 404 content in both languages; without JavaScript both are shown. */
+export function notFoundBody(notFound) {
+  const block = (locale) =>
+    `<div lang="${locale}" data-nf="${locale}"><h1>${esc(notFound[locale].heading)}</h1><p>${esc(notFound[locale].description)}</p><p style="font-size:.85rem">${esc(DISCLAIMER[locale])}</p><noscript><p>${NOSCRIPT[locale]}</p></noscript></div>`;
+  return `<main style="max-width:44rem;margin:0 auto;padding:4rem 1.25rem;font-family:system-ui,sans-serif;color:#0B1730">${block('it')}${block('en')}</main>`;
+}
+
 export function renderPage(template, page, config) {
+  const headScript = page.notFound
+    ? notFoundLocaleScript(config.base, { en: page.notFound.en.title })
+    : page.path === '/' && (page.locale ?? 'it') === 'it'
+      ? homeRedirectScript(config.base)
+      : '';
   return template
     .replace(/<html lang="[a-z]+">/, `<html lang="${page.locale ?? 'it'}">`)
+    .replace(/<meta charset="[^"]*" \/>/i, (m) => (headScript ? `${m}\n    ${headScript}` : m))
     .replace(/<link rel="icon"[^>]*>\s*/, '')
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(page.title)}</title>`)
     .replace('<!--seo-->', headTags(page, config))
-    .replace('<!--app-->', fallbackBody(page));
+    .replace('<!--app-->', page.notFound ? notFoundBody(page.notFound) : fallbackBody(page));
 }
 
 export function sitemapXml(meta, abs, today) {

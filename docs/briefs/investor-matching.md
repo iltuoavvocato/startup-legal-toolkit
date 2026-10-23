@@ -333,3 +333,21 @@ These are the differences from the plan above, decided while building:
   is identical to the baseline (default and `NOINDEX=true` builds, asset hashes normalised). The existing CSS is
   identical apart from the one additive header rule. In screenshots of existing pages, only the header and footer nav
   rows differ, plus the new band on Home.
+
+## Milestone 1 fixes (2026-10-24)
+
+- **No-deck copy**: without a deck, the stepper's second step reads "Analisi dei dati" / "Analysing your details"
+  (`startupFlowSteps(locale, hasDeck)` in `deck.ts`, tested), as the agent checklist and headings already did. The first
+  step stays "Dati e deck", since that is where the deck can be uploaded.
+- **No Italian flash for English visitors**: the prerendered Italian home has an inline `<head>` script that, when
+  `localStorage.lang === 'en'`, calls `location.replace('/en/' + query + hash)` before the body is parsed. SEO is
+  unchanged (crawlers have no stored value). Unit tests run the script against stubs (base path, storage errors);
+  `npm run screenshots` checks end to end that only the English document reaches DOMContentLoaded.
+- **Bilingual 404**: the React 404 page adds the disclaimer band. The static `404.html` contains both languages and
+  picks English on `/en/…` paths before paint (lang, title, copy). Without JavaScript both are shown. The screenshot
+  script serves `404.html` for unknown paths, as GitHub Pages and Vercel do, and checks IT and EN with JS on and off.
+
+Open decisions for Vincenzo:
+- **D12**: the no-deck stepper label ("Analisi dei dati" / "Analysing your details"). Is that wording OK, or should the
+  step be hidden when there's no deck?
+- **D13**: the static 404 shows both languages when JavaScript is off. Is that OK, or should it be Italian only?

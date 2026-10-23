@@ -12,7 +12,7 @@ Italian startup founders. It routes them to a lawyer at [iltuoavvocato.com](http
 | `/privacy/`  | Privacy notes (no cookies, no tracking, no data sent anywhere; only the language preference is stored) |
 | `/match-investitori/…` | **Match investitori** (prototype, see below): landing, `startup/`, `investitore/`, `doppio-consenso/`, `note-legali/` |
 | `/en/…`      | English version of every page (see [Languages](#languages)) |
-| anything else | Styled 404 |
+| anything else | Styled 404 (English under `/en/…`, Italian otherwise, with the disclaimer) |
 
 Every tool page shows the disclaimer *"Strumento indicativo: non sostituisce una consulenza legale."* (next to
 the result and in the footer). Every "Parla con un avvocato" CTA links to
@@ -130,8 +130,9 @@ dictionary plus a React context.
 
   The mapping, titles and descriptions live in `src/routes-meta.json`, which the app and the prerender both read.
   Every page has `<html lang>`, a self-referencing canonical, and hreflang alternates `it`, `en` and `x-default` (= Italian).
-  The sitemap lists both languages. There is one `404.html` (Italian, `noindex`): on `/en/…` paths the app renders the
-  English "Page not found" and sets `lang="en"` at runtime. `NOINDEX=true` applies to every page in both languages.
+  The sitemap lists both languages. There is one `404.html` (`noindex`) carrying both languages: a tiny inline script in
+  its `<head>` switches `<html lang>`, the title and the static copy to English on `/en/…` paths before paint, then the
+  app renders the matching "Page not found" (with the disclaimer). Without JavaScript both languages are shown. `NOINDEX=true` applies to every page in both languages.
 - **Dictionaries**: `src/i18n/messages/*.ts`. Each module exports `{ it, en }`, and `en` is typed as `typeof it`, so
   TypeScript rejects missing or extra keys. `src/i18n/messages.test.ts` also checks that the two trees have exactly the
   same keys and array lengths. Strings can contain `*emphasis*`, `**bold**` and `[link](@routeId)` (rendered by
@@ -144,8 +145,10 @@ dictionary plus a React context.
   keeping the query string. They have `lang`, `hreflang` and `aria-current` on the current language.
 - **Remembered choice (least surprising behaviour)**: an explicit URL always wins. `localStorage` (key `lang`, value `it`
   or `en`) is **written only when the user clicks the switcher**. It is **read only on the first load of the Italian home
-  `/`**: if the stored value is `en`, the visitor is sent to `/en/` (replace, no extra history entry). Nothing else reads
-  it, and if storage is unavailable the switcher still works. The privacy page says this in both languages.
+  `/`**: if the stored value is `en`, the visitor is sent to `/en/` (replace, no extra history entry). The prerendered
+  Italian home does this in an inline `<head>` script (`homeRedirectScript` in `scripts/seo.mjs`) before the body is
+  parsed, so there is no flash of Italian; crawlers have no stored value and still get the Italian page. The same check
+  in `Layout` covers the dev server. Nothing else reads it, and if storage is unavailable the switcher still works. The privacy page says this in both languages.
 - **Header fit**: with four nav items, the switcher and the CTA, the nav gaps tighten between 900 and 1099px and the
   "Startup Legal Toolkit" subtitle is hidden between 900 and 1023px. Checked at 900/930/959/960/1024/1100/1440px in both languages.
 
@@ -159,6 +162,8 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
 - **Startup flow** (`/match-investitori/startup/`): settore, fase, regione, round, descrizione and an optional PDF deck
   (drag and drop or file picker). The deck is **never read or uploaded**: only its name, type and size are used. A
   deterministic "l'agente ha letto il deck" step (`src/lib/deck.ts`) drafts the profile from the form and the file name.
+  Without a deck, neither the stepper ("Analisi dei dati" / "Analysing your details") nor the agent checklist mentions
+  reading one.
   The founder confirms or edits it, then sees ranked investors with score, reasons and exclusions, and can make up to
   `MONTHLY_PROPOSAL_LIMIT = 5` proposals a month (placeholder, "valore provvisorio").
 - **Investor flow** (`/match-investitori/investitore/`): settori, fasi, ticket min/max and aree, then anonymous teasers of

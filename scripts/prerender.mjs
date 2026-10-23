@@ -18,8 +18,8 @@ const siteNoindex = process.env.NOINDEX === 'true';
 const config = { abs, base, siteNoindex };
 
 const template = readFileSync(join(dist, 'index.html'), 'utf8');
-if (!template.includes('<!--seo-->') || !template.includes('<!--app-->')) {
-  throw new Error('dist/index.html is missing the <!--seo--> or <!--app--> placeholder');
+if (!template.includes('<!--seo-->') || !template.includes('<!--app-->') || !/<meta charset="[^"]*" \/>/i.test(template)) {
+  throw new Error('dist/index.html is missing the <!--seo--> or <!--app--> placeholder or the <meta charset> tag');
 }
 
 for (const page of pages(meta)) {
@@ -29,8 +29,9 @@ for (const page of pages(meta)) {
   console.log(`prerender: ${page.path} → ${out.replace(root + '/', '')}`);
 }
 
-// One 404.html for the whole site (GitHub Pages and Vercel serve it for any unknown path). It is Italian;
-// on /en/… paths the app renders the English "page not found" and switches <html lang> at runtime.
+// One 404.html for the whole site (GitHub Pages and Vercel serve it for any unknown path). It carries both
+// languages: an inline script picks English on /en/… paths before paint (<html lang>, title, static copy),
+// then the app renders the matching "page not found" page.
 writeFileSync(join(dist, '404.html'), renderPage(template, notFoundPage(meta), config));
 console.log('prerender: 404.html');
 

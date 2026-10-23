@@ -1,12 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { fallbackBody, headTags, notFoundPage, pages, renderPage, sitemapXml, type RoutesMeta } from '../../scripts/seo.mjs';
+import {
+  DISCLAIMER,
+  fallbackBody,
+  headTags,
+  notFoundPage,
+  pages,
+  renderPage,
+  sitemapXml,
+  type RoutesMeta,
+} from '../../scripts/seo.mjs';
+import { MESSAGES } from './messages';
 import meta from '../routes-meta.json';
 
 const routesMeta = meta as RoutesMeta;
 const abs = (p: string) => `https://example.test${'/'}${p.replace(/^\//, '')}`;
 const config = { abs, base: '/', siteNoindex: false };
 const template =
-  '<!doctype html>\n<html lang="it">\n  <head>\n    <link rel="icon" href="/favicon.svg" />\n    <title>x</title>\n    <!--seo-->\n  </head>\n  <body><div id="root"><!--app--></div></body>\n</html>';
+  '<!doctype html>\n<html lang="it">\n  <head>\n    <meta charset="UTF-8" />\n    <link rel="icon" href="/favicon.svg" />\n    <title>x</title>\n    <!--seo-->\n  </head>\n  <body><div id="root"><!--app--></div></body>\n</html>';
 
 const page = (path: string) => pages(routesMeta).find((p) => p.path === path)!;
 
@@ -53,5 +63,82 @@ describe('prerender meta', () => {
     expect(xml.match(/<url>/g)).toHaveLength(routesMeta.routes.length * 2);
     expect(xml).toContain('<loc>https://example.test/en/investor-match/double-opt-in/</loc>');
     expect(xml).toContain('xmlns:xhtml="http://www.w3.org/1999/xhtml"');
+  });
+});
+
+/** Runs the first inline <script> of a rendered page against stubbed browser globals. */
+function runInlineScript(html: string, env: { pathname: string; search?: string; hash?: string; stored?: string | null }) {
+  const body = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  if (!body) throw new Error('no inline script');
+  const replaced: string[] = [];
+  const classes: string[] = [];
+  const location = {
+    pathname: env.pathname,
+    search: env.search ?? '',
+    hash: env.hash ?? '',
+    replace: (u: string) => replaced.push(u),
+  };
+  const localStorage = { getItem: (k: string) => (k === 'lang' ? (env.stored ?? null) : null) };
+  const document = { title: 'IT title', documentElement: { lang: 'it', classList: { add: (c: string) => classes.push(c) } } };
+  new Function('location', 'localStorage', 'document', body)(location, localStorage, document);
+  return { replaced, classes, lang: document.documentElement.lang, title: document.title };
+}
+
+describe('no Italian flash for English visitors on the home', () => {
+  const home = renderPage(template, page('/'), config);
+
+  it('puts the redirect script before any stylesheet or module script, on the Italian home only', () => {
+    expect(home.indexOf('<script>')).toBeGreaterThan(home.indexOf('<meta charset="UTF-8" />'));
+    expect(home.indexOf('<script>')).toBeLessThan(home.indexOf('<title>'));
+    expect(renderPage(template, page('/en/'), config)).not.toContain('<script>');
+    expect(renderPage(template, page('/equity/'), config)).not.toContain('<script>');
+  });
+
+  it('redirects "/" to "/en/" before paint only when English was chosen, keeping query and hash', () => {
+    expect(runInlineScript(home, { pathname: '/', stored: 'en', search: '?a=1', hash: '#x' }).replaced).toEqual(['/en/?a=1#x']);
+    expect(runInlineScript(home, { pathname: '/index.html', stored: 'en' }).replaced).toEqual(['/en/']);
+    expect(runInlineScript(home, { pathname: '/', stored: 'it' }).replaced).toEqual([]);
+    expect(runInlineScript(home, { pathname: '/', stored: null }).replaced).toEqual([]);
+  });
+
+  it('honours the base path', () => {
+    const html = renderPage(template, page('/'), { ...config, base: '/toolkit/' });
+    expect(runInlineScript(html, { pathname: '/toolkit/', stored: 'en' }).replaced).toEqual(['/toolkit/en/']);
+    expect(runInlineScript(html, { pathname: '/', stored: 'en' }).replaced).toEqual([]);
+  });
+
+  it('keeps the Italian home intact when storage is unavailable', () => {
+    const body = home.match(/<script>([\s\S]*?)<\/script>/)![1]!;
+    const throwing = { getItem: () => { throw new Error('denied'); } };
+    expect(() => new Function('location', 'localStorage', body)({ pathname: '/', replace: () => {} }, throwing)).not.toThrow();
+  });
+});
+
+describe('bilingual 404.html', () => {
+  const html = renderPage(template, notFoundPage(routesMeta), config);
+
+  it('contains both languages with the disclaimer, Italian by default', () => {
+    expect(html).toContain('<html lang="it">');
+    expect(html).toContain('<h1>Pagina non trovata</h1>');
+    expect(html).toContain('<h1>Page not found</h1>');
+    expect(html).toContain(DISCLAIMER.it);
+    expect(html).toContain(DISCLAIMER.en);
+    expect(html).toContain('<meta name="robots" content="noindex" />');
+  });
+
+  it('switches to English before paint on /en/ paths only', () => {
+    const en = runInlineScript(html, { pathname: '/en/missing/' });
+    expect(en).toMatchObject({ lang: 'en', classes: ['nf-en'], title: 'Page not found | Startup Legal Toolkit' });
+    expect(runInlineScript(html, { pathname: '/en' }).lang).toBe('en');
+    const it = runInlineScript(html, { pathname: '/pagina-che-non-esiste/' });
+    expect(it).toMatchObject({ lang: 'it', classes: ['nf-it'], title: 'IT title' });
+    expect(runInlineScript(html, { pathname: '/english/' }).lang).toBe('it');
+    const based = renderPage(template, notFoundPage(routesMeta), { ...config, base: '/toolkit/' });
+    expect(runInlineScript(based, { pathname: '/toolkit/en/x/' }).lang).toBe('en');
+  });
+
+  it('uses the same disclaimer text as the app', () => {
+    expect(DISCLAIMER.it).toBe(MESSAGES.it.common.disclaimer);
+    expect(DISCLAIMER.en).toBe(MESSAGES.en.common.disclaimer);
   });
 });

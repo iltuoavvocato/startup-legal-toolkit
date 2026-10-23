@@ -1,6 +1,6 @@
 // Captures full-page screenshots of every page (desktop 1440×900, mobile 390×844 @2x) into screenshots/.
 // Requires a build in dist/ (run `npm run build` first).
-import { existsSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { launchBrowser } from './browser.mjs';
 import { startPreview } from './serve-dist.mjs';
@@ -31,6 +31,7 @@ const PAGES = [
   ['match-legal', 'match-investitori/note-legali/'],
   ['en-home', 'en/'],
   ['en-equity', 'en/equity/'],
+  ['en-404', 'en/page-that-does-not-exist/'],
   ['en-match', 'en/investor-match/'],
 ];
 
@@ -47,6 +48,15 @@ async function setRange(locator, value) {
     setter.call(el, String(v));
     el.dispatchEvent(new Event('input', { bubbles: true }));
   }, value);
+}
+
+const problems = [];
+
+async function expectNoDeckCopy(page, name, analysisLabel, forbidden) {
+  const stepper = await page.locator('.mi-steps').innerText();
+  if (!stepper.includes(analysisLabel)) problems.push(`${name}: stepper lacks "${analysisLabel}"`);
+  const text = await page.locator('main').innerText();
+  if (forbidden.test(text)) problems.push(`${name}: deck-reading copy shown without a deck`);
 }
 
 const STATES = {
@@ -104,6 +114,14 @@ const STATES = {
     await page.getByRole('heading', { name: /I tuoi match/ }).waitFor();
     await page.getByRole('button', { name: /Proponi il profilo/ }).first().click();
   },
+  // No deck uploaded: neither the stepper nor the agent checklist may say the deck is being read.
+  'match-startup-agent-nodeck': async (page, base) => {
+    await page.goto(`${base}match-investitori/startup/`);
+    await page.getByRole('button', { name: 'Usa un esempio' }).click();
+    await page.getByRole('button', { name: 'Prepara il profilo' }).click();
+    await page.getByRole('heading', { name: 'L’agente sta preparando il profilo' }).waitFor();
+    await expectNoDeckCopy(page, 'match-startup-agent-nodeck', 'Analisi dei dati', /lettura del deck|leggendo il deck/i);
+  },
   'match-investor-results': async (page, base) => {
     await page.goto(`${base}match-investitori/investitore/`);
     await page.getByRole('button', { name: 'Usa un esempio' }).click();
@@ -131,6 +149,13 @@ const STATES = {
     await page.getByRole('heading', { name: /Your matches/ }).waitFor();
     await page.getByRole('button', { name: /Propose your profile/ }).first().click();
   },
+  'en-match-startup-agent-nodeck': async (page, base) => {
+    await page.goto(`${base}en/investor-match/startup/`);
+    await page.getByRole('button', { name: 'Use an example' }).click();
+    await page.getByRole('button', { name: 'Draft the profile' }).click();
+    await page.getByRole('heading', { name: 'The agent is drafting the profile' }).waitFor();
+    await expectNoDeckCopy(page, 'en-match-startup-agent-nodeck', 'Analysing your details', /reading the deck/i);
+  },
   'en-match-optin-intro': async (page, base) => {
     await page.goto(`${base}en/investor-match/double-opt-in/`);
     await page.getByRole('button', { name: /Send the proposal/ }).click();
@@ -150,7 +175,6 @@ const STATES = {
 const { url: base, stop } = await startPreview();
 const browser = await launchBrowser();
 const files = [];
-const problems = [];
 try {
   for (const [vpName, opts] of Object.entries(VIEWPORTS)) {
     const context = await browser.newContext({ ...opts, reducedMotion: 'reduce', locale: 'it-IT' });
@@ -224,14 +248,62 @@ try {
     if (stored !== 'en') problems.push(`switcher: expected lang=en in localStorage, got ${stored}`);
     await page.goto(`${base}quiz/`);
     if (!page.url().endsWith('/quiz/')) problems.push('switcher: an explicit Italian URL was redirected');
+    // No Italian flash: with "en" stored, the Italian home must leave before its body is parsed,
+    // so the only document that reaches DOMContentLoaded is the English one.
+    await page.addInitScript(() => {
+      window.addEventListener('DOMContentLoaded', () => {
+        const seen = JSON.parse(window.sessionStorage.getItem('dcl') ?? '[]');
+        seen.push(`${location.pathname}|${document.documentElement.lang}`);
+        window.sessionStorage.setItem('dcl', JSON.stringify(seen));
+      });
+    });
     await page.goto(base);
     await page.waitForURL(/\/en\/$/);
+    await page.locator('#page-title').waitFor();
+    const seen = await page.evaluate(() => JSON.parse(window.sessionStorage.getItem('dcl') ?? '[]'));
+    await page.evaluate(() => window.sessionStorage.clear());
+    const enHome = `${new URL(base).pathname}en/|en`;
+    if (seen.length !== 1 || seen[0] !== enHome) problems.push(`switcher: Italian home was parsed before the redirect (${seen.join(', ')})`);
     await page.getByRole('group', { name: 'Language' }).getByRole('link', { name: 'Italiano' }).click();
     await page.waitForURL((u) => u.pathname === new URL(base).pathname);
     await page.goto(base);
     await page.waitForTimeout(200);
     if (new URL(page.url()).pathname !== new URL(base).pathname) problems.push('switcher: "/" redirected after choosing Italian');
     await context.close();
+  }
+
+  // Static 404.html as GitHub Pages / Vercel serve it for unknown paths (vite preview would serve index.html).
+  {
+    const html404 = readFileSync('dist/404.html', 'utf8');
+    const cases = [
+      ['pagina-che-non-esiste/', 'it', 'Pagina non trovata', 'Strumento indicativo: non sostituisce una consulenza legale.'],
+      ['en/page-that-does-not-exist/', 'en', 'Page not found', 'Indicative tool: not a substitute for legal advice.'],
+    ];
+    for (const javaScriptEnabled of [true, false]) {
+      const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, javaScriptEnabled });
+      const page = await context.newPage();
+      page.on('pageerror', (err) => problems.push(`404.html: pageerror ${err.message}`));
+      await page.route(/\/(pagina-che-non-esiste|en\/page-that-does-not-exist)\/$/, (route) =>
+        route.fulfill({ status: 404, contentType: 'text/html; charset=utf-8', body: html404 }),
+      );
+      for (const [path, lang, heading, disclaimer] of cases) {
+        const label = `404.html ${path} (JS ${javaScriptEnabled ? 'on' : 'off'})`;
+        await page.goto(`${base}${path}`);
+        const h1 = page.getByRole('heading', { level: 1, name: heading });
+        await h1.first().waitFor();
+        if (!(await page.getByText(disclaimer).first().isVisible())) problems.push(`${label}: disclaimer not visible`);
+        if (javaScriptEnabled) {
+          const htmlLang = await page.evaluate(() => document.documentElement.lang);
+          if (htmlLang !== lang) problems.push(`${label}: <html lang="${htmlLang}">, expected "${lang}"`);
+          const other = lang === 'en' ? 'Pagina non trovata' : 'Page not found';
+          if (await page.getByText(other).isVisible().catch(() => false)) problems.push(`${label}: other language visible`);
+          const file = join(OUT, `${lang === 'en' ? 'en-' : ''}404-static-desktop.png`);
+          await page.screenshot({ path: file, fullPage: true });
+          files.push(file);
+        }
+      }
+      await context.close();
+    }
   }
 } finally {
   await browser.close();

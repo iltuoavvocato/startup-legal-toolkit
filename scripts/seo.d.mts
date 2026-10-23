@@ -22,7 +22,17 @@ export const LOCALES: ('it' | 'en')[];
 export function normalizeBase(raw: string | undefined): string;
 export function esc(s: string): string;
 export function pages(meta: RoutesMeta): Page[];
-export function notFoundPage(meta: RoutesMeta): Omit<LocaleMeta, 'path'> & { path: null; locale: 'it'; noindex: true; alternates: null };
+export const DISCLAIMER: Record<'it' | 'en', string>;
+export function notFoundPage(meta: RoutesMeta): Omit<LocaleMeta, 'path'> & {
+  path: null;
+  locale: 'it';
+  noindex: true;
+  alternates: null;
+  notFound: RoutesMeta['notFound'];
+};
+export function homeRedirectScript(base: string): string;
+export function notFoundLocaleScript(base: string, titles: { en: string }): string;
+export function notFoundBody(notFound: RoutesMeta['notFound']): string;
 export function headTags(
   page: { title: string; description: string; path: string | null; locale?: string; noindex?: boolean; alternates?: { it: string; en: string } | null },
   config: SeoConfig,
