@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FORMATTERS } from './format';
-import { localeFromPath, metaFor, pathFor, routeFromPath, ROUTES, routePatterns, switchLocalePath } from './routes';
+import { localeFromPath, metaFor, pathFor, robotsFor, routeFromPath, ROUTES, routePatterns, switchLocalePath } from './routes';
+import { parseVariantRouteId, SCREENS, VARIANT_IDS, VARIANT_ROUTE_IDS, variantRouteId } from '../variants/registry';
 import { initialRedirect } from './storage';
 
 describe('route mapping', () => {
@@ -53,6 +54,43 @@ describe('route mapping', () => {
     expect(patterns).toHaveLength(ROUTES.length * 2);
     expect(new Set(patterns).size).toBe(patterns.length);
     expect(patterns).toContain('/en/investor-match/legal-notes');
+  });
+});
+
+describe('design variant routes', () => {
+  it('maps the gallery and every variant screen between Italian and English', () => {
+    expect(pathFor('matchVariants', 'it')).toBe('/match-investitori/varianti/');
+    expect(pathFor('matchVariants', 'en')).toBe('/en/investor-match/variants/');
+    expect(pathFor('matchV1Landing', 'it')).toBe('/match-investitori/varianti/v1/landing/');
+    expect(pathFor('matchV1Results', 'it')).toBe('/match-investitori/varianti/v1/risultati/');
+    expect(pathFor('matchV1Investor', 'it')).toBe('/match-investitori/varianti/v1/investitore/');
+    expect(pathFor('matchV1Landing', 'en')).toBe('/en/investor-match/variants/v1/landing/');
+    expect(pathFor('matchV3Results', 'en')).toBe('/en/investor-match/variants/v3/results/');
+    expect(pathFor('matchV4Investor', 'en')).toBe('/en/investor-match/variants/v4/investor/');
+    expect(switchLocalePath('/match-investitori/varianti/v2/risultati', 'en')).toBe('/en/investor-match/variants/v2/results/');
+    expect(switchLocalePath('/en/investor-match/variants/v5/investor/', 'it')).toBe('/match-investitori/varianti/v5/investitore/');
+  });
+
+  it('has a route for every variant × screen, and the ids round-trip', () => {
+    expect(VARIANT_ROUTE_IDS).toHaveLength(VARIANT_IDS.length * SCREENS.length);
+    const ids = new Set(ROUTES.map((r) => r.id));
+    for (const v of VARIANT_IDS) {
+      for (const s of SCREENS) {
+        const id = variantRouteId(v, s);
+        expect(ids.has(id), id).toBe(true);
+        expect(parseVariantRouteId(id)).toEqual({ variant: v, screen: s });
+      }
+    }
+    expect(parseVariantRouteId('matchStartup')).toBeNull();
+    expect(parseVariantRouteId('matchV9Landing')).toBeNull();
+    expect(parseVariantRouteId('matchVariants')).toBeNull();
+  });
+
+  it('marks only the variants as noindex, nofollow', () => {
+    expect(robotsFor('matchVariants')).toBe('noindex, nofollow');
+    for (const id of VARIANT_ROUTE_IDS) expect(robotsFor(id)).toBe('noindex, nofollow');
+    expect(robotsFor('match')).toBeNull();
+    expect(robotsFor('home')).toBeNull();
   });
 });
 

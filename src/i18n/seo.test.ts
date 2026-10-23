@@ -50,7 +50,7 @@ describe('prerender meta', () => {
   it('applies NOINDEX to every page, English included, and noindex to the 404', () => {
     for (const p of pages(routesMeta)) {
       expect(headTags(p, { ...config, siteNoindex: true })).toContain('<meta name="robots" content="noindex, nofollow" />');
-      expect(headTags(p, config)).not.toContain('name="robots"');
+      if (!p.robots) expect(headTags(p, config)).not.toContain('name="robots"');
     }
     const nf = headTags(notFoundPage(routesMeta), config);
     expect(nf).toContain('<meta name="robots" content="noindex" />');
@@ -60,9 +60,41 @@ describe('prerender meta', () => {
 
   it('lists both languages in the sitemap with alternates', () => {
     const xml = sitemapXml(routesMeta, abs, '2026-01-01');
-    expect(xml.match(/<url>/g)).toHaveLength(routesMeta.routes.length * 2);
+    const indexable = routesMeta.routes.filter((r) => !r.robots);
+    expect(xml.match(/<url>/g)).toHaveLength(indexable.length * 2);
     expect(xml).toContain('<loc>https://example.test/en/investor-match/double-opt-in/</loc>');
     expect(xml).toContain('xmlns:xhtml="http://www.w3.org/1999/xhtml"');
+  });
+});
+
+describe('design variants (internal prototype pages)', () => {
+  const variantPages = pages(routesMeta).filter((p) => p.id === 'matchVariants' || /^matchV\d/.test(p.id));
+
+  it('covers the gallery and 5 variants × 3 screens in both languages', () => {
+    expect(variantPages).toHaveLength((1 + 5 * 3) * 2);
+  });
+
+  it('are noindex, nofollow in the prerendered HTML, in both languages, keeping the canonical', () => {
+    for (const p of variantPages) {
+      const html = renderPage(template, p, config);
+      expect(html, p.path).toContain('<meta name="robots" content="noindex, nofollow" />');
+      expect(html).toContain(`<link rel="canonical" href="${abs(p.path)}" />`);
+      expect(html).toContain(`<html lang="${p.locale}">`);
+    }
+    expect(renderPage(template, page('/en/investor-match/variants/v4/investor/'), config)).toContain('<html lang="en">');
+  });
+
+  it('stay out of the sitemap while every other page is listed', () => {
+    const xml = sitemapXml(routesMeta, abs, '2026-01-01');
+    expect(xml).not.toContain('varianti');
+    expect(xml).not.toContain('variants');
+    expect(xml).toContain('<loc>https://example.test/match-investitori/investitore/</loc>');
+    for (const p of pages(routesMeta).filter((x) => !x.robots)) expect(xml).toContain(`<loc>${abs(p.path)}</loc>`);
+  });
+
+  it('do not change the robots tag of regular pages', () => {
+    expect(headTags(page('/match-investitori/'), config)).not.toContain('robots');
+    expect(headTags(page('/match-investitori/varianti/'), { ...config, siteNoindex: true })).toContain('content="noindex, nofollow"');
   });
 });
 

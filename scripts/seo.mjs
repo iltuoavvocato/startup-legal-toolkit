@@ -34,6 +34,7 @@ export function pages(meta) {
       ...r[locale],
       id: r.id,
       locale,
+      ...(r.robots ? { robots: r.robots } : {}),
       alternates: { it: r.it.path, en: r.en.path },
     })),
   );
@@ -66,7 +67,7 @@ export function notFoundLocaleScript(base, titles) {
 }
 
 /**
- * @param {object} page   { title, description, path, locale, noindex?, alternates? }
+ * @param {object} page   { title, description, path, locale, noindex?, robots?, alternates? }
  * @param {object} config { abs(path) → absolute URL, base, siteNoindex }
  */
 export function headTags(page, { abs, base, siteNoindex }) {
@@ -84,9 +85,11 @@ export function headTags(page, { abs, base, siteNoindex }) {
     `<meta name="description" content="${esc(page.description)}" />`,
     siteNoindex
       ? '<meta name="robots" content="noindex, nofollow" />'
-      : page.noindex
-        ? '<meta name="robots" content="noindex" />'
-        : '',
+      : page.robots
+        ? `<meta name="robots" content="${esc(page.robots)}" />`
+        : page.noindex
+          ? '<meta name="robots" content="noindex" />'
+          : '',
     url ? `<link rel="canonical" href="${url}" />` : '',
     ...alternates,
     `<link rel="icon" type="image/svg+xml" href="${base}favicon.svg" />`,
@@ -136,8 +139,10 @@ export function renderPage(template, page, config) {
     .replace('<!--app-->', page.notFound ? notFoundBody(page.notFound) : fallbackBody(page));
 }
 
+/** Pages with a robots directive (the design variants) are noindex and stay out of the sitemap. */
 export function sitemapXml(meta, abs, today) {
   const urls = pages(meta)
+    .filter((p) => !p.robots)
     .map((p) => {
       const priority = p.id === 'home' ? '1.0' : p.id === 'privacy' ? '0.3' : '0.8';
       return `  <url>

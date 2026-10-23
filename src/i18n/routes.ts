@@ -1,6 +1,7 @@
 // URL scheme: Italian at the original URLs, English under /en/ with English slugs.
 // The mapping lives in src/routes-meta.json (also read by scripts/prerender.mjs).
 import meta from '../routes-meta.json';
+import type { VariantRouteId } from '../variants/registry';
 import { DEFAULT_LOCALE, type Locale } from './locales';
 
 export type RouteId =
@@ -13,7 +14,9 @@ export type RouteId =
   | 'matchStartup'
   | 'matchInvestor'
   | 'matchOptIn'
-  | 'matchLegal';
+  | 'matchLegal'
+  | 'matchVariants'
+  | VariantRouteId;
 
 export interface PageMeta {
   path: string;
@@ -24,6 +27,8 @@ export interface PageMeta {
 
 interface RouteEntry {
   id: RouteId;
+  /** Robots directive for pages kept out of search engines (also left out of the sitemap). */
+  robots?: string;
   it: PageMeta;
   en: PageMeta;
 }
@@ -55,6 +60,11 @@ export function routeFromPath(pathname: string): { id: RouteId; locale: Locale }
 export function switchLocalePath(pathname: string, target: Locale): string {
   const route = routeFromPath(pathname);
   return pathFor(route ? route.id : 'home', target);
+}
+
+/** Robots directive of a page (e.g. "noindex, nofollow" for the design variants), or null. */
+export function robotsFor(id: RouteId): string | null {
+  return ROUTES.find((r) => r.id === id)?.robots ?? null;
 }
 
 export function metaFor(pathname: string): { meta: Omit<PageMeta, 'path'>; path: string | null; id: RouteId | null; locale: Locale } {

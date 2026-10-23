@@ -5,13 +5,14 @@ export interface LocaleMeta {
   heading: string;
 }
 export interface RoutesMeta {
-  routes: { id: string; it: LocaleMeta; en: LocaleMeta }[];
+  routes: { id: string; robots?: string; it: LocaleMeta; en: LocaleMeta }[];
   notFound: Record<'it' | 'en', Omit<LocaleMeta, 'path'>>;
 }
 export interface Page extends LocaleMeta {
   id: string;
   locale: 'it' | 'en';
   alternates: { it: string; en: string };
+  robots?: string;
 }
 export interface SeoConfig {
   abs: (path: string) => string;
@@ -34,7 +35,7 @@ export function homeRedirectScript(base: string): string;
 export function notFoundLocaleScript(base: string, titles: { en: string }): string;
 export function notFoundBody(notFound: RoutesMeta['notFound']): string;
 export function headTags(
-  page: { title: string; description: string; path: string | null; locale?: string; noindex?: boolean; alternates?: { it: string; en: string } | null },
+  page: { title: string; description: string; path: string | null; locale?: string; noindex?: boolean; robots?: string; alternates?: { it: string; en: string } | null },
   config: SeoConfig,
 ): string;
 export function fallbackBody(page: { heading: string; description: string; locale?: string }): string;

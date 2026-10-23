@@ -5,6 +5,7 @@ import { useI18n } from '../i18n/context';
 import { routeFromPath, type RouteId } from '../i18n/routes';
 import { initialRedirect, readStoredLocale } from '../i18n/storage';
 import { lawyerUrl, type ToolCampaign } from '../site';
+import { isEmbedded, parseVariantRouteId } from '../variants/registry';
 import { ExternalLink } from './ExternalLink';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Logo } from './Logo';
@@ -53,7 +54,18 @@ export function Layout({ children }: { children: ReactNode }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [menuOpen]);
 
-  const campaign = campaignFor(routeFromPath(pathname)?.id);
+  const routeId = routeFromPath(pathname)?.id;
+  const campaign = campaignFor(routeId);
+
+  // Compare view (design variants gallery): a variant screen inside an iframe, without header and footer.
+  // The variant frame carries its own prototype banner and disclaimer.
+  if (routeId && parseVariantRouteId(routeId) && isEmbedded(search)) {
+    return (
+      <main id="main" tabIndex={-1} className="is-embedded">
+        {children}
+      </main>
+    );
+  }
 
   return (
     <>

@@ -149,6 +149,262 @@
         "description": "Directory and introduction service only: no investment advice, no money handled. What needs to be checked with a lawyer.",
         "heading": "Limits and legal notes"
       }
+    },
+    {
+      "id": "matchVariants",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/",
+        "title": "Varianti di design MatchInvStar (prototipo) | Startup Legal Toolkit",
+        "description": "Galleria interna di direzioni di design per MatchInvStar: landing, risultati founder e vista investitore a confronto. Dati fittizi.",
+        "heading": "Varianti di design"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/",
+        "title": "MatchInvStar design variants (prototype) | Startup Legal Toolkit",
+        "description": "Internal gallery of design directions for MatchInvStar: landing, founder results and investor view side by side. Fictional data.",
+        "heading": "Design variants"
+      }
+    },
+    {
+      "id": "matchV1Landing",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v1/landing/",
+        "title": "V1 Editoriale · Landing (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V1 “Editoriale” di MatchInvStar: pagina di presentazione. Prototipo con dati fittizi.",
+        "heading": "V1 Editoriale · Landing"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v1/landing/",
+        "title": "V1 Editorial · Landing (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V1 “Editorial”: landing page. Prototype with fictional data.",
+        "heading": "V1 Editorial · Landing"
+      }
+    },
+    {
+      "id": "matchV1Results",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v1/risultati/",
+        "title": "V1 Editoriale · Risultati founder (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V1 “Editoriale” di MatchInvStar: elenco degli investitori in linea per il founder. Prototipo con dati fittizi.",
+        "heading": "V1 Editoriale · Risultati founder"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v1/results/",
+        "title": "V1 Editorial · Founder results (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V1 “Editorial”: list of matching investors for the founder. Prototype with fictional data.",
+        "heading": "V1 Editorial · Founder results"
+      }
+    },
+    {
+      "id": "matchV1Investor",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v1/investitore/",
+        "title": "V1 Editoriale · Vista investitore (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V1 “Editoriale” di MatchInvStar: teaser anonimi di startup e doppio consenso per l’investitore. Prototipo con dati fittizi.",
+        "heading": "V1 Editoriale · Vista investitore"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v1/investor/",
+        "title": "V1 Editorial · Investor view (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V1 “Editorial”: anonymous startup teasers and double opt-in for the investor. Prototype with fictional data.",
+        "heading": "V1 Editorial · Investor view"
+      }
+    },
+    {
+      "id": "matchV2Landing",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v2/landing/",
+        "title": "V2 Dashboard · Landing (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V2 “Dashboard” di MatchInvStar: pagina di presentazione. Prototipo con dati fittizi.",
+        "heading": "V2 Dashboard · Landing"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v2/landing/",
+        "title": "V2 Dashboard · Landing (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V2 “Dashboard”: landing page. Prototype with fictional data.",
+        "heading": "V2 Dashboard · Landing"
+      }
+    },
+    {
+      "id": "matchV2Results",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v2/risultati/",
+        "title": "V2 Dashboard · Risultati founder (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V2 “Dashboard” di MatchInvStar: elenco degli investitori in linea per il founder. Prototipo con dati fittizi.",
+        "heading": "V2 Dashboard · Risultati founder"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v2/results/",
+        "title": "V2 Dashboard · Founder results (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V2 “Dashboard”: list of matching investors for the founder. Prototype with fictional data.",
+        "heading": "V2 Dashboard · Founder results"
+      }
+    },
+    {
+      "id": "matchV2Investor",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v2/investitore/",
+        "title": "V2 Dashboard · Vista investitore (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V2 “Dashboard” di MatchInvStar: teaser anonimi di startup e doppio consenso per l’investitore. Prototipo con dati fittizi.",
+        "heading": "V2 Dashboard · Vista investitore"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v2/investor/",
+        "title": "V2 Dashboard · Investor view (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V2 “Dashboard”: anonymous startup teasers and double opt-in for the investor. Prototype with fictional data.",
+        "heading": "V2 Dashboard · Investor view"
+      }
+    },
+    {
+      "id": "matchV3Landing",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v3/landing/",
+        "title": "V3 Agente conversazionale · Landing (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V3 “Agente conversazionale” di MatchInvStar: pagina di presentazione. Prototipo con dati fittizi.",
+        "heading": "V3 Agente conversazionale · Landing"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v3/landing/",
+        "title": "V3 Conversational agent · Landing (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V3 “Conversational agent”: landing page. Prototype with fictional data.",
+        "heading": "V3 Conversational agent · Landing"
+      }
+    },
+    {
+      "id": "matchV3Results",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v3/risultati/",
+        "title": "V3 Agente conversazionale · Risultati founder (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V3 “Agente conversazionale” di MatchInvStar: elenco degli investitori in linea per il founder. Prototipo con dati fittizi.",
+        "heading": "V3 Agente conversazionale · Risultati founder"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v3/results/",
+        "title": "V3 Conversational agent · Founder results (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V3 “Conversational agent”: list of matching investors for the founder. Prototype with fictional data.",
+        "heading": "V3 Conversational agent · Founder results"
+      }
+    },
+    {
+      "id": "matchV3Investor",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v3/investitore/",
+        "title": "V3 Agente conversazionale · Vista investitore (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V3 “Agente conversazionale” di MatchInvStar: teaser anonimi di startup e doppio consenso per l’investitore. Prototipo con dati fittizi.",
+        "heading": "V3 Agente conversazionale · Vista investitore"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v3/investor/",
+        "title": "V3 Conversational agent · Investor view (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V3 “Conversational agent”: anonymous startup teasers and double opt-in for the investor. Prototype with fictional data.",
+        "heading": "V3 Conversational agent · Investor view"
+      }
+    },
+    {
+      "id": "matchV4Landing",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v4/landing/",
+        "title": "V4 Card e swipe · Landing (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V4 “Card e swipe” di MatchInvStar: pagina di presentazione. Prototipo con dati fittizi.",
+        "heading": "V4 Card e swipe · Landing"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v4/landing/",
+        "title": "V4 Cards and swipe · Landing (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V4 “Cards and swipe”: landing page. Prototype with fictional data.",
+        "heading": "V4 Cards and swipe · Landing"
+      }
+    },
+    {
+      "id": "matchV4Results",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v4/risultati/",
+        "title": "V4 Card e swipe · Risultati founder (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V4 “Card e swipe” di MatchInvStar: elenco degli investitori in linea per il founder. Prototipo con dati fittizi.",
+        "heading": "V4 Card e swipe · Risultati founder"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v4/results/",
+        "title": "V4 Cards and swipe · Founder results (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V4 “Cards and swipe”: list of matching investors for the founder. Prototype with fictional data.",
+        "heading": "V4 Cards and swipe · Founder results"
+      }
+    },
+    {
+      "id": "matchV4Investor",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v4/investitore/",
+        "title": "V4 Card e swipe · Vista investitore (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V4 “Card e swipe” di MatchInvStar: teaser anonimi di startup e doppio consenso per l’investitore. Prototipo con dati fittizi.",
+        "heading": "V4 Card e swipe · Vista investitore"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v4/investor/",
+        "title": "V4 Cards and swipe · Investor view (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V4 “Cards and swipe”: anonymous startup teasers and double opt-in for the investor. Prototype with fictional data.",
+        "heading": "V4 Cards and swipe · Investor view"
+      }
+    },
+    {
+      "id": "matchV5Landing",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v5/landing/",
+        "title": "V5 Dark premium · Landing (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V5 “Dark premium” di MatchInvStar: pagina di presentazione. Prototipo con dati fittizi.",
+        "heading": "V5 Dark premium · Landing"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v5/landing/",
+        "title": "V5 Dark premium · Landing (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V5 “Dark premium”: landing page. Prototype with fictional data.",
+        "heading": "V5 Dark premium · Landing"
+      }
+    },
+    {
+      "id": "matchV5Results",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v5/risultati/",
+        "title": "V5 Dark premium · Risultati founder (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V5 “Dark premium” di MatchInvStar: elenco degli investitori in linea per il founder. Prototipo con dati fittizi.",
+        "heading": "V5 Dark premium · Risultati founder"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v5/results/",
+        "title": "V5 Dark premium · Founder results (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V5 “Dark premium”: list of matching investors for the founder. Prototype with fictional data.",
+        "heading": "V5 Dark premium · Founder results"
+      }
+    },
+    {
+      "id": "matchV5Investor",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v5/investitore/",
+        "title": "V5 Dark premium · Vista investitore (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V5 “Dark premium” di MatchInvStar: teaser anonimi di startup e doppio consenso per l’investitore. Prototipo con dati fittizi.",
+        "heading": "V5 Dark premium · Vista investitore"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v5/investor/",
+        "title": "V5 Dark premium · Investor view (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V5 “Dark premium”: anonymous startup teasers and double opt-in for the investor. Prototype with fictional data.",
+        "heading": "V5 Dark premium · Investor view"
+      }
     }
   ],
   "notFound": {
