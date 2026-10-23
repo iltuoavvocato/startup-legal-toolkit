@@ -1,10 +1,37 @@
 // V4: card contents (investor card for founders, anonymous teaser card for investors) and the score ring.
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import { LockIcon } from '../../components/match/TeaserCard';
 import { useI18n } from '../../i18n/context';
 import { scoreBand, WEIGHTS, type Evaluation, type Parts } from '../../lib/matching';
 import { labelsFor, type Investor, type StartupProfile } from '../../lib/matchTaxonomy';
 import { teaserOf } from '../../lib/optin';
+
+/** Phone widths: deck cards collapse their secondary details so Pass / Interested stay within reach. */
+const NARROW = '(max-width: 520px)';
+function subscribeNarrow(cb: () => void) {
+  if (typeof window.matchMedia !== 'function') return () => {};
+  const mq = window.matchMedia(NARROW);
+  mq.addEventListener('change', cb);
+  return () => mq.removeEventListener('change', cb);
+}
+function useNarrow(): boolean {
+  return useSyncExternalStore(
+    subscribeNarrow,
+    () => typeof window.matchMedia === 'function' && window.matchMedia(NARROW).matches,
+    () => false,
+  );
+}
+
+/** Collapsed "Dettagli" block used on phones; the card's key resets it to closed for every new card. */
+function MoreDetails({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
+  return (
+    <details className="v4-more">
+      <summary>{t.variants.v4.card.details}</summary>
+      <div className="v4-more-body">{children}</div>
+    </details>
+  );
+}
 
 export function ScoreRing({ score, small = false }: { score: number; small?: boolean }) {
   const { locale, t } = useI18n();
@@ -79,8 +106,32 @@ export function InvestorCard({ investor: i, evaluation, reasons = 3, compact = f
   const c = t.variants.v4.card;
   const L = labelsFor(locale);
   const H = headingLevel === 2 ? 'h2' : 'h3';
+  const collapse = useNarrow() && !compact;
+  const thesis = <p className="v4-thesis">{i.tesi}</p>;
+  const facts = (
+    <dl className="v4-facts">
+      <div>
+        <dt>{c.ticket}</dt>
+        <dd>{c.ticketRange(f.euro(i.ticketMin), f.euro(i.ticketMax))}</dd>
+      </div>
+      <div>
+        <dt>{c.fasi}</dt>
+        <dd>{i.fasi.map((x) => L.fase[x]).join(', ')}</dd>
+      </div>
+    </dl>
+  );
+  const reasonList = (
+    <div className="v4-reasons">
+      <p className="v4-reasons-label">{t.match.ui.reasonsLabel}</p>
+      <ul>
+        {evaluation.reasons.slice(0, collapse ? 2 : reasons).map((r) => (
+          <li key={r}>{r}</li>
+        ))}
+      </ul>
+    </div>
+  );
   return (
-    <article className={`v4-card${compact ? ' v4-card-compact' : ''}`}>
+    <article className={`v4-card${compact ? ' v4-card-compact' : ''}${collapse ? ' v4-card-collapsed' : ''}`}>
       <header className="v4-card-head">
         <div className="v4-card-id">
           <span className="v4-avatar" aria-hidden="true">
@@ -100,27 +151,25 @@ export function InvestorCard({ investor: i, evaluation, reasons = 3, compact = f
         </div>
         <ScoreRing score={evaluation.score} small={compact} />
       </header>
-      {!compact && <p className="v4-thesis">{i.tesi}</p>}
-      <dl className="v4-facts">
-        <div>
-          <dt>{c.ticket}</dt>
-          <dd>{c.ticketRange(f.euro(i.ticketMin), f.euro(i.ticketMax))}</dd>
-        </div>
-        <div>
-          <dt>{c.fasi}</dt>
-          <dd>{i.fasi.map((x) => L.fase[x]).join(', ')}</dd>
-        </div>
-      </dl>
-      <div className="v4-reasons">
-        <p className="v4-reasons-label">{t.match.ui.reasonsLabel}</p>
-        <ul>
-          {evaluation.reasons.slice(0, reasons).map((r) => (
-            <li key={r}>{r}</li>
-          ))}
-        </ul>
-      </div>
-      {!compact && <PartsDetails parts={evaluation.parts} />}
-      {status}
+      {collapse ? (
+        <>
+          {reasonList}
+          {status}
+          <MoreDetails>
+            {thesis}
+            {facts}
+            <PartsDetails parts={evaluation.parts} />
+          </MoreDetails>
+        </>
+      ) : (
+        <>
+          {!compact && thesis}
+          {facts}
+          {reasonList}
+          {!compact && <PartsDetails parts={evaluation.parts} />}
+          {status}
+        </>
+      )}
     </article>
   );
 }
@@ -136,8 +185,39 @@ export function TeaserDeckCard({ startup, evaluation, status }: TeaserProps) {
   const { locale, t } = useI18n();
   const x = t.match.ui.teaser;
   const teaser = teaserOf(startup, locale);
+  const collapse = useNarrow();
+  const facts = (
+    <dl className="v4-facts v4-facts-4">
+      <div>
+        <dt>{x.settore}</dt>
+        <dd>{teaser.settore}</dd>
+      </div>
+      <div>
+        <dt>{x.fase}</dt>
+        <dd>{teaser.fase}</dd>
+      </div>
+      <div>
+        <dt>{x.regione}</dt>
+        <dd>{teaser.regione}</dd>
+      </div>
+      <div>
+        <dt>{x.round}</dt>
+        <dd>{teaser.importo}</dd>
+      </div>
+    </dl>
+  );
+  const reasonList = (
+    <div className="v4-reasons">
+      <p className="v4-reasons-label">{t.variants.v4.investor.reasons}</p>
+      <ul>
+        {evaluation.reasons.slice(0, collapse ? 2 : 3).map((r) => (
+          <li key={r}>{r}</li>
+        ))}
+      </ul>
+    </div>
+  );
   return (
-    <article className="v4-card v4-card-teaser">
+    <article className={`v4-card v4-card-teaser${collapse ? ' v4-card-collapsed' : ''}`}>
       <header className="v4-card-head">
         <div className="v4-card-id">
           <span className="v4-avatar v4-avatar-anon" aria-hidden="true">
@@ -154,34 +234,23 @@ export function TeaserDeckCard({ startup, evaluation, status }: TeaserProps) {
         <ScoreRing score={evaluation.score} />
       </header>
       <p className="v4-oneliner">{teaser.oneLiner || x.placeholder}</p>
-      <dl className="v4-facts v4-facts-4">
-        <div>
-          <dt>{x.settore}</dt>
-          <dd>{teaser.settore}</dd>
-        </div>
-        <div>
-          <dt>{x.fase}</dt>
-          <dd>{teaser.fase}</dd>
-        </div>
-        <div>
-          <dt>{x.regione}</dt>
-          <dd>{teaser.regione}</dd>
-        </div>
-        <div>
-          <dt>{x.round}</dt>
-          <dd>{teaser.importo}</dd>
-        </div>
-      </dl>
-      <div className="v4-reasons">
-        <p className="v4-reasons-label">{t.variants.v4.investor.reasons}</p>
-        <ul>
-          {evaluation.reasons.slice(0, 3).map((r) => (
-            <li key={r}>{r}</li>
-          ))}
-        </ul>
-      </div>
-      <PartsDetails parts={evaluation.parts} />
-      {status}
+      {collapse ? (
+        <>
+          {reasonList}
+          {status}
+          <MoreDetails>
+            {facts}
+            <PartsDetails parts={evaluation.parts} />
+          </MoreDetails>
+        </>
+      ) : (
+        <>
+          {facts}
+          {reasonList}
+          <PartsDetails parts={evaluation.parts} />
+          {status}
+        </>
+      )}
     </article>
   );
 }

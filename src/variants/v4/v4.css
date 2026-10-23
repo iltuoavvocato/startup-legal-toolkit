@@ -386,7 +386,8 @@
   border-top: 1px dashed var(--v4-line);
   padding-top: 0.6rem;
 }
-.v4-root .v4-parts summary {
+.v4-root .v4-parts summary,
+.v4-root .v4-more > summary {
   cursor: pointer;
   font-weight: 700;
   font-size: 0.9375rem;
@@ -398,10 +399,12 @@
   gap: 0.4rem;
   list-style: none;
 }
-.v4-root .v4-parts summary::-webkit-details-marker {
+.v4-root .v4-parts summary::-webkit-details-marker,
+.v4-root .v4-more > summary::-webkit-details-marker {
   display: none;
 }
-.v4-root .v4-parts summary::before {
+.v4-root .v4-parts summary::before,
+.v4-root .v4-more > summary::before {
   content: '';
   width: 0.5rem;
   height: 0.5rem;
@@ -411,7 +414,8 @@
   transition: transform 0.2s ease;
   margin-right: 0.2rem;
 }
-.v4-root .v4-parts[open] summary::before {
+.v4-root .v4-parts[open] summary::before,
+.v4-root .v4-more[open] > summary::before {
   transform: rotate(45deg);
 }
 .v4-root .v4-parts ul {
@@ -456,6 +460,20 @@
 .v4-root .v4-card-status.is-sent {
   background: var(--v4-yes-soft);
   color: var(--v4-yes);
+}
+
+/* Collapsed card (phones): thesis, facts and score parts behind "Dettagli" */
+.v4-root .v4-more {
+  border-top: 1px dashed var(--v4-line);
+  padding-top: 0.25rem;
+}
+.v4-root .v4-more-body {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+.v4-root .v4-more .v4-parts {
+  padding-top: 0.25rem;
 }
 
 /* Compact card (landing mini-deck) */
@@ -1205,6 +1223,18 @@
   }
   .v4-root .v4-controls {
     gap: 0.5rem;
+  }
+  /* The full deck's buttons stay pinned to the bottom of the screen while the deck is in view. */
+  .v4-root .v4-deck-full .v4-controls {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin: 0 -1rem;
+    padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to bottom, rgba(243, 245, 250, 0), var(--v4-bg) 30%);
+  }
+  .v4-root .v4-deck-full .v4-stage {
+    padding-bottom: 20px;
   }
   .v4-root .v4-deck-full .v4-reasons li:nth-child(n + 3) {
     display: none;

@@ -1280,3 +1280,11 @@
     transition: none;
   }
 }
+
+/* Touch screens and phone widths: no physical keyboard to speak of, so the shortcut legend and hints go. */
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  .v2-root .v2-keys,
+  .v2-root .v2-search kbd {
+    display: none;
+  }
+}
