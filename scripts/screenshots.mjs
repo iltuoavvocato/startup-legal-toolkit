@@ -17,6 +17,19 @@ const VIEWPORTS = {
   mobile: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
 };
 
+// Design variants gallery (internal, noindex): the gallery plus every variant screen, in both languages.
+const routesMeta = JSON.parse(readFileSync('src/routes-meta.json', 'utf8'));
+const VARIANT_PAGES = routesMeta.routes
+  .filter((r) => r.id === 'matchVariants' || /^matchV\d/.test(r.id))
+  .flatMap((r) => {
+    const m = r.id.match(/^matchV(\d)(\w+)$/);
+    const name = m ? `variant-v${m[1]}-${m[2].toLowerCase()}` : 'variants-gallery';
+    return [
+      [name, r.it.path.slice(1)],
+      [`en-${name}`, r.en.path.slice(1)],
+    ];
+  });
+
 const PAGES = [
   ['home', ''],
   ['equity', 'equity/'],
@@ -33,7 +46,30 @@ const PAGES = [
   ['en-equity', 'en/equity/'],
   ['en-404', 'en/page-that-does-not-exist/'],
   ['en-match', 'en/investor-match/'],
+  ...VARIANT_PAGES,
 ];
+
+const VARIANT_COPY = {
+  it: { tag: 'Variante di design – prototipo', disclaimer: 'Strumento indicativo: non sostituisce una consulenza legale.', fictional: 'Dati di esempio fittizi' },
+  en: { tag: 'Design variant – prototype', disclaimer: 'Indicative tool: not a substitute for legal advice.', fictional: 'Fictional sample data' },
+};
+
+/** Variant pages: banner, fictional-data label, disclaimer and the noindex meta must all be there. */
+async function checkVariantPage(page, name) {
+  const lang = name.startsWith('en-') ? 'en' : 'it';
+  const c = VARIANT_COPY[lang];
+  const text = await page.locator('main').innerText();
+  // Case-insensitive: some variants set labels in uppercase with CSS, which innerText reflects.
+  for (const [what, needle] of Object.entries(c)) if (!text.toLowerCase().includes(needle.toLowerCase())) problems.push(`${name}: missing ${what} "${needle}"`);
+  const robots = await page.locator('meta[name="robots"]').first().getAttribute('content').catch(() => null);
+  if (robots !== 'noindex, nofollow') problems.push(`${name}: robots meta is "${robots}"`);
+  if ((await page.locator('h1').count()) !== 1) problems.push(`${name}: expected exactly one <h1>`);
+  const dupes = await page.evaluate(() => {
+    const ids = [...document.querySelectorAll('[id]')].map((el) => el.id);
+    return [...new Set(ids.filter((id, i) => ids.indexOf(id) !== i))];
+  });
+  if (dupes.length) problems.push(`${name}: duplicate ids ${dupes.join(', ')}`);
+}
 
 async function pressTimes(locator, key, n) {
   await locator.focus();
@@ -59,7 +95,52 @@ async function expectNoDeckCopy(page, name, analysisLabel, forbidden) {
   if (forbidden.test(text)) problems.push(`${name}: deck-reading copy shown without a deck`);
 }
 
+/** The compare view loads two variant screens in iframes: wait until both have rendered their heading. */
+async function waitForCompareFrames(page) {
+  const frames = page.locator('.vg-frame iframe');
+  const n = await frames.count();
+  if (n !== 2) problems.push(`gallery: expected 2 compare iframes, found ${n}`);
+  for (let i = 0; i < n; i++) {
+    await frames.nth(i).scrollIntoViewIfNeeded();
+    await frames.nth(i).contentFrame().locator('#page-title').waitFor();
+    const header = await frames.nth(i).contentFrame().locator('.site-header').count();
+    if (header) problems.push('gallery: compare iframe shows the site header (embed mode not applied)');
+  }
+}
+
 const STATES = {
+  // Design variants: the interactions work on the real engine, and a startup's "no" is never revealed.
+  'variant-v4-investor-swiped': async (page, base) => {
+    await page.goto(`${base}match-investitori/varianti/v4/investitore/`);
+    await page.locator('#page-title').waitFor();
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowRight');
+    await page.getByText('3 di 5').first().waitFor();
+  },
+  'en-variant-v2-results-sorted': async (page, base) => {
+    await page.goto(`${base}en/investor-match/variants/v2/results/`);
+    await page.locator('#page-title').waitFor();
+    const header = page.locator('th:has(button.v2-sort)').filter({ hasText: /^Investor/ }).first();
+    await header.locator('button').click();
+    const sort = await header.getAttribute('aria-sort');
+    if (sort !== 'ascending' && sort !== 'descending') problems.push(`v2 sort: aria-sort is "${sort}" after clicking`);
+  },
+  'variant-v3-investor-chat': async (page, base) => {
+    await page.goto(`${base}match-investitori/varianti/v3/investitore/`);
+    await page.locator('#page-title').waitFor();
+    await page.getByRole('button', { name: 'Interessato', exact: true }).click();
+    await page.getByRole('button', { name: 'Simula la risposta della startup' }).click();
+  },
+  // The first sample teaser (Contoverde) declines in the demo: the investor must keep seeing "Interesse inviato".
+  'variant-v5-investor-declined': async (page, base) => {
+    await page.goto(`${base}match-investitori/varianti/v5/investitore/`);
+    await page.locator('#page-title').waitFor();
+    await page.getByRole('button', { name: 'Interessato', exact: true }).first().click();
+    await page.getByRole('button', { name: 'Simula la risposta della startup' }).first().click();
+    const text = await page.locator('main').innerText();
+    if (text.includes('Contoverde') || text.includes('Giada')) problems.push('v5 investor: a declining startup was revealed');
+    if (!text.includes('Interesse inviato')) problems.push('v5 investor: declined interest does not read "Interesse inviato"');
+  },
   'equity-3-founders': async (page, base) => {
     await page.goto(`${base}equity/`);
     await page.getByRole('button', { name: 'Aggiungi cofondatore' }).click();
@@ -194,7 +275,11 @@ try {
         await document.fonts.ready;
       });
       await page.waitForTimeout(150);
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      // Compare with the configured viewport too: on mobile emulation the layout viewport can grow with the content.
+      const overflow = await page.evaluate(
+        (w) => Math.max(document.documentElement.scrollWidth, window.innerWidth) - w,
+        opts.viewport.width,
+      );
       if (overflow > 0) problems.push(`[${vpName}] ${name}: horizontal overflow of ${overflow}px`);
       // Privacy: no cookies ever; localStorage may only hold the language preference (written by the switcher).
       const storage = await page.evaluate(() => ({ cookie: document.cookie, keys: Object.keys(window.localStorage) }));
@@ -213,6 +298,8 @@ try {
     for (const [name, path] of PAGES) {
       await page.goto(`${base}${path}`);
       await page.locator('#page-title').waitFor();
+      if (name.includes('variant')) await checkVariantPage(page, name);
+      if (name.endsWith('variants-gallery')) await waitForCompareFrames(page);
       await shoot(name);
     }
     for (const [name, run] of Object.entries(STATES)) {
