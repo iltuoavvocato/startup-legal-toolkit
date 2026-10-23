@@ -92,7 +92,8 @@ export interface Investor {
   ticketMin: number;
   ticketMax: number;
   aree: Area[] | 'italia';
-  sede: Regione;
+  /** Region of the investor's base; null when not given (no same-region bonus). */
+  sede: Regione | null;
   tesi: string;
   referente: string;
   email: string;
