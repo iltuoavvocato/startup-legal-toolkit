@@ -1,21 +1,7 @@
-// Variant V3: placeholder screens (replaced by the real implementation).
-import { useI18n } from '../../i18n/context';
+// Variant V3 "Agent-first conversazionale": the agent explains each match in a chat with quick-reply chips.
+import './v3.css';
 
-function Placeholder() {
-  const { t } = useI18n();
-  return (
-    <section style={{ padding: '3rem 1.25rem' }}>
-      <h1 id="page-title" tabIndex={-1}>
-        V3 · {t.variants.variants.v3.name}
-      </h1>
-      <p>{t.variants.v3.placeholder}</p>
-    </section>
-  );
-}
-
-export const Landing = Placeholder;
-export const Results = Placeholder;
-export const Investor = Placeholder;
-export function Thumb() {
-  return <div aria-hidden="true" />;
-}
+export { Landing } from './Landing';
+export { Results } from './Results';
+export { Investor } from './InvestorView';
+export { Thumb } from './Thumb';
