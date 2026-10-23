@@ -1,4 +1,5 @@
-// Simulated "l'agente ha letto il deck". The file is never read: only its name, type and size are used.
+// Deck upload rules, agent step labels and the profile draft. The deck's text is read locally (pdfText.ts) and
+// turned into findings (deckExtract.ts); the founder's choices on those findings arrive here as an AcceptedDeck.
 import type { Locale } from '../i18n/locales';
 import { MESSAGES } from '../i18n/messages';
 import {
@@ -20,7 +21,7 @@ export interface DeckMeta {
   size: number;
 }
 
-/** Returns an Italian error message, or null if the file is acceptable. */
+/** Returns an error message in the given language, or null if the file is acceptable. */
 export function validateDeck(file: DeckMeta, locale: Locale = 'it'): string | null {
   const m = MESSAGES[locale].match.deck;
   const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
@@ -62,6 +63,8 @@ export interface StartupForm {
 export interface Extracted<T> {
   value: T;
   fonte: Fonte;
+  /** Deck page, when fonte is 'deck'. */
+  page?: number;
 }
 
 export interface Extraction {
@@ -72,7 +75,7 @@ export interface Extraction {
   oneLiner: Extracted<string>;
 }
 
-/** Fixed demo extraction, used for anything neither the form nor the file name provides. */
+/** Fixed demo extraction, used for anything neither the deck review nor the form provides. */
 export const DEMO_EXTRACTION = {
   settore: 'saas-b2b',
   fase: 'seed',
@@ -80,78 +83,6 @@ export const DEMO_EXTRACTION = {
   round: 300_000,
   oneLiner: MESSAGES.it.match.deck.demoOneLiner,
 } as const satisfies { settore: Settore; fase: Fase; regione: Regione; round: number; oneLiner: string };
-
-// Keyword → value, matched against the file name (lowercase, separators normalised to spaces).
-const SETTORE_KEYWORDS: [string, Settore][] = [
-  ['fintech', 'fintech'],
-  ['insurtech', 'fintech'],
-  ['pagamenti', 'fintech'],
-  ['health', 'healthtech'],
-  ['salute', 'healthtech'],
-  ['medtech', 'healthtech'],
-  ['agri', 'agritech'],
-  ['clean', 'cleantech'],
-  ['energia', 'cleantech'],
-  ['saas', 'saas-b2b'],
-  ['b2b', 'saas-b2b'],
-  ['edtech', 'edtech'],
-  ['scuola', 'edtech'],
-  ['deeptech', 'deeptech'],
-  ['mobilit', 'mobilita'],
-  ['proptech', 'proptech'],
-  ['immobil', 'proptech'],
-  ['food', 'foodtech'],
-  ['consumer', 'consumer'],
-];
-
-const FASE_KEYWORDS: [string, Fase][] = [
-  ['pre seed', 'pre-seed'],
-  ['preseed', 'pre-seed'],
-  ['serie a', 'serie-a'],
-  ['series a', 'serie-a'],
-  ['seed', 'seed'],
-];
-
-const REGIONE_KEYWORDS: [string, Regione][] = [
-  ['milano', 'lombardia'],
-  ['milan', 'lombardia'],
-  ['lombardia', 'lombardia'],
-  ['torino', 'piemonte'],
-  ['turin', 'piemonte'],
-  ['piemonte', 'piemonte'],
-  ['genova', 'liguria'],
-  ['bologna', 'emilia-romagna'],
-  ['venezia', 'veneto'],
-  ['venice', 'veneto'],
-  ['padova', 'veneto'],
-  ['veneto', 'veneto'],
-  ['trento', 'trentino-alto-adige'],
-  ['trieste', 'friuli-venezia-giulia'],
-  ['firenze', 'toscana'],
-  ['florence', 'toscana'],
-  ['toscana', 'toscana'],
-  ['roma', 'lazio'],
-  ['rome', 'lazio'],
-  ['lazio', 'lazio'],
-  ['napoli', 'campania'],
-  ['naples', 'campania'],
-  ['bari', 'puglia'],
-  ['palermo', 'sicilia'],
-  ['catania', 'sicilia'],
-  ['cagliari', 'sardegna'],
-];
-
-function normaliseName(name: string): string {
-  return ` ${name
-    .toLowerCase()
-    .replace(/\.pdf$/i, '')
-    .replace(/[^a-z0-9àèéìòù]+/g, ' ')
-    .trim()} `;
-}
-
-function findKeyword<T>(haystack: string, table: [string, T][]): T | undefined {
-  return table.find(([k]) => haystack.includes(k))?.[1];
-}
 
 /** Trims to `max` characters at a word boundary, adding an ellipsis when cut. */
 export function toOneLiner(text: string, max = ONE_LINER_MAX): string {
@@ -165,30 +96,47 @@ export function toOneLiner(text: string, max = ONE_LINER_MAX): string {
   return `${(lastSpace > 40 ? cut.slice(0, lastSpace) : cut).replace(/[,;:.\s]+$/, '')}…`;
 }
 
-/** Deterministic mock: form values win, then file-name keywords, then the fixed demo extraction. */
-export function mockExtract(file: Pick<DeckMeta, 'name'> | null, form: StartupForm, locale: Locale = 'it'): Extraction {
-  const hay = file ? normaliseName(file.name) : '';
-  const pick = <T>(formValue: unknown, guard: (v: unknown) => v is T, keyword: T | undefined, demo: T): Extracted<T> => {
+export interface AcceptedValue<T> {
+  value: T;
+  /** Deck page the value comes from. */
+  page: number;
+}
+
+/** What the founder chose to use from the deck review ("Cosa abbiamo trovato nel deck"). */
+export interface AcceptedDeck {
+  settore?: AcceptedValue<Settore>;
+  fase?: AcceptedValue<Fase>;
+  regione?: AcceptedValue<Regione>;
+  round?: AcceptedValue<number>;
+  team?: AcceptedValue<number>;
+  /** Anonymous one-liner taken (or rewritten) from the deck's cover. */
+  oneLiner?: AcceptedValue<string>;
+  /** Traction lines as the founder accepted or rewrote them ("MRR 18.000 €"). */
+  traction: AcceptedValue<string>[];
+}
+
+/**
+ * Profile draft: what the founder accepted from the deck wins, then the form, then the fixed demo values (labelled
+ * "esempio" in the review, so nothing is passed off as read from the deck).
+ */
+export function draftExtraction(form: StartupForm, deck: AcceptedDeck | null, locale: Locale = 'it'): Extraction {
+  const pick = <T>(accepted: AcceptedValue<T> | undefined, formValue: unknown, guard: (v: unknown) => v is T, demo: T): Extracted<T> => {
+    if (accepted) return { value: accepted.value, fonte: 'deck', page: accepted.page };
     if (guard(formValue)) return { value: formValue, fonte: 'modulo' };
-    if (keyword !== undefined) return { value: keyword, fonte: 'deck' };
     return { value: demo, fonte: 'esempio' };
   };
-
-  const roundFromName = hay.match(/ (\d{2,4}) ?k /)?.[1];
-  const round: Extracted<number> =
-    form.round && form.round > 0
-      ? { value: form.round, fonte: 'modulo' }
-      : roundFromName
-        ? { value: Number(roundFromName) * 1000, fonte: 'deck' }
-        : { value: DEMO_EXTRACTION.round, fonte: 'esempio' };
-
+  const isRound = (v: unknown): v is number => typeof v === 'number' && v > 0;
   const descr = form.descrizione.trim();
   return {
-    settore: pick(form.settore, isSettore, findKeyword(hay, SETTORE_KEYWORDS), DEMO_EXTRACTION.settore),
-    fase: pick(form.fase, isFase, findKeyword(hay, FASE_KEYWORDS), DEMO_EXTRACTION.fase),
-    regione: pick(form.regione, isRegione, findKeyword(hay, REGIONE_KEYWORDS), DEMO_EXTRACTION.regione),
-    round,
-    oneLiner: descr ? { value: toOneLiner(descr), fonte: 'modulo' } : { value: MESSAGES[locale].match.deck.demoOneLiner, fonte: 'esempio' },
+    settore: pick(deck?.settore, form.settore, isSettore, DEMO_EXTRACTION.settore),
+    fase: pick(deck?.fase, form.fase, isFase, DEMO_EXTRACTION.fase),
+    regione: pick(deck?.regione, form.regione, isRegione, DEMO_EXTRACTION.regione),
+    round: pick(deck?.round, form.round, isRound, DEMO_EXTRACTION.round),
+    oneLiner: deck?.oneLiner
+      ? { value: toOneLiner(deck.oneLiner.value), fonte: 'deck', page: deck.oneLiner.page }
+      : descr
+        ? { value: toOneLiner(descr), fonte: 'modulo' }
+        : { value: MESSAGES[locale].match.deck.demoOneLiner, fonte: 'esempio' },
   };
 }
 

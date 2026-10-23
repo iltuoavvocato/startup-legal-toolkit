@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { demoInvestors, demoStartups, DEMO_INVESTORS, DEMO_STARTUPS } from '../data/matchDemo';
-import { mockExtract, validateDeck } from './deck';
+import { draftExtraction, validateDeck } from './deck';
 import { evaluate, matchInvestors, scoreBand } from './matching';
 import { ownStartup, thesisErrors } from './matchQuery';
 import type { Investor, StartupProfile } from './matchTaxonomy';
@@ -120,10 +120,9 @@ describe('English demo data, opt-in, deck and forms', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toBe('You’ve reached the limit of 5 proposals for this month (placeholder value).');
     expect(validateDeck({ name: 'deck.pptx', type: '', size: 10 }, 'en')).toBe('Upload the deck as a PDF.');
-    expect(mockExtract(null, { settore: '', fase: '', regione: '', round: null, descrizione: '' }, 'en').oneLiner.value).toBe(
+    expect(draftExtraction({ settore: '', fase: '', regione: '', round: null, descrizione: '' }, null, 'en').oneLiner.value).toBe(
       'Software that simplifies a repetitive business process for Italian SMEs.',
     );
-    expect(mockExtract({ name: 'Healthtech Rome seed.pdf' }, { settore: '', fase: '', regione: '', round: null, descrizione: '' }).regione.value).toBe('lazio');
     expect(thesisErrors({ settori: [], fasi: ['seed'], ticketMin: 1, ticketMax: 2, aree: ['centro'] }, 'en')).toEqual({
       settori: 'Choose at least one sector.',
     });
