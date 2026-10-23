@@ -27,7 +27,8 @@ the result and in the footer). Every "Parla con un avvocato" CTA links to
 - Vitest for unit tests, ESLint 9 (typescript-eslint and react-hooks)
 - playwright-core with the system Google Chrome for screenshots and the OG image
 
-No runtime dependencies beyond React and react-router. There are no trackers and no cookies, and the site makes **no
+Runtime dependencies: React, react-router and `pdfjs-dist` (bundled, lazy-loaded only when a founder picks a deck in
+the matching prototype). There are no trackers and no cookies, and the site makes **no
 external requests**. The only thing ever stored is the language chosen with the IT/EN switcher (`localStorage`, key
 `lang`). Tool state lives in the URL query string, so results can be shared.
 
@@ -42,11 +43,12 @@ npm test             # vitest run (src/lib/*.test.ts)
 npm run lint         # eslint, zero warnings allowed
 npm run screenshots  # build first; full-page PNGs at 1440×900 and 390×844@2x into screenshots/ (git-ignored)
 npm run og           # re-render public/og-image.png from scripts/og-template.html
+node scripts/make-sample-decks.mjs  # regenerate the two fictional sample decks in public/demo/ (pdf-lib, byte-stable)
 ```
 
 `npm run screenshots` uses Chrome at its default install location (`channel: 'chrome'`). Set
 `CHROME_PATH=/path/to/chromium` to use a different binary. The script also fails if it detects console errors,
-external requests, horizontal overflow, any cookie, a `localStorage` key other than `lang`, or a wrong `<html lang>`.
+external requests, any non-GET request (nothing may be uploaded), horizontal overflow, any cookie, a `localStorage` key other than `lang`, or a wrong `<html lang>`.
 It captures English pages too (files prefixed `en-`). At the end it clicks the language switcher and checks the
 equivalent page, the stored preference and the redirect, which happens only from `/`.
 
@@ -161,11 +163,26 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
 `.example` domain). The full plan and the default decisions are in `docs/briefs/investor-matching.md`.
 
 - **Startup flow** (`/match-investitori/startup/`): settore, fase, regione, round, descrizione and an optional PDF deck
-  (drag and drop or file picker). The deck is **never read or uploaded**: only its name, type and size are used. A
-  deterministic "l'agente ha letto il deck" step (`src/lib/deck.ts`) drafts the profile from the form and the file name.
-  Without a deck, neither the stepper ("Analisi dei dati" / "Analysing your details") nor the agent checklist mentions
-  reading one.
-  The founder confirms or edits it, then sees ranked investors with score, reasons and exclusions, and can make up to
+  (drag and drop, file picker, or **"Prova con un deck di esempio" / "Try a sample deck"**, which loads a fictional
+  sample from `public/demo/`). The deck is **read in the browser and never uploaded**:
+  - `src/lib/pdfText.ts` lazy-loads pdf.js (`pdfjs-dist`, bundled; worker via Vite `?url`, no CDN) only when a file is
+    chosen, and extracts the text page by page with fonts, CMaps and eval disabled, so nothing is fetched. Limits
+    (placeholders): PDF only, 20 MB, 40 pages. Encrypted, damaged, too long and image-only/scanned decks (under 60
+    characters of text) get a clear message and fall back to the form-only flow.
+  - `src/lib/deckExtract.ts` (pure, no AI, IT + EN) proposes **settore** (keyword lists mapped to the 11 taxonomy
+    sectors), **fase** (pre-seed / seed / serie A, preferring the stage being raised now over past rounds), **round**
+    (the ask: "raising €1.5M", "round da 800k", "1,2 mln", "800.000 €"; market sizes, revenue and past raises are
+    ignored), **sede** (Italian cities and regions → region, office lines weigh more), **team size**, **traction**
+    (MRR/ARR, revenue, users, customers, growth %, pilots, LOI) and a **tagline** for the anonymous one-liner. Every
+    finding has a confidence (alta/media/bassa) and the snippet + page it comes from. Only the findings are kept, not
+    the text.
+  - Review step **"Cosa abbiamo trovato nel deck" / "What we found in your deck"**: each finding with snippet and page
+    and Usa / Modifica / Ignora; nothing is applied without a choice (`src/lib/deckSignals.ts`). Accepted values
+    prefill the profile ("Fonte: dal deck, p. 7"), which the founder still confirms.
+  - Results: "L'agente ha usato il tuo deck per: …", each reason that rests on a deck value says "(dal tuo deck, p. N)",
+    and accepted team/traction signals are quoted under each match (they don't count towards the score).
+  Without a readable deck, neither the stepper ("Analisi dei dati" / "Analysing your details") nor the agent checklist
+  mentions reading one. The founder then sees ranked investors with score, reasons and exclusions, and can make up to
   `MONTHLY_PROPOSAL_LIMIT = 5` proposals a month (placeholder, "valore provvisorio").
 - **Investor flow** (`/match-investitori/investitore/`): settori, fasi, ticket min/max and aree, then anonymous teasers of
   matching startups.
@@ -175,7 +192,8 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
 - **Double opt-in** (`src/lib/optin.ts`): `proposta → attesa-startup → intro`, or a closed state on either no.
   `viewFor(state, side)` guarantees that a "no" looks exactly like no answer to the other side (tested).
 - **URL state**: only enumerated values and amounts go in the query string (never names, descriptions or file names).
-  Step state and the monthly counter live in memory. There is no storage and there are no network calls.
+  Step state and the monthly counter live in memory. There is no storage and there are no network calls with user
+  data: the only requests are same-origin static assets (pdf.js chunk and worker, and the sample deck when asked for).
 
 **A real double opt-in with real investor data requires a backend** (accounts, investor identification, sending
 proposals and emails) **and a privacy and regulatory review** (Regolamento (UE) 2020/1503, Consob, TUF art. 18, GDPR,
