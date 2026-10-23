@@ -21,7 +21,7 @@ import { demoInvestors, EXAMPLE_STARTUP_FORM } from '../data/matchDemo';
 import { readQuery, useSyncQuery } from '../hooks/useQueryState';
 import { useI18n } from '../i18n/context';
 import { Rich } from '../i18n/Rich';
-import { fonteLabels, mockExtract, type DeckMeta, type Extraction, type Fonte, type StartupForm } from '../lib/deck';
+import { fonteLabels, mockExtract, startupFlowSteps, type DeckMeta, type Extraction, type Fonte, type StartupForm } from '../lib/deck';
 import { matchInvestors } from '../lib/matching';
 import { ownStartup, startupFromQuery, startupToQuery, type StartupCore } from '../lib/matchQuery';
 import {
@@ -108,11 +108,13 @@ export function MatchStartupPage() {
     headingRef.current?.focus();
   }, [step]);
 
+  const stepLabels = startupFlowSteps(locale, Boolean(deck));
+
   const go = (next: Step) => {
     moved.current = true;
     setStep(next);
     const n = STEPS.indexOf(next);
-    setMessage(u.stepAnnounce(n + 1, STEPS.length, u.steps[n]!));
+    setMessage(u.stepAnnounce(n + 1, STEPS.length, stepLabels[n]!));
   };
 
   const useExample = () => {
@@ -214,7 +216,7 @@ export function MatchStartupPage() {
       <section className="section section-cream tool-section">
         <div className="container">
           <LiveRegion message={message} />
-          <MatchSteps steps={u.steps} current={stepIndex} label={u.stepsLabel} />
+          <MatchSteps steps={stepLabels} current={stepIndex} label={u.stepsLabel} />
 
           {step === 'dati' && (
             <div className="mi-flow">

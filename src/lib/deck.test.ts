@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { agentSteps, DEMO_EXTRACTION, formatFileSize, MAX_DECK_MB, mockExtract, toOneLiner, validateDeck, type StartupForm } from './deck';
+import {
+  agentSteps,
+  DEMO_EXTRACTION,
+  formatFileSize,
+  MAX_DECK_MB,
+  mockExtract,
+  startupFlowSteps,
+  toOneLiner,
+  validateDeck,
+  type StartupForm,
+} from './deck';
 
 const empty: StartupForm = { settore: '', fase: '', regione: '', round: null, descrizione: '' };
 
@@ -89,6 +99,21 @@ describe('agentSteps', () => {
       const steps = agentSteps(locale, false);
       expect(steps).toHaveLength(agentSteps(locale, true).length);
       expect(steps.join(' ')).not.toMatch(/deck/i);
+    }
+  });
+});
+
+describe('startupFlowSteps', () => {
+  it('labels the analysis step as reading the deck only when there is one', () => {
+    expect(startupFlowSteps('it', true)[1]).toBe('Lettura del deck');
+    expect(startupFlowSteps('en', true)[1]).toBe('Reading the deck');
+    expect(startupFlowSteps('it', false)[1]).toBe('Analisi dei dati');
+    expect(startupFlowSteps('en', false)[1]).toBe('Analysing your details');
+    for (const locale of ['it', 'en'] as const) {
+      const steps = startupFlowSteps(locale, false);
+      expect(steps).toHaveLength(startupFlowSteps(locale, true).length);
+      // Only the first step (where the deck can be uploaded) may mention it.
+      expect(steps.slice(1).join(' ')).not.toMatch(/deck/i);
     }
   });
 });

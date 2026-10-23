@@ -1,7 +1,7 @@
 import { useI18n } from '../../i18n/context';
 
 interface Props {
-  steps: string[];
+  steps: readonly string[];
   current: number;
   label: string;
 }
