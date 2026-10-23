@@ -2538,6 +2538,15 @@ input[type='range']:focus-visible::-moz-range-thumb {
   flex: 1;
 }
 
+/* 404: the disclaimer sits in a slim band under the hero. */
+.not-found-note {
+  padding: 1.25rem 0;
+}
+
+.not-found-note .disclaimer {
+  margin: 0;
+}
+
 main:has(> .hero-compact:only-child) {
   display: flex;
   flex-direction: column;
