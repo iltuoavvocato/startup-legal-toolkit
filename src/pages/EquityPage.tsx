@@ -21,7 +21,9 @@ import {
   type Founder,
 } from '../lib/equity';
 import { formatEuro, formatNumber, formatPercent } from '../lib/format';
-import { DISCLAIMER } from '../site';
+import { MESSAGES } from '../i18n/messages';
+
+const DISCLAIMER = MESSAGES.it.common.disclaimer;
 
 const COLORS = ['#16305B', '#C9A45C', '#4F6FA8', '#8C6A2E', '#8A97B3'];
 const POOL_COLOR = '#D6CDB8';

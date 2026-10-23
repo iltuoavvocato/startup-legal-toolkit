@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
-const meta = JSON.parse(readFileSync(join(root, 'src/routes-meta.json'), 'utf8'));
+const rawMeta = JSON.parse(readFileSync(join(root, 'src/routes-meta.json'), 'utf8'));
+const meta = { routes: rawMeta.routes.map((r) => r.it), notFound: rawMeta.notFound.it };
 
 function normalizeBase(raw) {
   let base = (raw ?? '/').trim() || '/';

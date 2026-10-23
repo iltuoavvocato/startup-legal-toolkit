@@ -1,4 +1,5 @@
 import type { AnchorHTMLAttributes, ReactNode } from 'react';
+import { useI18n } from '../i18n/context';
 
 interface Props extends AnchorHTMLAttributes<HTMLAnchorElement> {
   href: string;
@@ -6,10 +7,11 @@ interface Props extends AnchorHTMLAttributes<HTMLAnchorElement> {
 }
 
 export function ExternalLink({ children, ...rest }: Props) {
+  const { t } = useI18n();
   return (
     <a target="_blank" rel="noopener" {...rest}>
       {children}
-      <span className="sr-only"> (si apre in una nuova scheda)</span>
+      <span className="sr-only">{t.common.newTab}</span>
     </a>
   );
 }

@@ -1,27 +1,27 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { usePageMeta } from '../hooks/usePageMeta';
-import { DISCLAIMER, lawyerUrl } from '../site';
+import { useI18n } from '../i18n/context';
+import { routeFromPath, type RouteId } from '../i18n/routes';
+import { lawyerUrl, type ToolCampaign } from '../site';
 import { ExternalLink } from './ExternalLink';
 import { Logo } from './Logo';
 
-const NAV = [
-  { to: '/equity/', label: 'Ripartizione quote' },
-  { to: '/vesting/', label: 'Vesting' },
-  { to: '/quiz/', label: 'Quali documenti?' },
-  { to: '/match-investitori/', label: 'Investitori' },
-];
+const NAV = ['equity', 'vesting', 'quiz', 'match'] as const;
 
-function routeKey(pathname: string): string {
-  const p = pathname.endsWith('/') ? pathname : `${pathname}/`;
-  return p;
+function campaignFor(id: RouteId | undefined): ToolCampaign {
+  if (id === 'equity' || id === 'vesting' || id === 'quiz') return id;
+  if (id?.startsWith('match')) return 'match';
+  return 'home';
 }
 
 export function Layout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const firstRender = useRef(true);
-  usePageMeta(routeKey(pathname));
+  const { t, path } = useI18n();
+  usePageMeta(pathname);
+  const nav = NAV.map((id) => ({ to: path(id), label: t.common.nav[id] }));
 
   useEffect(() => {
     setMenuOpen(false);
@@ -41,24 +41,16 @@ export function Layout({ children }: { children: ReactNode }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [menuOpen]);
 
-  const campaign = pathname.includes('match-investitori')
-    ? 'match'
-    : pathname.includes('equity')
-    ? 'equity'
-    : pathname.includes('vesting')
-      ? 'vesting'
-      : pathname.includes('quiz')
-        ? 'quiz'
-        : 'home';
+  const campaign = campaignFor(routeFromPath(pathname)?.id);
 
   return (
     <>
       <a className="skip-link" href="#main">
-        Vai al contenuto
+        {t.common.skipLink}
       </a>
       <header className="site-header">
         <div className="container header-inner">
-          <Link to="/" className="brand" aria-label="Startup Legal Toolkit — home">
+          <Link to={path('home')} className="brand" aria-label={t.common.brandLabel}>
             <Logo variant="light" height={15} />
             <span className="brand-sub">Startup Legal Toolkit</span>
           </Link>
@@ -70,11 +62,11 @@ export function Layout({ children }: { children: ReactNode }) {
             onClick={() => setMenuOpen((o) => !o)}
           >
             <span className="menu-icon" aria-hidden="true" />
-            <span className="sr-only">{menuOpen ? 'Chiudi il menu' : 'Apri il menu'}</span>
+            <span className="sr-only">{menuOpen ? t.common.menuClose : t.common.menuOpen}</span>
           </button>
-          <nav id="site-nav" className={`site-nav ${menuOpen ? 'is-open' : ''}`} aria-label="Principale">
+          <nav id="site-nav" className={`site-nav ${menuOpen ? 'is-open' : ''}`} aria-label={t.common.navLabel}>
             <ul>
-              {NAV.map((item) => (
+              {nav.map((item) => (
                 <li key={item.to}>
                   <NavLink to={item.to} className={({ isActive }) => (isActive ? 'active' : undefined)}>
                     {item.label}
@@ -83,7 +75,7 @@ export function Layout({ children }: { children: ReactNode }) {
               ))}
             </ul>
             <ExternalLink href={lawyerUrl(campaign)} className="btn btn-gold btn-sm">
-              Parla con un avvocato
+              {t.common.talkToLawyer}
             </ExternalLink>
           </nav>
         </div>
@@ -95,17 +87,17 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="container footer-inner">
           <div className="footer-brand">
             <Logo variant="light" height={16} />
-            <p>Strumenti gratuiti per founder, a cura di ilTuoAvvocato.com</p>
+            <p>{t.common.footerTagline}</p>
           </div>
-          <nav aria-label="Footer" className="footer-nav">
+          <nav aria-label={t.common.footerNavLabel} className="footer-nav">
             <ul>
-              {NAV.map((item) => (
+              {nav.map((item) => (
                 <li key={item.to}>
                   <Link to={item.to}>{item.label}</Link>
                 </li>
               ))}
               <li>
-                <Link to="/privacy/">Privacy</Link>
+                <Link to={path('privacy')}>{t.common.privacy}</Link>
               </li>
               <li>
                 <ExternalLink href={lawyerUrl(campaign)}>iltuoavvocato.com</ExternalLink>
@@ -114,7 +106,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </nav>
         </div>
         <div className="container footer-bottom">
-          <p className="footer-disclaimer">{DISCLAIMER}</p>
+          <p className="footer-disclaimer">{t.common.disclaimer}</p>
           <p>© {new Date().getFullYear()} ilTuoAvvocato.com</p>
         </div>
       </footer>

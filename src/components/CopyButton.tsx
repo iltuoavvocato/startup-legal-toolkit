@@ -1,4 +1,5 @@
 import { useCopy } from '../hooks/useCopy';
+import { useI18n } from '../i18n/context';
 
 interface Props {
   label: string;
@@ -7,6 +8,7 @@ interface Props {
 
 export function CopyButton({ label, getText }: Props) {
   const [state, copy] = useCopy();
+  const { t } = useI18n();
   return (
     <>
       <button type="button" className="btn btn-outline" onClick={() => copy(getText())}>
@@ -20,10 +22,10 @@ export function CopyButton({ label, getText }: Props) {
             </>
           )}
         </svg>
-        {state === 'copied' ? 'Copiato!' : label}
+        {state === 'copied' ? t.common.copied : label}
       </button>
       <span className="sr-only" role="status" aria-live="polite">
-        {state === 'copied' ? 'Testo copiato negli appunti.' : state === 'error' ? 'Copia non riuscita: seleziona e copia il testo manualmente.' : ''}
+        {state === 'copied' ? t.common.copiedStatus : state === 'error' ? t.common.copyError : ''}
       </span>
     </>
   );
