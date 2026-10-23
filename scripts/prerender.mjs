@@ -19,6 +19,8 @@ const base = normalizeBase(process.env.BASE_PATH);
 const siteUrl = (process.env.SITE_URL ?? 'https://toolkit.iltuoavvocato.com').replace(/\/+$/, '');
 const abs = (path) => `${siteUrl}${base}${path.replace(/^\//, '')}`;
 const ogImage = abs('og-image.png');
+// NOINDEX=true: site-wide noindex for preview deployments (every page gets the robots meta, no Sitemap in robots.txt).
+const siteNoindex = process.env.NOINDEX === 'true';
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -26,7 +28,11 @@ function headTags({ title, description, path, noindex }) {
   const url = path ? abs(path) : null;
   return [
     `<meta name="description" content="${esc(description)}" />`,
-    noindex ? '<meta name="robots" content="noindex" />' : '',
+    siteNoindex
+      ? '<meta name="robots" content="noindex, nofollow" />'
+      : noindex
+        ? '<meta name="robots" content="noindex" />'
+        : '',
     url ? `<link rel="canonical" href="${url}" />` : '',
     `<link rel="icon" type="image/svg+xml" href="${base}favicon.svg" />`,
     `<meta property="og:type" content="website" />`,
@@ -92,5 +98,9 @@ ${meta.routes
 </urlset>
 `;
 writeFileSync(join(dist, 'sitemap.xml'), sitemap);
-writeFileSync(join(dist, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${abs('sitemap.xml')}\n`);
+// Never Disallow here: crawlers must be able to fetch the pages to see the noindex tag.
+writeFileSync(
+  join(dist, 'robots.txt'),
+  `User-agent: *\nAllow: /\n${siteNoindex ? '' : `\nSitemap: ${abs('sitemap.xml')}\n`}`,
+);
 console.log('prerender: sitemap.xml, robots.txt');

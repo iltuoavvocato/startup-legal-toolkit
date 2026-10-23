@@ -54,6 +54,7 @@ files in `src/assets/fonts/` are committed, so a normal build needs no Python.
 |-------------|--------------------------------------|----------|
 | `BASE_PATH` | `/`                                  | Vite `base` and router basename. Use `/<repo>/` for a GitHub Pages project site. |
 | `SITE_URL`  | `https://toolkit.iltuoavvocato.com` (**placeholder**) | Origin for canonical, `og:url`, `og:image`, sitemap and robots. Origin only, no path. |
+| `NOINDEX`   | unset                                | When `true`, every generated HTML page gets `<meta name="robots" content="noindex, nofollow">` and `robots.txt` omits the `Sitemap` line. `robots.txt` still allows crawling, so search engines can see the tag. Any other value (or unset) = no tag. |
 
 Example: `BASE_PATH=/startup-legal-toolkit/ SITE_URL=https://<user>.github.io npm run build`
 
@@ -76,6 +77,8 @@ Example: `BASE_PATH=/startup-legal-toolkit/ SITE_URL=https://<user>.github.io np
 
 1. In the repo, go to *Settings → Pages → Source* and choose **GitHub Actions**.
 2. By default the workflow sets `BASE_PATH=/<repo-name>/` and `SITE_URL=https://<owner>.github.io` (a project site).
+   It also sets `NOINDEX: 'true'`, so the GitHub Pages preview is not indexed. **Remove `NOINDEX` from the workflow
+   when the site goes live on its real domain.**
 3. With a **custom domain**, add `public/CNAME` containing the domain (e.g. `toolkit.iltuoavvocato.com`) and
    change the workflow env to `BASE_PATH: /` and `SITE_URL: https://toolkit.iltuoavvocato.com`.
 

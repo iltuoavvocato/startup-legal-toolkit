@@ -22,6 +22,9 @@ jobs:
       # With a custom domain (public/CNAME), set BASE_PATH to "/" and SITE_URL to the domain.
       BASE_PATH: /${{ github.event.repository.name }}/
       SITE_URL: https://${{ github.repository_owner }}.github.io
+      # Preview only: adds <meta name="robots" content="noindex, nofollow"> to every page.
+      # Remove this line when the site goes live on its real domain.
+      NOINDEX: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
