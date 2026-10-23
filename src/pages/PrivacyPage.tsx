@@ -1,40 +1,33 @@
 import { ExternalLink } from '../components/ExternalLink';
 import { PageHero } from '../components/PageHero';
+import { useI18n } from '../i18n/context';
 import { LAWYER_URL } from '../site';
 
 export function PrivacyPage() {
+  const { t } = useI18n();
+  const p = t.privacy;
   return (
     <>
-      <PageHero eyebrow="Informazioni" title="Privacy">
-        <p>In breve: questo sito non raccoglie i tuoi dati.</p>
+      <PageHero eyebrow={p.eyebrow} title={p.title}>
+        <p>{p.lead}</p>
       </PageHero>
       <section className="section section-cream">
         <div className="container">
           <div className="prose">
-          <h2>Nessun cookie, nessun tracciamento</h2>
+          <h2>{p.cookiesTitle}</h2>
+          <p>{p.cookiesText}</p>
+          <h2>{p.storageTitle}</h2>
+          <p>{p.storageText}</p>
+          <h2>{p.localTitle}</h2>
+          <p>{p.localText}</p>
+          <p>{p.urlText}</p>
+          <h2>{p.linksTitle}</h2>
           <p>
-            Questo sito non usa cookie, strumenti di analisi, pixel o altri sistemi di tracciamento, e non
-            salva nulla nel tuo browser (niente localStorage).
+            {p.linksBefore} <ExternalLink href={LAWYER_URL}>iltuoavvocato.com</ExternalLink>
+            {p.linksAfter}
           </p>
-          <h2>I calcoli restano sul tuo dispositivo</h2>
-          <p>
-            Tutti i calcoli (ripartizione quote, vesting e quiz) avvengono nel tuo browser. Nessun dato che inserisci
-            viene inviato a server, a ilTuoAvvocato.com o a terzi. Il sito non effettua richieste esterne: anche i
-            caratteri tipografici sono serviti dallo stesso sito.
-          </p>
-          <p>
-            Per rendere i risultati condivisibili, alcuni strumenti riportano i valori inseriti nell’indirizzo della
-            pagina (la parte dopo il “?”). Non vengono inviati a nessuno: escono dal tuo dispositivo solo se sei tu a condividere il link.
-          </p>
-          <h2>Link esterni</h2>
-          <p>
-            I pulsanti “Parla con un avvocato” portano a{' '}
-            <ExternalLink href={LAWYER_URL}>iltuoavvocato.com</ExternalLink>, che ha una propria informativa privacy.
-            Il link contiene solo parametri che indicano da quale strumento arrivi (per esempio
-            “utm_campaign=quiz”), non i dati che hai inserito.
-          </p>
-          <h2>Chi gestisce il sito</h2>
-          <p>Startup Legal Toolkit è un servizio di ilTuoAvvocato.com, servizi legali online con avvocati iscritti all’Ordine.</p>
+          <h2>{p.whoTitle}</h2>
+          <p>{p.whoText}</p>
           </div>
         </div>
       </section>

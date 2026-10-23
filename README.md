@@ -1,7 +1,7 @@
 # Startup Legal Toolkit — by ilTuoAvvocato.com
 
-A small static website (in Italian) with three free interactive tools for Italian startup founders. It routes
-them to a lawyer at [iltuoavvocato.com](https://iltuoavvocato.com):
+A small static website (Italian by default, with a full English version under `/en/`) with three free interactive tools for
+Italian startup founders. It routes them to a lawyer at [iltuoavvocato.com](https://iltuoavvocato.com):
 
 | Route        | Tool |
 |--------------|------|
@@ -9,8 +9,9 @@ them to a lawyer at [iltuoavvocato.com](https://iltuoavvocato.com):
 | `/equity/`   | **Calcolatore ripartizione quote**: 2–5 cofounders, 5 weighted factors, optional pool/ESOP, donut and bars, copy/print |
 | `/vesting/`  | **Simulatore vesting**: stake, duration, cliff, monthly/quarterly/annual frequency, step chart with a draggable leaver marker, good/bad leaver explanation |
 | `/quiz/`     | **Quali documenti mi servono?**: 7 questions, then a personalized checklist from the 5 documents with priority badges |
-| `/privacy/`  | Privacy notes (no cookies, no tracking, no data sent anywhere) |
+| `/privacy/`  | Privacy notes (no cookies, no tracking, no data sent anywhere; only the language preference is stored) |
 | `/match-investitori/…` | **Match investitori** (prototype, see below): landing, `startup/`, `investitore/`, `doppio-consenso/`, `note-legali/` |
+| `/en/…`      | English version of every page (see [Languages](#languages)) |
 | anything else | Styled 404 |
 
 Every tool page shows the disclaimer *"Strumento indicativo: non sostituisce una consulenza legale."* (next to
@@ -26,8 +27,9 @@ the result and in the footer). Every "Parla con un avvocato" CTA links to
 - Vitest for unit tests, ESLint 9 (typescript-eslint and react-hooks)
 - playwright-core with the system Google Chrome for screenshots and the OG image
 
-No runtime dependencies beyond React and react-router. There are no trackers, no cookies and no localStorage, and the site
-makes **no external requests**. Tool state lives in the URL query string, so results can be shared.
+No runtime dependencies beyond React and react-router. There are no trackers and no cookies, and the site makes **no
+external requests**. The only thing ever stored is the language chosen with the IT/EN switcher (`localStorage`, key
+`lang`). Tool state lives in the URL query string, so results can be shared.
 
 ## Scripts
 
@@ -66,10 +68,12 @@ Example: `BASE_PATH=/startup-legal-toolkit/ SITE_URL=https://<user>.github.io np
   - `src/lib/rounding.ts`: largest-remainder rounding to one decimal, so the displayed shares always sum to 100,0%.
   - `src/lib/vesting.ts`: cliff with catch-up, vesting only at period boundaries (1/3/12 months from the start), fully vested at ≥ duration.
   - `src/lib/quiz.ts`: the questions and `getRecommendations(answers)`, which returns only the 5 allowed documents.
-- **Pre-render**: `scripts/prerender.mjs` copies `dist/index.html` into `route/index.html` for each route in
-  `src/routes-meta.json`. It rewrites `<title>`, description, canonical, OG and Twitter tags, and injects a small static
-  fallback (`h1` and description) that React replaces on mount. It also writes `404.html` (an SPA fallback with `noindex`),
-  `sitemap.xml` and `robots.txt`. At runtime `usePageMeta` keeps the head tags in sync during client-side navigation.
+- **Pre-render**: `scripts/prerender.mjs` copies `dist/index.html` into `route/index.html` for each route **and language** in
+  `src/routes-meta.json`. It sets `<html lang>`, and rewrites `<title>`, description, canonical, hreflang alternates, OG
+  and Twitter tags. It also injects a small static fallback (`h1` and description) that React replaces on mount. It also
+  writes `404.html` (an SPA fallback with `noindex`), `sitemap.xml` (both languages, with `xhtml:link` alternates) and
+  `robots.txt`. The pure helpers are in `scripts/seo.mjs` and are tested in `src/i18n/seo.test.ts`. At runtime
+  `usePageMeta` keeps `lang` and the head tags in sync during client-side navigation.
 
 ## Deploy: GitHub Pages
 
@@ -101,6 +105,47 @@ In the Aruba DNS panel for `iltuoavvocato.com`, add a **CNAME** record for the s
 - Vercel: `toolkit` → `CNAME` → `cname.vercel-dns.com.` Then add the domain in *Project → Settings → Domains*.
 
 If you use an apex domain instead of a subdomain, follow each provider's A/ALIAS instructions.
+
+## Languages
+
+Italian is the default, and English is the second language. There is no external service and no new dependency: a typed
+dictionary plus a React context.
+
+- **URL scheme**: Italian pages keep their original URLs. English pages live under `/en/` with English slugs:
+
+  | Italian | English |
+  |---|---|
+  | `/` | `/en/` |
+  | `/equity/` | `/en/equity/` |
+  | `/vesting/` | `/en/vesting/` |
+  | `/quiz/` | `/en/quiz/` |
+  | `/privacy/` | `/en/privacy/` |
+  | `/match-investitori/` | `/en/investor-match/` |
+  | `/match-investitori/startup/` | `/en/investor-match/startup/` |
+  | `/match-investitori/investitore/` | `/en/investor-match/investor/` |
+  | `/match-investitori/doppio-consenso/` | `/en/investor-match/double-opt-in/` |
+  | `/match-investitori/note-legali/` | `/en/investor-match/legal-notes/` |
+
+  The mapping, titles and descriptions live in `src/routes-meta.json`, which the app and the prerender both read.
+  Every page has `<html lang>`, a self-referencing canonical, and hreflang alternates `it`, `en` and `x-default` (= Italian).
+  The sitemap lists both languages. There is one `404.html` (Italian, `noindex`): on `/en/…` paths the app renders the
+  English "Page not found" and sets `lang="en"` at runtime. `NOINDEX=true` applies to every page in both languages.
+- **Dictionaries**: `src/i18n/messages/*.ts`. Each module exports `{ it, en }`, and `en` is typed as `typeof it`, so
+  TypeScript rejects missing or extra keys. `src/i18n/messages.test.ts` also checks that the two trees have exactly the
+  same keys and array lengths. Strings can contain `*emphasis*`, `**bold**` and `[link](@routeId)` (rendered by
+  `src/i18n/Rich.tsx`). Strings with parameters are small functions.
+- **Hook**: `useI18n()` returns `{ locale, t, f, path }`: the dictionary, locale formatters and localised paths. Pure
+  libraries (`quiz.ts`, `matching.ts`, `optin.ts`, `deck.ts`, `matchQuery.ts`) take an optional `locale` (default `it`).
+- **Formatting**: Italian uses `it-IT` (`62,5%`, `500.000 €`, `gen 2027`). English uses **`en-GB`** with euros (`62.5%`,
+  `€500,000`, `Jan 2027`), because the audience is European and the amounts are in euros.
+- **Switcher**: IT/EN links in the header (and in the mobile menu) point to the equivalent page in the other language,
+  keeping the query string. They have `lang`, `hreflang` and `aria-current` on the current language.
+- **Remembered choice (least surprising behaviour)**: an explicit URL always wins. `localStorage` (key `lang`, value `it`
+  or `en`) is **written only when the user clicks the switcher**. It is **read only on the first load of the Italian home
+  `/`**: if the stored value is `en`, the visitor is sent to `/en/` (replace, no extra history entry). Nothing else reads
+  it, and if storage is unavailable the switcher still works. The privacy page says this in both languages.
+- **Header fit**: with four nav items, the switcher and the CTA, the nav gaps tighten between 900 and 1099px and the
+  "Startup Legal Toolkit" subtitle is hidden between 900 and 1023px. Checked at 900/930/959/960/1024/1100/1440px in both languages.
 
 ## Match investitori (prototype)
 
@@ -138,9 +183,9 @@ AI Act). Neither is built here; see `/match-investitori/note-legali/`.
 - **Inter** is pinned to optical size 14 and weight 400–700 to keep the font small (46 KB). Playfair keeps its full weight axis.
 - On mobile, a compact fixed bar on the equity page shows the live split and links to the result card. It hides once the card is in view.
 - **Match investitori**: the default decisions (D1–D11) are recorded in `docs/briefs/investor-matching.md` and still need
-  Vincenzo's confirmation. The header gets an "Investitori" item. To keep the nav on one line, the "Startup Legal Toolkit"
-  subtitle is hidden between 900 and 959px only. Match styles live in `src/styles/match.css` (all classes `mi-`),
-  loaded after `global.css`. The privacy page is unchanged.
+  Vincenzo's confirmation. The header gets an "Investitori" item (see [Languages](#languages) for how the nav fits).
+  Match styles live in `src/styles/match.css` (all classes `mi-`), loaded after `global.css`. The privacy page was
+  later updated only to describe the stored language preference.
 
 ## TODO
 

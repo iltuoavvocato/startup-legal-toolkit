@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { useI18n } from '../i18n/context';
 import { routeFromPath, type RouteId } from '../i18n/routes';
+import { initialRedirect, readStoredLocale } from '../i18n/storage';
 import { lawyerUrl, type ToolCampaign } from '../site';
 import { ExternalLink } from './ExternalLink';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { Logo } from './Logo';
 
 const NAV = ['equity', 'vesting', 'quiz', 'match'] as const;
@@ -16,12 +18,22 @@ function campaignFor(id: RouteId | undefined): ToolCampaign {
 }
 
 export function Layout({ children }: { children: ReactNode }) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const firstRender = useRef(true);
   const { t, path } = useI18n();
   usePageMeta(pathname);
   const nav = NAV.map((id) => ({ to: path(id), label: t.common.nav[id] }));
+
+  // Only on the first load of the Italian home: honour a language chosen earlier with the switcher.
+  const checkedStoredLocale = useRef(false);
+  useEffect(() => {
+    if (checkedStoredLocale.current) return;
+    checkedStoredLocale.current = true;
+    const target = initialRedirect(pathname, readStoredLocale());
+    if (target) navigate(`${target}${search}`, { replace: true });
+  }, [pathname, search, navigate]);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -74,6 +86,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 </li>
               ))}
             </ul>
+            <LanguageSwitcher />
             <ExternalLink href={lawyerUrl(campaign)} className="btn btn-gold btn-sm">
               {t.common.talkToLawyer}
             </ExternalLink>

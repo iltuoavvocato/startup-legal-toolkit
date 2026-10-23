@@ -503,8 +503,68 @@ main:focus {
   }
 }
 
-/* Narrow desktop: make room for the fourth nav item without wrapping. */
-@media (min-width: 900px) and (max-width: 959px) {
+/* Language switcher (IT / EN) */
+.lang-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(201, 164, 92, 0.35);
+  border-radius: 999px;
+}
+
+.lang-switch a {
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 36px;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-decoration: none;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.lang-switch a:hover {
+  color: var(--ink);
+}
+
+.lang-switch a.is-current {
+  background: rgba(201, 164, 92, 0.18);
+  color: var(--gold-light);
+}
+
+@media (min-width: 900px) {
+  .lang-switch {
+    margin-bottom: 0;
+  }
+
+  .lang-switch a {
+    min-width: 36px;
+    min-height: 30px;
+    padding: 0 0.45rem;
+  }
+}
+
+/* Narrow desktop: keep four nav items, the language switcher and the CTA on one line. */
+@media (min-width: 900px) and (max-width: 1099px) {
+  .site-nav,
+  .site-nav.is-open,
+  .site-nav ul {
+    gap: 1.1rem;
+  }
+
+  .site-nav li a {
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1023px) {
   .brand-sub {
     display: none;
   }
