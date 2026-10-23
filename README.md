@@ -127,6 +127,7 @@ dictionary plus a React context.
   | `/match-investitori/investitore/` | `/en/investor-match/investor/` |
   | `/match-investitori/doppio-consenso/` | `/en/investor-match/double-opt-in/` |
   | `/match-investitori/note-legali/` | `/en/investor-match/legal-notes/` |
+  | `/match-investitori/varianti/…` (noindex) | `/en/investor-match/variants/…` |
 
   The mapping, titles and descriptions live in `src/routes-meta.json`, which the app and the prerender both read.
   Every page has `<html lang>`, a self-referencing canonical, and hreflang alternates `it`, `en` and `x-default` (= Italian).
@@ -179,6 +180,32 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
 **A real double opt-in with real investor data requires a backend** (accounts, investor identification, sending
 proposals and emails) **and a privacy and regulatory review** (Regolamento (UE) 2020/1503, Consob, TUF art. 18, GDPR,
 AI Act). Neither is built here; see `/match-investitori/note-legali/`.
+
+### Design variants gallery (internal, noindex)
+
+For comparing design directions (Milestone 2). `/match-investitori/varianti/` (EN `/en/investor-match/variants/`) shows one
+card per variant with a preview, description, pros/cons and links to its three screens, plus a **side-by-side compare**
+(two iframes; pick left/right variant, screen and desktop/mobile width; the choice is mirrored in `?a=&b=&s=&w=`).
+Each screen lives at `…/varianti/vN/{landing,risultati,investitore}/` (EN `…/variants/vN/{landing,results,investor}/`):
+
+| | Direction | Founder results | Investor view |
+| --- | --- | --- | --- |
+| **V1** | Editoriale / minimal: black and white, gold `#C9A24A` accent, Playfair headlines | numbered "articles" | editorial index of teasers |
+| **V2** | Dashboard: filter sidebar, sortable tables, score bars, keyboard (j/k, Enter, `/`, i/p) | profile controls recompute live | bucket tabs + teaser table |
+| **V3** | Agent-first chat: the agent presents one match at a time, chip answers | Perché / Proponi / Prossimo / Esclusi | Interessato / Passa / simulated reply |
+| **V4** | Card / swipe: stack of cards, buttons, drag, ← → and undo | Interessato = propose profile | Interessato / Passa, undo only for a pass |
+| **V5** | Dark premium (ilTuoAvvocato black, mono figures, minimal gold) | master/detail split | dark list + terminal-style intro email |
+
+- All variants use the real engine (`matching.ts`) and the fictional demo data through `src/variants/shared/useDemo.ts`;
+  state is in memory only. A startup's "no" looks exactly like no answer (`src/variants/logic/board.ts`, tested, and
+  checked end to end by the screenshot script).
+- Every screen has the "Variante di design – prototipo" banner, the fictional-data label and the disclaimer, and is
+  `noindex, nofollow` in the prerendered HTML (route `robots` in `src/routes-meta.json`) and left out of the sitemap.
+- Code is under `src/variants/` and lazy-loaded (separate JS/CSS chunk). CSS is scoped: `.vx-` (shared frame), `.vg-`
+  (gallery), `.v1-`…`.v5-` per variant, so existing pages are unaffected. Copy: `src/i18n/messages/variants.ts` and
+  `variantCopy/vN.ts`.
+- `?embed=1` on a variant screen hides the site header/footer (used by the compare iframes).
+- **Decision for Vincenzo**: see `docs/briefs/investor-matching.md`, "Milestone 2" (D14).
 
 ## Decisions
 

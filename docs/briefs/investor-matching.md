@@ -351,3 +351,31 @@ Open decisions for Vincenzo:
 - **D12**: the no-deck stepper label ("Analisi dei dati" / "Analysing your details"). Is that wording OK, or should the
   step be hidden when there's no deck?
 - **D13**: the static 404 shows both languages when JavaScript is off. Is that OK, or should it be Italian only?
+
+## Milestone 2: UI variants gallery (2026-10-24)
+
+What exists: a gallery at `/match-investitori/varianti/` (EN `/en/investor-match/variants/`) with five design
+directions, each applied to the landing, the founder results and the investor view (15 screens × IT/EN), plus a
+side-by-side compare mode. All screens are functional on the real engine and fictional data (filters/sort in V2, chat
+steps in V3, swipe deck in V4, propose within the monthly limit, investor double opt-in with a simulated startup
+answer). Everything is local state; a "no" is never revealed. All pages are noindex, nofollow and not in the sitemap.
+Code in `src/variants/` (lazy-loaded, scoped CSS); see the README section "Design variants gallery".
+
+- **V1 Editoriale**: magazine typography, white space, black/white + one gold accent. Pro: trust, readability, fits a
+  law firm. Con: few items per screen, weak for comparing many investors.
+- **V2 Dashboard**: tables, filters sidebar, score bars, sortable columns, keyboard. Pro: fast comparison, power users
+  (investors). Con: cold for first-time founders; on mobile it becomes stacked rows.
+- **V3 Agent-first**: chat where the agent explains each match, chip answers. Pro: makes the agent (the differentiator)
+  visible, guides newcomers. Con: slower to scan, risk of looking like a generic chatbot.
+- **V4 Card / swipe**: one card at a time, Pass / Interessato, drag and arrow keys, undo. Pro: best on mobile, double
+  opt-in feels natural. Con: "dating app" feel; no side-by-side comparison.
+- **V5 Dark premium**: ilTuoAvvocato black, white/grey text, mono figures, minimal gold. Pro: brand-consistent, exclusive.
+  Con: less readable for long text, stands apart from the light toolkit.
+
+Open decisions for Vincenzo:
+- **D14 (main)**: which direction to build on. Recommendation: **V1 Editoriale as the visual base**, the founder results
+  in the **V3** style (the agent explains each match), the investor view as **V4 cards on mobile** with a **V2 table view**
+  toggle on desktop; V5 only as an optional dark theme. Alternative: pick one variant as is (V1 is the safest single
+  choice).
+- **D15**: keep the gallery deployed (noindex) for stakeholder reviews, or remove it before a public launch?
+- **D16**: V4 swipe gestures: keep drag-to-decide, or buttons only (less "dating app")?
