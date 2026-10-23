@@ -1,21 +1,7 @@
-// Variant V2: placeholder screens (replaced by the real implementation).
-import { useI18n } from '../../i18n/context';
+// Variant V2 "Dashboard": data-dense tables, filter sidebar, score bars, keyboard navigation.
+import './v2.css';
 
-function Placeholder() {
-  const { t } = useI18n();
-  return (
-    <section style={{ padding: '3rem 1.25rem' }}>
-      <h1 id="page-title" tabIndex={-1}>
-        V2 · {t.variants.variants.v2.name}
-      </h1>
-      <p>{t.variants.v2.placeholder}</p>
-    </section>
-  );
-}
-
-export const Landing = Placeholder;
-export const Results = Placeholder;
-export const Investor = Placeholder;
-export function Thumb() {
-  return <div aria-hidden="true" />;
-}
+export { Landing } from './Landing';
+export { Results } from './Results';
+export { Investor } from './Investor';
+export { Thumb } from './Thumb';
