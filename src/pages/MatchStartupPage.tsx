@@ -7,6 +7,8 @@ import { AgentProcessing } from '../components/match/AgentProcessing';
 import { DeckDropzone } from '../components/match/DeckDropzone';
 import { DeckFindingsReview } from '../components/match/DeckFindingsReview';
 import { useDeckReader } from '../components/match/useDeckReader';
+import { readExportStore, saveStartupSheet } from '../components/match/useExportStore';
+import { ExportLink } from '../components/match/ExportLink';
 import { updateInbox, useInbox } from '../components/match/useInbox';
 import { DemoBadge } from '../components/match/DemoBadge';
 import { EuroField } from '../components/match/EuroField';
@@ -150,6 +152,14 @@ export function MatchStartupPage() {
     headingRef.current?.focus();
   }, [step]);
 
+  // Results opened from a shared URL: the export only knows the enumerated fields (keep richer data for the same profile).
+  useEffect(() => {
+    if (!initial) return;
+    const prev = readExportStore().startup?.core;
+    const same = prev && (['settore', 'fase', 'regione', 'round'] as const).every((k) => prev[k] === initial[k]);
+    if (!same) saveStartupSheet({ source: 'form', core: initial });
+  }, [initial]);
+
   const read = reader.state;
   // "With a deck" means a deck that was actually read; a failed read falls back to the form-only flow.
   const hasDeck = read.status === 'ready';
@@ -235,6 +245,14 @@ export function MatchStartupPage() {
     const deckUsed = hasDeck ? accepted : null;
     setDeckInfo({ sources: deckSources(core, deckUsed), signals: deckSignals(deckUsed, locale) });
     updateInbox((s) => withProfile(s, core));
+    // For the local export: enumerated fields, the confirmed one-liner and the deck signals the founder accepted.
+    saveStartupSheet({
+      source: 'form',
+      core,
+      oneLiner: draft.oneLiner,
+      team: deckUsed?.team?.value ?? null,
+      traction: deckUsed?.traction.map((x) => x.value) ?? [],
+    });
     go('match');
   };
 
@@ -631,6 +649,7 @@ function Results({ profile, counter, proposed, onPropose, onEdit, headingRef, de
           {u.resultsTitle(matches.length)}
         </h2>
         <DemoBadge />
+        <ExportLink kind="startup" name={profile.nome !== t.match.own.startupName ? profile.nome : null} />
       </div>
 
       {Object.keys(deckInfo.sources).length > 0 && (

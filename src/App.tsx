@@ -7,6 +7,7 @@ import { EquityPage } from './pages/EquityPage';
 import { HomePage } from './pages/HomePage';
 import { MatchAgentInvestorPage, MatchAgentStartupPage } from './pages/MatchAgentPage';
 import { MatchDirectoryPage } from './pages/MatchDirectoryPage';
+import { MatchExportPage } from './pages/MatchExportPage';
 import { MatchInvestorPage } from './pages/MatchInvestorPage';
 import { MatchInvestorProfilePage } from './pages/MatchInvestorProfilePage';
 import { MatchLandingPage } from './pages/MatchLandingPage';
@@ -58,6 +59,7 @@ const PAGES: Record<RouteId, ComponentType> = {
   matchDirectory: MatchDirectoryPage,
   matchInvestorProfile: MatchInvestorProfilePage,
   matchRequests: MatchRequestsPage,
+  matchExport: MatchExportPage,
   matchVariants: lazyPage(() => <GalleryPage />),
   ...VARIANT_PAGES,
 };

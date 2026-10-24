@@ -35,7 +35,7 @@ interface SideTemplates {
 const founderIt: SideTemplates & {
   lead: E;
   leadNoSede: E;
-  next: Record<'idle' | 'passed' | 'waiting' | 'noNews' | 'request' | 'intro' | 'declined', E>;
+  next: Record<'idle' | 'passed' | 'waiting' | 'request' | 'intro' | 'declined' | 'expired', E>;
 } = {
   lead: (c) => `Ti propongo ${c.nome} (${c.tipo}, sede in ${c.sede}).`,
   leadNoSede: (c) => `Ti propongo ${c.nome} (${c.tipo}).`,
@@ -60,12 +60,13 @@ const founderIt: SideTemplates & {
     idle: (c) =>
       `Se proponi il profilo, ${c.nome} vede solo il teaser anonimo. Se gli interessa ti chiedo se vuoi l’intro; se non gli interessa non ricevi alcun rifiuto.`,
     passed: (c) => `Ok, lascio da parte ${c.nome}: non riceve nulla e non saprà di questa scelta.`,
-    waiting: (c) => `Proposta inviata: ${c.nome} vede solo il teaser anonimo. Ti scrivo solo se c’è un interesse reciproco.`,
-    noNews: (c) =>
-      `Nessuna risposta da ${c.nome} per ora. Se non è interessato non te lo diremo: semplicemente l’intro non arriva.`,
+    waiting: (c) =>
+      `Proposta inviata: ${c.nome} vede solo il teaser anonimo. La trovi nelle richieste, con la scadenza; ti scrivo solo se c’è un interesse reciproco.`,
     request: (c) => `${c.nome} è interessato e ha già detto sì. Vuoi l’intro? Se dici di no, non lo saprà.`,
     intro: (c) => `Avete detto sì entrambi: vi ho presentati con un’email. Da qui la conversazione con ${c.nome} è vostra.`,
     declined: (c) => `Hai detto di no: ${c.nome} non riceverà alcuna notifica del rifiuto.`,
+    expired: (c) =>
+      `Nessuna intro con ${c.nome} entro la scadenza: può succedere per tanti motivi. Se vuoi, puoi proporre di nuovo il profilo.`,
   },
 };
 
@@ -123,11 +124,12 @@ const founderEn: typeof founderIt = {
     idle: (c) =>
       `If you propose your profile, ${c.nome} only sees the anonymous teaser. If they’re interested I’ll ask whether you want the intro; if not, you won’t get any rejection.`,
     passed: (c) => `OK, I’ll set ${c.nome} aside: they receive nothing and won’t know about this choice.`,
-    waiting: (c) => `Proposal sent: ${c.nome} only sees the anonymous teaser. I’ll only get back to you if the interest is mutual.`,
-    noNews: (c) => `No answer from ${c.nome} for now. If they’re not interested we won’t tell you: the intro simply doesn’t happen.`,
+    waiting: (c) =>
+      `Proposal sent: ${c.nome} only sees the anonymous teaser. You’ll find it in your requests, with its deadline; I’ll only get back to you if the interest is mutual.`,
     request: (c) => `${c.nome} is interested and has already said yes. Do you want the intro? If you say no, they won’t know.`,
     intro: (c) => `You both said yes: I’ve introduced you by email. From here the conversation with ${c.nome} is yours.`,
     declined: (c) => `You said no: ${c.nome} won’t be notified that you declined.`,
+    expired: (c) => `No intro with ${c.nome} before the deadline: that can happen for many reasons. You can propose your profile again if you like.`,
   },
 };
 
@@ -240,11 +242,12 @@ const it = {
       invalid: 'Questa risposta non è tra le opzioni.',
     },
     matchesLabel: (n: number) => `Match ${n}`,
-    proposalsLeft: (left: number, limit: number) => `Proposte rimaste a questo mese: ${left} di ${limit} (valore provvisorio)`,
+    proposalsLeft: (left: number, limit: number) =>
+      `Proposte rimaste a questo mese: ${left} di ${limit} (valore provvisorio). Il contatore è lo stesso del modulo e della directory.`,
     actions: {
       propose: 'Proponi il profilo',
       pass: 'Lascia stare',
-      simulateInvestor: 'Simula la risposta dell’investitore',
+      proposeAgain: 'Proponi di nuovo',
       introYes: 'Accetta l’intro',
       introNo: 'Non ora',
       interested: 'Mi interessa',
@@ -428,11 +431,12 @@ const en: typeof it = {
       invalid: 'That answer isn’t one of the options.',
     },
     matchesLabel: (n: number) => `Match ${n}`,
-    proposalsLeft: (left: number, limit: number) => `Proposals left this month: ${left} of ${limit} (provisional value)`,
+    proposalsLeft: (left: number, limit: number) =>
+      `Proposals left this month: ${left} of ${limit} (provisional value). The counter is shared with the form and the directory.`,
     actions: {
       propose: 'Propose your profile',
       pass: 'Skip this one',
-      simulateInvestor: 'Simulate the investor’s answer',
+      proposeAgain: 'Propose again',
       introYes: 'Accept the intro',
       introNo: 'Not now',
       interested: 'I’m interested',

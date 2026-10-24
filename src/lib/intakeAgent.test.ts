@@ -39,9 +39,7 @@ import {
 import { evaluate, matchInvestors, matchStartups } from './matching';
 import { ownStartup } from './matchQuery';
 import { FASI, REGIONI, SETTORI, AREE } from './matchTaxonomy';
-import { MONTHLY_PROPOSAL_LIMIT } from './optin';
 
-const MONTH = '2026-10';
 const R = (s: IntakeState) => resultIdsFor(s, demoInvestors(), demoStartups());
 const run = (s: IntakeState, ...actions: Action[]) => actions.reduce((st, a) => reduce(st, a, R), s);
 const ans = (value: Parameters<typeof validate>[1]): Action => ({ type: 'ANSWER', value });
@@ -55,7 +53,7 @@ const lastAsk = (s: IntakeState) => {
 /** Founder answers matching the "Usa un esempio" demo: fintech, seed, Lombardia, 500.000 €. */
 function founderDone(): IntakeState {
   return run(
-    initIntake('startup', MONTH),
+    initIntake('startup'),
     ans('skip'),
     ans('fintech'),
     ans('seed'),
@@ -67,7 +65,7 @@ function founderDone(): IntakeState {
 
 function investorDone(): IntakeState {
   return run(
-    initIntake('investor', MONTH),
+    initIntake('investor'),
     ans([...EXAMPLE_INVESTOR_FORM.settori]),
     ans([...EXAMPLE_INVESTOR_FORM.fasi]),
     ans({ min: EXAMPLE_INVESTOR_FORM.ticketMin, max: EXAMPLE_INVESTOR_FORM.ticketMax }),
@@ -88,10 +86,10 @@ const withDeck = (s: IntakeState) => run(s, { type: 'DECK_START' }, { type: 'DEC
 
 describe('initIntake', () => {
   it('greets and asks the first question of each mode', () => {
-    const s = initIntake('startup', MONTH);
+    const s = initIntake('startup');
     expect(s.messages.map((m) => m.body.kind)).toEqual(['hello', 'ask']);
     expect(s.current).toBe('deck');
-    expect(initIntake('investor', MONTH).current).toBe('settori');
+    expect(initIntake('investor').current).toBe('settori');
   });
 
   it('message ids are unique and increasing', () => {
@@ -118,7 +116,7 @@ describe('questions and validation', () => {
   });
 
   it('rejects invalid answers without moving on, and clears the error on a valid one', () => {
-    let s = run(initIntake('startup', MONTH), ans('skip'));
+    let s = run(initIntake('startup'), ans('skip'));
     s = run(s, ans('not-a-sector'));
     expect(s.error).toBe('invalid');
     expect(s.current).toBe('settore');
@@ -152,19 +150,19 @@ describe('questions and validation', () => {
   });
 
   it('only optional questions can be skipped', () => {
-    let s = run(initIntake('startup', MONTH), ans('skip'));
+    let s = run(initIntake('startup'), ans('skip'));
     expect(run(s, { type: 'SKIP' })).toBe(s);
     s = run(s, ans('fintech'), ans('seed'), ans(500_000), ans('lombardia'), { type: 'SKIP' });
     expect(s.answers.oneLiner).toBeNull();
     expect(s.current).toBe('confirm');
-    const i = run(initIntake('investor', MONTH), ans(['fintech']), ans(['seed']), ans({ min: 1, max: 2 }), ans(['centro']), { type: 'SKIP' });
+    const i = run(initIntake('investor'), ans(['fintech']), ans(['seed']), ans({ min: 1, max: 2 }), ans(['centro']), { type: 'SKIP' });
     expect(i.answers.sede).toBeNull();
     expect(i.current).toBe('confirm');
     expect(summaryRows(i).find((r) => r.key === 'sede')).toMatchObject({ value: null, skipped: true });
   });
 
   it('ignores answers when no question is open', () => {
-    const s = run(initIntake('startup', MONTH), { type: 'DECK_START' });
+    const s = run(initIntake('startup'), { type: 'DECK_START' });
     expect(s.current).toBeNull();
     expect(run(s, ans('fintech'))).toBe(s);
   });
@@ -186,9 +184,9 @@ describe('branching and follow-ups', () => {
   });
 
   it('passes the stage to the round question and the stages to the ticket question', () => {
-    const s = run(initIntake('startup', MONTH), ans('skip'), ans('fintech'), ans('pre-seed'));
+    const s = run(initIntake('startup'), ans('skip'), ans('fintech'), ans('pre-seed'));
     expect(lastAsk(s)).toMatchObject({ q: 'round', fase: 'pre-seed' });
-    const i = run(initIntake('investor', MONTH), ans(['fintech']), ans(['seed', 'pre-seed']));
+    const i = run(initIntake('investor'), ans(['fintech']), ans(['seed', 'pre-seed']));
     expect(lastAsk(i)).toMatchObject({ q: 'ticket', fasi: ['seed', 'pre-seed'] });
   });
 
@@ -196,7 +194,7 @@ describe('branching and follow-ups', () => {
     expect(isUnusualRound('pre-seed', 3_000_000)).toBe(true);
     expect(isUnusualRound('seed', 500_000)).toBe(false);
     expect(isUnusualRound('serie-a', 500_000)).toBe(true);
-    let s = run(initIntake('startup', MONTH), ans('skip'), ans('fintech'), ans('pre-seed'), ans(3_000_000));
+    let s = run(initIntake('startup'), ans('skip'), ans('fintech'), ans('pre-seed'), ans(3_000_000));
     expect(s.current).toBe('roundCheck');
     expect(lastAsk(s)).toMatchObject({ round: 3_000_000, fase: 'pre-seed' });
     s = run(s, ans('change'));
@@ -206,7 +204,7 @@ describe('branching and follow-ups', () => {
     expect(s.current).toBe('regione');
     expect(plan(s)).toContain('roundCheck');
     // A usual amount needs no check.
-    expect(run(initIntake('startup', MONTH), ans('skip'), ans('fintech'), ans('seed'), ans(500_000)).current).toBe('regione');
+    expect(run(initIntake('startup'), ans('skip'), ans('fintech'), ans('seed'), ans(500_000)).current).toBe('regione');
   });
 
   it('asks the check again when the stage changes and makes the amount unusual', () => {
@@ -219,7 +217,7 @@ describe('branching and follow-ups', () => {
 
 describe('edit and back', () => {
   it('reopens any answered question and resumes where it was', () => {
-    let s = run(initIntake('startup', MONTH), ans('skip'), ans('fintech'), ans('seed'), ans(500_000));
+    let s = run(initIntake('startup'), ans('skip'), ans('fintech'), ans('seed'), ans(500_000));
     expect(s.current).toBe('regione');
     s = run(s, { type: 'EDIT', q: 'settore' });
     expect(s.current).toBe('settore');
@@ -232,7 +230,7 @@ describe('edit and back', () => {
   });
 
   it('ignores edits of questions not answered yet or not editable', () => {
-    const s = run(initIntake('startup', MONTH), ans('skip'));
+    const s = run(initIntake('startup'), ans('skip'));
     expect(run(s, { type: 'EDIT', q: 'regione' })).toBe(s);
     expect(run(founderDone(), { type: 'EDIT', q: 'confirm' }).current).toBe('confirm');
     expect(run(s, { type: 'EDIT', q: 'settori' })).toBe(s);
@@ -240,13 +238,13 @@ describe('edit and back', () => {
   });
 
   it('back reopens the previous answer', () => {
-    let s = run(initIntake('investor', MONTH), ans(['fintech']), ans(['seed']));
+    let s = run(initIntake('investor'), ans(['fintech']), ans(['seed']));
     s = run(s, { type: 'BACK' });
     expect(s.current).toBe('fasi');
     s = run(s, ans(['seed', 'serie-a']));
     expect(s.answers.fasi).toEqual(['seed', 'serie-a']);
     expect(s.current).toBe('ticket');
-    expect(run(initIntake('investor', MONTH), { type: 'BACK' }).current).toBe('settori');
+    expect(run(initIntake('investor'), { type: 'BACK' }).current).toBe('settori');
   });
 
   it('editing after the results goes back to the intake and finds new matches on confirm', () => {
@@ -265,7 +263,7 @@ describe('edit and back', () => {
 
 describe('deck in the conversation', () => {
   it('asks to confirm each finding, then skips the questions the deck answered', () => {
-    let s = withDeck(initIntake('startup', MONTH));
+    let s = withDeck(initIntake('startup'));
     expect(s.deck.status).toBe('read');
     expect(s.messages.some((m) => m.body.kind === 'deckRead')).toBe(true);
     expect(s.current).toBe('deck:settore');
@@ -286,7 +284,7 @@ describe('deck in the conversation', () => {
   });
 
   it('asks the regular question after "ignore", with the deck value as a suggestion after "edit"', () => {
-    let s = run(withDeck(initIntake('startup', MONTH)), ans('ignore'), ans('edit'));
+    let s = run(withDeck(initIntake('startup')), ans('ignore'), ans('edit'));
     expect(s.answers.settore).toBeUndefined();
     s = run(s, ans('ignore'), ans('ignore'), ans('ignore'), ans('ignore'));
     expect(s.current).toBe('settore');
@@ -297,7 +295,7 @@ describe('deck in the conversation', () => {
   });
 
   it('a deck dropped mid-conversation only asks about values that differ from the answers', () => {
-    let s = run(initIntake('startup', MONTH), ans('skip'), ans('fintech'), ans('seed'));
+    let s = run(initIntake('startup'), ans('skip'), ans('fintech'), ans('seed'));
     s = withDeck(s);
     // Stage agrees (seed): no question. Sector differs: asked, with the founder's earlier answer.
     expect(plan(s)).not.toContain('deck:fase');
@@ -309,7 +307,7 @@ describe('deck in the conversation', () => {
   });
 
   it('carries on with the questions when the deck cannot be read', () => {
-    let s = run(initIntake('startup', MONTH), { type: 'DECK_START' });
+    let s = run(initIntake('startup'), { type: 'DECK_START' });
     expect(s.deck.status).toBe('reading');
     expect(nextQuestion(s)).toBeNull();
     s = run(s, { type: 'DECK_ERROR', code: 'tooManyPages', pages: 55 });
@@ -323,13 +321,13 @@ describe('deck in the conversation', () => {
 
   it('a deck with nothing useful just continues', () => {
     const empty = extractFromDeck(['Grazie per l’attenzione']);
-    const s = run(initIntake('startup', MONTH), { type: 'DECK_START' }, { type: 'DECK_READY', pages: 1, findings: empty });
+    const s = run(initIntake('startup'), { type: 'DECK_START' }, { type: 'DECK_READY', pages: 1, findings: empty });
     expect(s.current).toBe('settore');
     expect(messageText(s.messages.find((m) => m.body.kind === 'deckRead')!, 'startup', 'en')).toMatch(/found nothing useful/);
   });
 
   it('investors cannot add a deck', () => {
-    const s = initIntake('investor', MONTH);
+    const s = initIntake('investor');
     expect(run(s, { type: 'DECK_START' })).toBe(s);
   });
 });
@@ -361,66 +359,40 @@ describe('matching and results', () => {
     const n = s.messages.length;
     s = run(s, { type: 'SHOW_EXCLUDED' });
     expect(s.messages).toHaveLength(n);
-    expect(run(initIntake('startup', MONTH), { type: 'SHOW_EXCLUDED' }).messages).toHaveLength(2);
+    expect(run(initIntake('startup'), { type: 'SHOW_EXCLUDED' }).messages).toHaveLength(2);
   });
 });
 
 describe('double opt-in (local state only)', () => {
   const ids = (s: IntakeState) => R(s).matches;
 
-  it('founder: propose within the monthly limit, never twice', () => {
-    let s = run(founderDone(), ans('go'));
-    const [a] = ids(s);
-    s = run(s, { type: 'PROPOSE', id: a! });
-    expect(s.counter.used).toBe(1);
-    expect(founderStatus(s, a!)).toBe('waiting');
-    expect(run(s, { type: 'PROPOSE', id: a! })).toBe(s);
-    // Limit: the sixth proposal is refused and nothing changes but the notice.
-    let t = run(founderDone(), ans('go'));
-    const all = ['i01', 'i02', 'i03', 'i04', 'i05', 'i06'];
-    for (const id of all) t = run(t, { type: 'PROPOSE', id });
-    expect(t.counter.used).toBe(MONTHLY_PROPOSAL_LIMIT);
-    expect(t.limitHit).toBe('i06');
-    expect(t.board.i06).toBeUndefined();
-  });
-
-  it('founder: an investor\'s no looks exactly like no answer', () => {
-    const base = { passed: [] as string[] };
-    expect(founderStatus({ ...base, board: { x: 'chiusa-investitore' }, simulated: ['x'] }, 'x')).toBe(
-      founderStatus({ ...base, board: { x: 'proposta' }, simulated: ['x'] }, 'x'),
-    );
-    expect(founderStatus({ ...base, board: { x: 'chiusa-investitore' }, simulated: [] }, 'x')).toBe(
-      founderStatus({ ...base, board: { x: 'proposta' }, simulated: [] }, 'x'),
-    );
+  it('founder: the status comes from the inbox view; an investor\'s no is already folded into silence', () => {
+    expect(founderStatus(null, false)).toBe('idle');
+    expect(founderStatus(null, true)).toBe('passed');
+    expect(founderStatus({ status: 'waiting' }, true)).toBe('waiting');
+    expect(founderStatus({ status: 'your-turn' }, false)).toBe('request');
+    expect(founderStatus({ status: 'intro' }, false)).toBe('intro');
+    expect(founderStatus({ status: 'declined-by-you' }, false)).toBe('declined');
+    expect(founderStatus({ status: 'expired' }, false)).toBe('expired');
+    // Neither the waiting nor the expired explanation ever says no.
     const s = run(founderDone(), ans('go'));
-    const no = ids(s).find((id) => !demoAnswer(id));
-    const yes = ids(s).find((id) => demoAnswer(id));
-    expect(no && yes).toBeTruthy();
-    const t = run(s, { type: 'PROPOSE', id: no! }, { type: 'SIMULATE', id: no! }, { type: 'PROPOSE', id: yes! }, { type: 'SIMULATE', id: yes! });
-    expect(t.board[no!]).toBe('chiusa-investitore');
-    expect(founderStatus(t, no!)).toBe('noNews');
-    expect(founderStatus(t, yes!)).toBe('request');
-    // The explanation for a "no" never says no.
-    const p = startupProfileOf(t)!;
-    const inv = demoInvestors().find((i) => i.id === no)!;
+    const p = startupProfileOf(s)!;
+    const inv = demoInvestors().find((i) => i.id === R(s).matches[0])!;
     for (const locale of ['it', 'en'] as const) {
-      const e = explainInvestorMatch(p, inv, evaluate(p, inv, 'startup', locale), founderStatus(t, no!), locale);
-      expect(e.next).not.toMatch(/rifiut|declin|non è interessato a te|said no/i);
+      for (const status of ['waiting', 'expired'] as const) {
+        const e = explainInvestorMatch(p, inv, evaluate(p, inv, 'startup', locale), status, locale);
+        expect(e.next).not.toMatch(/rifiut|declin|non è interessat|not interested|said no|detto (di )?no/i);
+      }
     }
-    // Accept or decline the intro only when asked.
-    expect(run(t, { type: 'INTRO_YES', id: no! })).toBe(t);
-    expect(founderStatus(run(t, { type: 'INTRO_YES', id: yes! }), yes!)).toBe('intro');
-    expect(founderStatus(run(t, { type: 'INTRO_NO', id: yes! }), yes!)).toBe('declined');
   });
 
-  it('founder: simulate only after proposing; pass sets an investor aside', () => {
+  it('founder: pass sets an investor aside; founders\' simulations are left to the inbox clock', () => {
     let s = run(founderDone(), ans('go'));
     const [a, b] = ids(s);
     expect(run(s, { type: 'SIMULATE', id: a! })).toBe(s);
     s = run(s, { type: 'PASS', id: b! });
-    expect(founderStatus(s, b!)).toBe('passed');
-    expect(run(s, { type: 'PROPOSE', id: b! })).toBe(s);
-    expect(s.counter.used).toBe(0);
+    expect(s.passed).toEqual([b]);
+    expect(run(s, { type: 'PASS', id: b! })).toBe(s);
   });
 
   it('investor: interest, simulated answer, and a startup\'s no looks like no answer', () => {
@@ -435,8 +407,7 @@ describe('double opt-in (local state only)', () => {
     s = run(s, { type: 'SIMULATE', id: no }, { type: 'SIMULATE', id: yes });
     expect(investorStatus(s, no)).toBe('noNews');
     expect(investorStatus(s, yes)).toBe('intro');
-    // Founders' actions don't apply to investors and vice versa.
-    expect(run(s, { type: 'PROPOSE', id: list[0]! })).toBe(s);
+    // Investors' actions don't apply to founders.
     const f = run(founderDone(), ans('go'));
     expect(run(f, { type: 'INTERESTED', id: 'i01' })).toBe(f);
     // Passing.
@@ -468,7 +439,7 @@ describe('explanations', () => {
     for (const locale of ['it', 'en'] as const) {
       const p = startupProfileOf(s, locale)!;
       for (const { item, evaluation } of matchInvestors(p, demoInvestors(locale), locale).matches) {
-        for (const status of ['idle', 'passed', 'waiting', 'noNews', 'request', 'intro', 'declined'] as const) {
+        for (const status of ['idle', 'passed', 'waiting', 'request', 'intro', 'declined', 'expired'] as const) {
           const e = explainInvestorMatch(p, item, evaluation, status, locale);
           expect(e.lead).toContain(item.nome);
           expect(e.fits.length).toBeGreaterThan(20);
@@ -517,7 +488,7 @@ describe('both languages', () => {
 
   it('state is language-free: the same actions give the same state, rendered in either language', () => {
     for (const mode of MODES) {
-      const s = run(mode === 'startup' ? withDeck(initIntake('startup', MONTH)) : investorDone(), ans(mode === 'startup' ? 'accept' : 'go'));
+      const s = run(mode === 'startup' ? withDeck(initIntake('startup')) : investorDone(), ans(mode === 'startup' ? 'accept' : 'go'));
       const it = s.messages.map((m) => messageText(m, mode, 'it'));
       const en = s.messages.map((m) => messageText(m, mode, 'en'));
       expect(it).toHaveLength(en.length);
@@ -562,7 +533,7 @@ describe('both languages', () => {
 
 describe('storage', () => {
   it('never stores the deck text: no findings, no snippets, no tagline unless accepted', () => {
-    const s = withDeck(initIntake('startup', MONTH));
+    const s = withDeck(initIntake('startup'));
     const raw = serialize(s);
     expect(s.deck.findings).not.toBeNull();
     expect(JSON.parse(raw).deck.findings).toBeNull();
@@ -577,43 +548,50 @@ describe('storage', () => {
   });
 
   it('round-trips a conversation', () => {
-    const s = run(founderDone(), ans('go'), { type: 'PROPOSE', id: 'i01' });
-    const back = restore(serialize(s), 'startup', MONTH)!;
+    const s = run(founderDone(), ans('go'), { type: 'PASS', id: 'i01' });
+    const back = restore(serialize(s), 'startup')!;
     expect(back).toEqual(toStorable(s));
-    expect(founderStatus(back, 'i01')).toBe('waiting');
+    expect(back.passed).toEqual(['i01']);
+    const inv = run(investorDone(), ans('go'), { type: 'INTERESTED', id: R(investorDone()).matches[0] ?? 'x' });
+    expect(restore(serialize(inv), 'investor')).toEqual(toStorable(inv));
+  });
+
+  it('restores older conversations that still carry a monthly counter and founder proposals', () => {
+    const s = run(founderDone(), ans('go'));
+    const old = JSON.stringify({ ...JSON.parse(serialize(s)), counter: { month: '2026-10', used: 2 }, limitHit: 'i01', board: { i01: 'proposta' } });
+    const back = restore(old, 'startup')!;
+    expect(back).not.toHaveProperty('counter');
+    expect(back).not.toHaveProperty('limitHit');
+    expect(back.board).toEqual({});
+    expect(back.phase).toBe('results');
   });
 
   it('rejects other modes, other versions and junk', () => {
     const raw = serialize(founderDone());
-    expect(restore(raw, 'investor', MONTH)).toBeNull();
-    expect(restore(raw.replace('"version":1', '"version":2'), 'startup', MONTH)).toBeNull();
-    expect(restore('{nope', 'startup', MONTH)).toBeNull();
-    expect(restore(null, 'startup', MONTH)).toBeNull();
-    expect(restore(JSON.stringify({ ...JSON.parse(raw), answers: { settore: 'crypto' } }), 'startup', MONTH)).toBeNull();
-    expect(restore(JSON.stringify({ ...JSON.parse(raw), answers: { round: -5 } }), 'startup', MONTH)).toBeNull();
-  });
-
-  it('resets the monthly counter in a new month', () => {
-    const s = run(founderDone(), ans('go'), { type: 'PROPOSE', id: 'i01' });
-    expect(restore(serialize(s), 'startup', '2026-11')!.counter).toEqual({ month: '2026-11', used: 0 });
+    expect(restore(raw, 'investor')).toBeNull();
+    expect(restore(raw.replace('"version":1', '"version":2'), 'startup')).toBeNull();
+    expect(restore('{nope', 'startup')).toBeNull();
+    expect(restore(null, 'startup')).toBeNull();
+    expect(restore(JSON.stringify({ ...JSON.parse(raw), answers: { settore: 'crypto' } }), 'startup')).toBeNull();
+    expect(restore(JSON.stringify({ ...JSON.parse(raw), answers: { round: -5 } }), 'startup')).toBeNull();
   });
 
   it('after a reload during the deck review, the regular questions take over', () => {
-    const s = withDeck(initIntake('startup', MONTH));
+    const s = withDeck(initIntake('startup'));
     expect(s.current).toBe('deck:settore');
-    const back = restore(serialize(s), 'startup', MONTH)!;
+    const back = restore(serialize(s), 'startup')!;
     expect(back.current).toBe('settore');
     expect(back.messages.some((m) => m.body.kind === 'restored')).toBe(true);
     // A read in progress is not resumed either.
-    const reading = run(initIntake('startup', MONTH), { type: 'DECK_START' });
-    expect(restore(serialize(reading), 'startup', MONTH)!.current).toBe('settore');
+    const reading = run(initIntake('startup'), { type: 'DECK_START' });
+    expect(restore(serialize(reading), 'startup')!.current).toBe('settore');
   });
 
-  it('restart clears the answers but keeps this month\'s proposals', () => {
-    const s = run(founderDone(), ans('go'), { type: 'PROPOSE', id: 'i01' }, { type: 'RESTART' });
+  it('restart clears the answers (proposals stay in the inbox)', () => {
+    const s = run(founderDone(), ans('go'), { type: 'PASS', id: 'i01' }, { type: 'RESTART' });
     expect(s.answers).toEqual({});
     expect(s.board).toEqual({});
-    expect(s.counter.used).toBe(1);
+    expect(s.passed).toEqual([]);
     expect(s.current).toBe('deck');
     expect(s.messages).toHaveLength(2);
   });

@@ -20,6 +20,7 @@ export type RouteId =
   | 'matchDirectory'
   | 'matchInvestorProfile'
   | 'matchRequests'
+  | 'matchExport'
   | 'matchVariants'
   | VariantRouteId;
 

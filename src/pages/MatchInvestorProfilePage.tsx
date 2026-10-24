@@ -4,6 +4,7 @@ import { CtaPanel } from '../components/CtaPanel';
 import { Disclaimer } from '../components/Disclaimer';
 import { PageHero } from '../components/PageHero';
 import { DemoBadge } from '../components/match/DemoBadge';
+import { ExportLink } from '../components/match/ExportLink';
 import { FictionalNotice } from '../components/match/FictionalNotice';
 import { LegalLimits } from '../components/match/LegalLimits';
 import { LiveRegion } from '../components/match/LiveRegion';
@@ -129,6 +130,9 @@ function ProfileBody({ investor: i }: { investor: Investor }) {
           <h3 className="mi-profile-sub">{d.thesis}</h3>
           <p>{i.tesi}</p>
           <p className="notice">{d.noContacts}</p>
+          <p className="mi-profile-export">
+            <ExportLink kind="investor" investorId={i.id} className="btn btn-text btn-sm" />
+          </p>
         </article>
 
         {profile && ev && (

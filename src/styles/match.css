@@ -3701,3 +3701,387 @@ div.mi-error p {
 .mi-request .details {
   margin-top: 0.75rem;
 }
+
+/* ---------- Local export: one-pager and thesis sheet (A4, print / PDF) ---------- */
+
+.mi-export-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mi-results-head .mi-export-link {
+  margin-left: auto;
+}
+
+.mi-agent-export,
+.mi-inbox-export,
+.mi-profile-export {
+  margin: 0.5rem 0 0;
+}
+
+.mi-export-layout {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 980px) {
+  .mi-export-layout {
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  }
+
+  .mi-export-tools {
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+
+.mi-export-tools .card-title {
+  margin-bottom: 1rem;
+}
+
+.mi-export-tools .field-hint {
+  margin: 0.5rem 0 0;
+}
+
+.mi-export-tools textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.mi-export-note {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+}
+
+.mi-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.mi-export-actions .btn:first-child {
+  flex: 1 1 100%;
+}
+
+.mi-export-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 1rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.92rem;
+}
+
+.mi-export-empty .actions {
+  margin-top: 1rem;
+}
+
+/* The paper: a desk-coloured surface with one A4 sheet on it. */
+.mi-export-paper {
+  background: var(--cream-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: clamp(0.75rem, 3vw, 2rem);
+  min-width: 0;
+}
+
+.mi-sheet {
+  --sheet-pad: clamp(1.25rem, 5vw, 3.25rem);
+  max-width: 210mm;
+  margin: 0 auto;
+  background: var(--white);
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+  padding: var(--sheet-pad);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 980px) {
+  .mi-sheet {
+    min-height: 297mm;
+  }
+}
+
+.mi-sheet-head {
+  border-bottom: 2px solid var(--navy-900);
+  padding-bottom: 1.1rem;
+}
+
+.mi-sheet-brandline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+  font-weight: 600;
+}
+
+.mi-sheet-date {
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.mi-sheet-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+}
+
+.mi-sheet-tags li {
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.mi-sheet-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 4vw, 2.3rem);
+  line-height: 1.15;
+  margin: 0.9rem 0 0;
+  color: var(--navy-900);
+}
+
+.mi-sheet-kicker {
+  margin: 0.25rem 0 0;
+  font-weight: 600;
+  color: var(--gold-dark);
+}
+
+.mi-sheet-sub {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+}
+
+.mi-sheet-body {
+  display: grid;
+  gap: 1.35rem 2rem;
+}
+
+@media (min-width: 720px) {
+  .mi-sheet-body {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mi-sheet-sec.is-profile,
+  .mi-sheet-sec.is-thesis,
+  .mi-sheet-sec.is-pitch,
+  .mi-sheet-sec.is-notes,
+  .mi-sheet-sec.is-optin {
+    grid-column: 1 / -1;
+  }
+}
+
+.mi-sheet-sec h3 {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--navy-700);
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.mi-sheet-sec p,
+.mi-sheet-sec ul,
+.mi-sheet-sec ol {
+  margin: 0;
+}
+
+.mi-sheet-sec ul {
+  padding-left: 1.1rem;
+}
+
+.mi-sheet-sec li + li {
+  margin-top: 0.25rem;
+}
+
+.mi-sheet-sec p + p {
+  margin-top: 0.6rem;
+}
+
+.mi-sheet-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.mi-sheet-facts div {
+  border-left: 3px solid var(--gold);
+  padding: 0.15rem 0 0.15rem 0.7rem;
+}
+
+.mi-sheet-facts dt {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.mi-sheet-facts dd {
+  margin: 0.1rem 0 0;
+  font-weight: 600;
+  font-size: 1.02rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.mi-sheet-sec.is-pitch p {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-style: italic;
+  color: var(--navy-800);
+}
+
+.mi-sheet-note {
+  margin-top: 0.55rem !important;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.mi-sheet-steps {
+  list-style: none;
+  padding: 0;
+  counter-reset: sheet-step;
+  display: grid;
+  gap: 0.6rem;
+}
+
+@media (min-width: 720px) {
+  .mi-sheet-steps {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+.mi-sheet-steps li {
+  counter-increment: sheet-step;
+  position: relative;
+  padding-top: 1.9rem;
+  margin: 0 !important;
+  font-size: 0.88rem;
+}
+
+.mi-sheet-steps li::before {
+  content: counter(sheet-step);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--navy-900);
+  color: var(--gold-light);
+  font-weight: 700;
+  font-size: 0.78rem;
+  display: grid;
+  place-items: center;
+}
+
+.mi-sheet-foot {
+  margin-top: auto;
+  border-top: 1px solid var(--line-strong);
+  padding-top: 0.9rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: grid;
+  gap: 0.3rem;
+}
+
+.mi-sheet-foot p {
+  margin: 0;
+}
+
+.mi-sheet-disclaimer {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Print / Save as PDF: only the sheet, on A4 (named page, so other pages keep their own print setup). */
+@page mi-a4 {
+  size: A4;
+  margin: 14mm 14mm 14mm;
+}
+
+@media print {
+  body:has(.mi-export) .site-header,
+  body:has(.mi-export) .site-footer,
+  body:has(.mi-export) .mi-banner,
+  body:has(.mi-export) .page-hero,
+  .mi-export .no-print {
+    display: none !important;
+  }
+
+  .mi-export {
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  .mi-export .container {
+    max-width: none;
+    padding: 0;
+  }
+
+  .mi-export-layout {
+    display: block;
+  }
+
+  .mi-export-paper {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .mi-sheet {
+    page: mi-a4;
+    max-width: none;
+    min-height: 0;
+    box-shadow: none;
+    padding: 0;
+    font-size: 10.5pt;
+    gap: 6mm;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .mi-sheet-body {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mi-sheet-sec.is-profile,
+  .mi-sheet-sec.is-thesis,
+  .mi-sheet-sec.is-pitch,
+  .mi-sheet-sec.is-notes,
+  .mi-sheet-sec.is-optin {
+    grid-column: 1 / -1;
+  }
+
+  .mi-sheet-steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .mi-sheet-sec {
+    break-inside: avoid;
+  }
+
+  .mi-sheet-title {
+    font-size: 22pt;
+  }
+}

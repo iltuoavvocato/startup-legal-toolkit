@@ -228,6 +228,22 @@
       }
     },
     {
+      "id": "matchExport",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/esporta/",
+        "title": "Esporta il profilo (prototipo, locale) | Startup Legal Toolkit",
+        "description": "One-pager della startup o scheda della tesi dell’investitore, da stampare o salvare in PDF. Generato nel tuo browser: nessun dato viene inviato.",
+        "heading": "Esporta il profilo"
+      },
+      "en": {
+        "path": "/en/investor-match/export/",
+        "title": "Export your profile (prototype, local) | Startup Legal Toolkit",
+        "description": "A startup one-pager or an investor thesis sheet, to print or save as PDF. Generated in your browser: nothing is sent.",
+        "heading": "Export your profile"
+      }
+    },
+    {
       "id": "matchVariants",
       "robots": "noindex, nofollow",
       "it": {

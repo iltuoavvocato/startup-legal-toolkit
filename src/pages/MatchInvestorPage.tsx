@@ -5,6 +5,7 @@ import { Disclaimer } from '../components/Disclaimer';
 import { PageHero } from '../components/PageHero';
 import { ChoiceChips } from '../components/match/ChoiceChips';
 import { DemoBadge } from '../components/match/DemoBadge';
+import { ExportLink } from '../components/match/ExportLink';
 import { EuroField } from '../components/match/EuroField';
 import { ExcludedList } from '../components/match/ExcludedList';
 import { LiveRegion } from '../components/match/LiveRegion';
@@ -15,6 +16,7 @@ import { PrototypeBanner } from '../components/match/PrototypeBanner';
 import { ScoreExplainer } from '../components/match/ScoreExplainer';
 import { SelectField } from '../components/match/SelectField';
 import { TeaserCard } from '../components/match/TeaserCard';
+import { saveInvestorSheet } from '../components/match/useExportStore';
 import { demoStartups, EXAMPLE_INVESTOR_FORM } from '../data/matchDemo';
 import { readQuery, useSyncQuery } from '../hooks/useQueryState';
 import { useI18n } from '../i18n/context';
@@ -258,6 +260,10 @@ function InvestorResults({ thesis, nome, onEdit, headingRef }: ResultsProps) {
   const u = t.match.ui.investor;
   const L = labelsFor(locale);
   const investor = ownInvestor(thesis, { nome }, locale);
+  // For the local export (thesis only; the typed name travels as router state).
+  useEffect(() => {
+    saveInvestorSheet({ source: 'form', thesis });
+  }, [thesis]);
   const { matches, excluded } = matchStartups(investor, demoStartups(locale), locale);
   const aree = thesis.aree === 'italia' ? t.match.taxonomy.allItaly : thesis.aree.map((a) => L.area[a]).join(', ');
 
@@ -295,6 +301,7 @@ function InvestorResults({ thesis, nome, onEdit, headingRef }: ResultsProps) {
           {u.resultsTitle(matches.length)}
         </h2>
         <DemoBadge />
+        <ExportLink kind="investor" name={nome} />
       </div>
       <p className="mi-aside-text">{u.anonymousNote}</p>
 

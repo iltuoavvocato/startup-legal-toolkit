@@ -179,6 +179,16 @@ export function activeProposal(store: InboxStore, investorId: string, now: numbe
   );
 }
 
+/** The most recent founder request to this investor (any state, expired included), if any. */
+export function latestProposal(store: InboxStore, investorId: string): InboxRequest | null {
+  let latest: InboxRequest | null = null;
+  for (const r of store.requests) {
+    if (r.role !== 'founder' || r.counterpartId !== investorId) continue;
+    if (!latest || r.createdAt > latest.createdAt || (r.createdAt === latest.createdAt && r.id > latest.id)) latest = r;
+  }
+  return latest;
+}
+
 export type ProposeResult =
   | { ok: true; store: InboxStore; request: InboxRequest }
   | { ok: false; reason: 'no-profile' | 'already-sent' | 'limit' };

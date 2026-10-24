@@ -40,7 +40,8 @@ import {
   type Settore,
   type StartupProfile,
 } from './matchTaxonomy';
-import { counterFor, consume, transition, type OptInEvent, type OptInState, type ProposalCounter } from './optin';
+import type { RequestView } from './inbox';
+import { transition, type OptInEvent, type OptInState } from './optin';
 import { MAX_DECK_PAGES, type DeckReadErrorCode } from './pdfText';
 
 export type IntakeMode = 'startup' | 'investor';
@@ -224,16 +225,15 @@ export interface IntakeState {
   error: ErrorKey | null;
   messages: Message[];
   nextId: number;
-  /** Double opt-in state per match id (local only). */
+  /**
+   * Investor: double opt-in state per teaser (local only). The founder's proposals are not kept here: they live in the
+   * shared requests inbox (inbox.ts), with the same monthly counter as the form results and the directory.
+   */
   board: Record<string, OptInState>;
-  /** Founder: proposals sent this month (monthly limit). */
-  counter: ProposalCounter;
-  /** Ids whose other side's answer has been simulated. */
+  /** Investor: ids whose startup answer has been simulated. */
   simulated: string[];
   /** Founder: investors set aside without proposing. */
   passed: string[];
-  /** Founder: last proposal refused because the monthly limit is reached. */
-  limitHit: string | null;
 }
 
 export type Action =
@@ -244,12 +244,9 @@ export type Action =
   | { type: 'DECK_START' }
   | { type: 'DECK_READY'; pages: number; findings: DeckFindings }
   | { type: 'DECK_ERROR'; code: DeckReadErrorCode; pages?: number }
-  | { type: 'PROPOSE'; id: string }
   | { type: 'PASS'; id: string }
   | { type: 'INTERESTED'; id: string }
   | { type: 'SIMULATE'; id: string }
-  | { type: 'INTRO_YES'; id: string }
-  | { type: 'INTRO_NO'; id: string }
   | { type: 'SHOW_EXCLUDED' }
   | { type: 'RESTART' };
 
@@ -261,7 +258,7 @@ export interface ResultIds {
 
 const EMPTY_DECK: DeckState = { status: 'none', pages: 0, findings: null, decisions: {}, signals: [] };
 
-export function initIntake(mode: IntakeMode, month: string, counter?: ProposalCounter): IntakeState {
+export function initIntake(mode: IntakeMode): IntakeState {
   const s: IntakeState = {
     version: 1,
     mode,
@@ -275,10 +272,8 @@ export function initIntake(mode: IntakeMode, month: string, counter?: ProposalCo
     messages: [],
     nextId: 1,
     board: {},
-    counter: counterFor(month, counter),
     simulated: [],
     passed: [],
-    limitHit: null,
   };
   return advance(agent(s, { kind: 'hello' }));
 }
@@ -629,7 +624,7 @@ export function reduce(s: IntakeState, action: Action, results?: (s: IntakeState
       let next = setAnswer(user({ ...s, error: null }, { kind: 'answer', q, value: v.value }), q, v.value);
       if (q === 'confirm') {
         const ids = results?.(next) ?? { matches: [], excluded: [] };
-        next = resultsMessages({ ...next, current: null, editing: null, limitHit: null }, ids);
+        next = resultsMessages({ ...next, current: null, editing: null }, ids);
         return next;
       }
       return advance({ ...next, editing: null });
@@ -668,16 +663,11 @@ export function reduce(s: IntakeState, action: Action, results?: (s: IntakeState
       const failed = { ...s, deck: { ...EMPTY_DECK, status: 'error' as const, errorCode: action.code } };
       return advance(agent(failed, { kind: 'deckError', code: action.code, ...(action.pages ? { pages: action.pages } : {}) }));
     }
-    case 'PROPOSE': {
-      if (s.mode !== 'startup' || s.phase !== 'results' || stateOf(s, action.id) || s.passed.includes(action.id)) return s;
-      const r = consume(s.counter);
-      if (!r.ok) return { ...s, limitHit: action.id };
-      return { ...s, counter: r.counter, board: { ...s.board, [action.id]: 'proposta' }, limitHit: null };
-    }
     case 'PASS': {
       if (s.phase !== 'results') return s;
       if (s.mode === 'startup') {
-        if (stateOf(s, action.id) || s.passed.includes(action.id)) return s;
+        // Proposals live in the inbox: the caller only offers "set aside" for an investor with no open proposal.
+        if (s.passed.includes(action.id)) return s;
         return { ...s, passed: [...s.passed, action.id] };
       }
       return stateOf(s, action.id) ? s : move(s, action.id, 'INVESTOR_NO');
@@ -686,52 +676,44 @@ export function reduce(s: IntakeState, action: Action, results?: (s: IntakeState
       if (s.mode !== 'investor' || s.phase !== 'results' || stateOf(s, action.id)) return s;
       return move(s, action.id, 'INVESTOR_YES');
     case 'SIMULATE': {
-      if (s.phase !== 'results' || s.simulated.includes(action.id)) return s;
-      const st = stateOf(s, action.id);
+      // Investor only: the founder's simulated answers come from the inbox's demo clock ("Simula +7 giorni").
+      if (s.mode !== 'investor' || s.phase !== 'results' || s.simulated.includes(action.id)) return s;
+      if (stateOf(s, action.id) !== 'attesa-startup') return s;
       const yes = demoAnswer(action.id);
-      if (s.mode === 'startup' && st === 'proposta') {
-        return { ...move(s, action.id, yes ? 'INVESTOR_YES' : 'INVESTOR_NO'), simulated: [...s.simulated, action.id] };
-      }
-      if (s.mode === 'investor' && st === 'attesa-startup') {
-        return { ...move(s, action.id, yes ? 'STARTUP_YES' : 'STARTUP_NO'), simulated: [...s.simulated, action.id] };
-      }
-      return s;
+      return { ...move(s, action.id, yes ? 'STARTUP_YES' : 'STARTUP_NO'), simulated: [...s.simulated, action.id] };
     }
-    case 'INTRO_YES':
-    case 'INTRO_NO':
-      if (s.mode !== 'startup' || stateOf(s, action.id) !== 'attesa-startup') return s;
-      return move(s, action.id, action.type === 'INTRO_YES' ? 'STARTUP_YES' : 'STARTUP_NO');
     case 'SHOW_EXCLUDED':
       if (s.phase !== 'results' || s.messages.some((m) => m.body.kind === 'excluded')) return s;
       return agent(user(s, { kind: 'excluded' }), { kind: 'excluded' });
     case 'RESTART':
-      // The monthly proposal counter is per month, so it survives a restart.
-      return initIntake(s.mode, s.counter.month, s.counter);
+      // Proposals already sent stay in the inbox (and in this month's counter).
+      return initIntake(s.mode);
   }
 }
 
 // ---------------------------------------------------------------- per-match status (double opt-in)
 
-export type FounderStatus = 'idle' | 'passed' | 'waiting' | 'noNews' | 'request' | 'intro' | 'declined';
+export type FounderStatus = 'idle' | 'passed' | 'waiting' | 'request' | 'intro' | 'declined' | 'expired';
 export type InvestorStatus = 'idle' | 'passed' | 'waiting' | 'noNews' | 'intro';
 
 /**
- * What the founder sees for one investor. The investor's "no" (chiusa-investitore) is shown exactly like no answer
- * (proposta): only whether an answer was simulated changes the wording, never its content.
+ * What the founder sees for one investor, from the inbox view of the latest proposal to it (null: never proposed).
+ * The inbox already folds the investor's "no" into silence (waiting until the deadline, then expired), so the agent
+ * can't tell them apart either.
  */
-export function founderStatus(s: Pick<IntakeState, 'board' | 'simulated' | 'passed'>, id: string): FounderStatus {
-  const st = s.board[id];
-  if (!st) return s.passed.includes(id) ? 'passed' : 'idle';
-  switch (st) {
-    case 'proposta':
-    case 'chiusa-investitore':
-      return s.simulated.includes(id) ? 'noNews' : 'waiting';
-    case 'attesa-startup':
+export function founderStatus(view: Pick<RequestView, 'status'> | null, passed: boolean): FounderStatus {
+  if (!view) return passed ? 'passed' : 'idle';
+  switch (view.status) {
+    case 'waiting':
+      return 'waiting';
+    case 'your-turn':
       return 'request';
     case 'intro':
       return 'intro';
-    case 'chiusa-startup':
+    case 'declined-by-you':
       return 'declined';
+    case 'expired':
+      return 'expired';
   }
 }
 
@@ -772,6 +754,16 @@ export function thesisOf(a: Answers): Thesis | null {
 export function investorProfileOf(s: IntakeState, locale: Locale = 'it'): Investor | null {
   const t = thesisOf(s.answers);
   return t ? ownInvestor(t, undefined, locale) : null;
+}
+
+/** Ids of the matches the agent presented in the latest results (best first). */
+export function matchIdsOf(s: Pick<IntakeState, 'messages'>): string[] {
+  let start = -1;
+  s.messages.forEach((m, i) => {
+    if (m.from === 'agent' && m.body.kind === 'results') start = i;
+  });
+  if (start < 0) return [];
+  return s.messages.slice(start).flatMap((m) => (m.from === 'agent' && m.body.kind === 'match' ? [m.body.id] : []));
 }
 
 /** Ranked match ids for the current answers, from the given (demo) investors and startups. */
@@ -1016,7 +1008,7 @@ export function serialize(s: IntakeState): string {
  * Restores a stored conversation, or null when it is missing, malformed, from another mode or from an older format.
  * Without the deck's findings, pending deck questions disappear from the plan and the regular questions take over.
  */
-export function restore(raw: string | null, mode: IntakeMode, month: string): IntakeState | null {
+export function restore(raw: string | null, mode: IntakeMode): IntakeState | null {
   if (!raw) return null;
   let data: unknown;
   try {
@@ -1026,18 +1018,18 @@ export function restore(raw: string | null, mode: IntakeMode, month: string): In
   }
   const s = data as Partial<IntakeState>;
   if (!s || typeof s !== 'object' || s.version !== 1 || s.mode !== mode || !Array.isArray(s.messages) || !s.answers || !s.deck) return null;
-  if (typeof s.nextId !== 'number' || !s.counter || typeof s.counter.month !== 'string') return null;
+  if (typeof s.nextId !== 'number') return null;
   if (!validAnswers(s.answers)) return null;
+  // Older stored conversations also carry a monthly counter and founder proposals: both now live in the inbox.
+  const rest = Object.fromEntries(Object.entries(s).filter(([k]) => k !== 'counter' && k !== 'limitHit')) as Partial<IntakeState>;
   const base: IntakeState = {
-    ...(s as IntakeState),
-    board: s.board ?? {},
+    ...(rest as IntakeState),
+    board: s.mode === 'investor' ? (s.board ?? {}) : {},
     simulated: s.simulated ?? [],
     passed: s.passed ?? [],
     sources: s.sources ?? {},
-    counter: counterFor(month, s.counter),
     deck: { ...EMPTY_DECK, ...s.deck, findings: null },
     error: null,
-    limitHit: null,
   };
   if (base.phase === 'results') return base;
   // Ask again whatever is next now (a pending deck question may no longer apply).

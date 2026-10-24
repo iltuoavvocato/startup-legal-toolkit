@@ -10,6 +10,8 @@ import { LiveRegion } from '../components/match/LiveRegion';
 import { PrototypeBanner } from '../components/match/PrototypeBanner';
 import { TeaserCard } from '../components/match/TeaserCard';
 import { resetInbox, updateInbox, useInbox } from '../components/match/useInbox';
+import { resetExportStore } from '../components/match/useExportStore';
+import { ExportLink } from '../components/match/ExportLink';
 import { DEMO_STARTUPS, demoInvestors, demoStartups, EXAMPLE_STARTUP_FORM } from '../data/matchDemo';
 import { useI18n } from '../i18n/context';
 import {
@@ -94,6 +96,7 @@ export function MatchRequestsPage() {
   };
   const reset = () => {
     resetInbox();
+    resetExportStore();
     setMessage(x.resetDone);
   };
   const respond = (r: InboxRequest, choice: SimAnswer) => {
@@ -144,6 +147,9 @@ export function MatchRequestsPage() {
                 {x.investor.intro} <DemoBadge />
               </p>
             )}
+            <p className="mi-inbox-export">
+              <ExportLink kind={role === 'founder' ? 'startup' : 'investor'} className="btn btn-text btn-sm" />
+            </p>
 
             {founderEmpty ? (
               <FounderEmpty

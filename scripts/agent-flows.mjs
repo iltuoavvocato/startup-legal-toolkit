@@ -13,7 +13,10 @@ const COPY = {
     confirm: 'Conferma',
     send: 'Invia',
     propose: 'Proponi il profilo',
-    simulateInvestor: 'Simula la risposta dell’investitore',
+    requestsLink: 'Le tue richieste',
+    travel: 'Simula +7 giorni',
+    requests: 'match-investitori/richieste/',
+    left: /Proposte rimaste a questo mese: (\d) di 5/,
     interested: 'Mi interessa',
     simulateStartup: 'Simula la risposta della startup',
     excluded: 'Perché alcuni non compaiono?',
@@ -39,7 +42,10 @@ const COPY = {
     confirm: 'Confirm',
     send: 'Send',
     propose: 'Propose your profile',
-    simulateInvestor: 'Simulate the investor’s answer',
+    requestsLink: 'Your requests',
+    travel: 'Simulate +7 days',
+    requests: 'en/investor-match/requests/',
+    left: /Proposals left this month: (\d) of 5/,
     interested: 'I’m interested',
     simulateStartup: 'Simulate the startup’s answer',
     excluded: 'Why are some missing?',
@@ -116,9 +122,37 @@ export async function founderWithDeck(page, base, lang, problems, upTo = 'result
   await chip(page, c.find).click();
   await page.getByText(c.found).waitFor();
   await expectInChat(page, problems, name, [c.next, c.gaps, c.fromDeck]);
+  await proposeFirst(page, c, problems, name);
+  // The investor's simulated answer arrives on the inbox's demo clock, as on the requests page.
+  await page.locator('.mi-agent-match').first().getByRole('button', { name: c.travel }).click();
+}
+
+/** "Proponi il profilo" on the first match: recorded in the shared inbox, and the shared counter drops by one. */
+async function proposeFirst(page, c, problems, name) {
+  const leftOf = async () => Number((await page.locator('.mi-agent-chat').innerText()).match(c.left)?.[1]);
+  const before = await leftOf();
   const firstCard = page.locator('.mi-agent-match').first();
   await firstCard.getByRole('button', { name: new RegExp(`^${c.propose}`) }).click();
-  await firstCard.getByRole('button', { name: new RegExp(`^${c.simulateInvestor}`) }).click();
+  await firstCard.getByRole('link', { name: c.requestsLink }).waitFor();
+  const after = await leftOf();
+  if (!(after === before - 1)) problems.push(`${name}: shared counter went from ${before} to ${after} after proposing`);
+  const inbox = await page.evaluate(() => JSON.parse(window.sessionStorage.getItem('matchinvstar-inbox') ?? '{"requests":[]}'));
+  if (!inbox.requests.some((r) => r.role === 'founder')) problems.push(`${name}: the agent's proposal is not in the requests inbox`);
+}
+
+/** Founder without a deck, then a proposal from the agent's results, then the requests page that lists it. */
+export async function agentProposalInInbox(page, base, lang, problems) {
+  const c = COPY[lang];
+  const name = `${lang} agent → inbox`;
+  await founderNoDeck(page, base, lang, problems);
+  const investor = (await page.locator('.mi-agent-match h3').first().innerText()).replace(/^\d+\.\s*/, '');
+  await proposeFirst(page, c, problems, name);
+  await page.locator('.mi-agent-match').first().getByRole('link', { name: c.requestsLink }).click();
+  await page.waitForURL((u) => u.pathname.endsWith(`/${c.requests}`));
+  await page.locator('#page-title').waitFor();
+  const text = await page.locator('main').innerText();
+  if (!text.includes(investor)) problems.push(`${name}: the requests page does not list ${investor}`);
+  if (!/(1\/5 proposte questo mese|1\/5 proposals this month)/.test(text)) problems.push(`${name}: the requests page counter is not 1/5`);
 }
 
 /** Founder without a deck: chips, a suggested amount, a typed one-liner, an edit, then results. */

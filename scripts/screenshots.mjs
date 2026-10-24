@@ -4,8 +4,9 @@ import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { launchBrowser } from './browser.mjs';
 import { startPreview } from './serve-dist.mjs';
-import { founderNoDeck, founderWithDeck, investorFlow, restartWorks } from './agent-flows.mjs';
+import { agentProposalInInbox, founderNoDeck, founderWithDeck, investorFlow, restartWorks } from './agent-flows.mjs';
 import * as dir from './directory-flows.mjs';
+import * as ex from './export-flows.mjs';
 
 const OUT = 'screenshots';
 if (!existsSync('dist/index.html')) {
@@ -151,6 +152,29 @@ const STATES = {
         [`${p}match-requests-investor`, (page, base) => dir.requestsInvestor(page, base, lang, problems)],
         [`${p}match-requests-travel`, (page, base) => dir.requestsTravel(page, base, lang, problems, 'founder')],
         [`${p}match-requests-investor-travel`, (page, base) => dir.requestsTravel(page, base, lang, problems, 'investor')],
+      ];
+    }),
+  ),
+  // Local export (one-pager / thesis sheet) and the guided intake's proposals in the shared inbox.
+  ...Object.fromEntries(
+    ['it', 'en'].flatMap((lang) => {
+      const p = lang === 'en' ? 'en-' : '';
+      return [
+        [`${p}match-export-empty`, (page, base) => ex.exportEmpty(page, base, lang, problems)],
+        [`${p}match-export-startup-teaser`, (page, base) => ex.exportStartupTeaser(page, base, lang, problems)],
+        [`${p}match-export-startup-full`, (page, base) => ex.exportStartupFull(page, base, lang, problems)],
+        [`${p}match-export-startup-deck`, (page, base) => ex.exportStartupDeck(page, base, lang, problems)],
+        [`${p}match-export-investor`, (page, base) => ex.exportInvestor(page, base, lang, problems)],
+        [`${p}match-export-demo-investor`, (page, base) => ex.exportDemoInvestor(page, base, lang, problems)],
+        [
+          `${p}match-export-agent-startup`,
+          async (page, base) => {
+            await founderWithDeck(page, base, lang, problems);
+            await page.locator('.mi-agent-chat').getByRole('link', { name: lang === 'it' ? 'Esporta il one-pager' : 'Export the one-pager' }).click();
+            await page.locator('.mi-sheet').waitFor();
+          },
+        ],
+        [`${p}match-requests-from-agent`, (page, base) => agentProposalInInbox(page, base, lang, problems)],
       ];
     }),
   ),
@@ -396,6 +420,11 @@ try {
       // sessionStorage: only the guided intake's conversation and the requests inbox, never the deck's text or names.
       const session = await page.evaluate(() => Object.entries(window.sessionStorage));
       for (const [k, v] of session) {
+        if (k === 'matchinvstar-export') {
+          if (/"(nome|founder|email|snippet|findings|description|descrizione)":/.test(v) || v.includes(ex.NAME))
+            problems.push(`[${vpName}] ${name}: names or deck text in the export storage`);
+          continue;
+        }
         if (k === 'matchinvstar-inbox') {
           if (/"(nome|founder|oneLiner|email)":/.test(v)) problems.push(`[${vpName}] ${name}: names in the inbox storage`);
           continue;
@@ -447,6 +476,36 @@ try {
         files.push(drawer);
         await page.keyboard.press('Escape');
       }
+    }
+    await context.close();
+  }
+
+  // Print: the export page as Chrome prints it (print media emulated, A4 PDF via Chrome's print-to-PDF).
+  {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+    const page = await context.newPage();
+    page.setDefaultTimeout(10000);
+    page.on('pageerror', (err) => problems.push(`print: pageerror ${err.message}`));
+    const cases = [
+      ['match-export-startup', 'it', ex.exportStartupDeck],
+      ['en-match-export-startup', 'en', ex.exportStartupFull],
+      ['match-export-investor', 'it', ex.exportInvestor],
+      ['en-match-export-demo-investor', 'en', ex.exportDemoInvestor],
+    ];
+    for (const [name, lang, flow] of cases) {
+      await page.emulateMedia({ media: 'screen' });
+      await flow(page, base, lang, problems);
+      await ex.checkPrintMedia(page, lang, problems, `${name} (print)`);
+      await page.evaluate(() => document.fonts.ready);
+      const png = join(OUT, `${name}-print.png`);
+      await page.screenshot({ path: png, fullPage: true });
+      files.push(png);
+      const pdf = join(OUT, `${name}.pdf`);
+      await page.pdf({ path: pdf, preferCSSPageSize: true, printBackground: true });
+      files.push(pdf);
+      const bytes = readFileSync(pdf);
+      const pages = (bytes.toString('latin1').match(/\/Type\s*\/Page[^s]/g) ?? []).length;
+      if (pages !== 1) problems.push(`${name}.pdf: expected 1 A4 page, got ${pages}`);
     }
     await context.close();
   }

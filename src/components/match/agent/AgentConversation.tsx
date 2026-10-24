@@ -20,8 +20,11 @@ import {
 } from '../../../lib/intakeAgent';
 import { matchInvestors, matchStartups } from '../../../lib/matching';
 import { labelsFor } from '../../../lib/matchTaxonomy';
+import { proposalCounter } from '../../../lib/inbox';
 import { MONTHLY_PROPOSAL_LIMIT, remaining } from '../../../lib/optin';
+import { ExportLink } from '../ExportLink';
 import { LockIcon } from '../TeaserCard';
+import { useInbox } from '../useInbox';
 import type { DeckReadState } from '../useDeckReader';
 import { AgentComposer } from './AgentComposer';
 import { AgentMatch } from './AgentMatch';
@@ -293,6 +296,7 @@ function AgentContent({ m, body, elId, state, dispatch }: ContentProps) {
   const { locale, t } = useI18n();
   const u = t.intake.ui;
   const Q = t.intake.questions;
+  const inbox = useInbox();
   const text = messageText(m, state.mode, locale);
 
   if (body.kind === 'match') {
@@ -329,7 +333,7 @@ function AgentContent({ m, body, elId, state, dispatch }: ContentProps) {
   }
 
   if (body.kind === 'results') {
-    const left = remaining(state.counter, MONTHLY_PROPOSAL_LIMIT);
+    const left = remaining(proposalCounter(inbox.store, inbox.now), MONTHLY_PROPOSAL_LIMIT);
     return (
       <div className="mi-bubble" id={elId} tabIndex={-1}>
         <p>{text}</p>
@@ -338,6 +342,9 @@ function AgentContent({ m, body, elId, state, dispatch }: ContentProps) {
         )}
         {state.mode === 'startup' && body.count > 0 && <p className="mi-agent-note">{u.proposalsLeft(left, MONTHLY_PROPOSAL_LIMIT)}</p>}
         <p className="mi-agent-note">{t.match.demoLabel}</p>
+        <p className="mi-agent-export">
+          <ExportLink kind={state.mode} />
+        </p>
       </div>
     );
   }
