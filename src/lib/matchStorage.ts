@@ -30,6 +30,19 @@ export function safeGet(key: string, get: StorageGetter = session): string | nul
   }
 }
 
+/** setItem (or removeItem when `value` is null) that never throws (storage full or disabled). False if it failed. */
+export function safeSet(key: string, value: string | null, get: StorageGetter = session): boolean {
+  try {
+    const s = storageOf(get);
+    if (!s) return false;
+    if (value === null) s.removeItem(key);
+    else s.setItem(key, value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Removes the matching demo's keys (from sessionStorage, and from localStorage in case an older or future version put
  * them there). Never touches anything else, such as the language preference. Returns false if no storage was usable.

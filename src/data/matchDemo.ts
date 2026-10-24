@@ -7,8 +7,6 @@ import type { Investor, StartupProfile } from '../lib/matchTaxonomy';
 
 const T = MESSAGES.it.matchDemo;
 
-export const DEMO_LABEL = MESSAGES.it.match.demoLabel;
-
 export const DEMO_INVESTORS: readonly Investor[] = [
   {
     id: 'i01',

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { EXPORT_STORAGE_KEY, emptyExportStore, parseExportStore } from './exportDoc';
 import { emptyStore, INBOX_STORAGE_KEY, parseStore } from './inbox';
 import { initIntake, restore, serialize, STORAGE_KEYS } from './intakeAgent';
-import { clearMatchStorage, MATCH_STORAGE_KEYS, safeGet, storageOf } from './matchStorage';
+import { clearMatchStorage, MATCH_STORAGE_KEYS, safeGet, safeSet, storageOf } from './matchStorage';
 
 // Every stored-state loader must turn corrupt JSON, wrong shapes and missing keys into a clean state, never throw.
 const JUNK = ['', '{', 'null', '0', '"x"', '[]', 'true', '{}', '{"v":1}', '{"v":1,"requests":"x"}', '\u0000￿', '{"__proto__":{"v":1}}'];
@@ -105,6 +105,19 @@ describe('matchStorage', () => {
     expect(safeGet('k', throwing)).toBeNull();
     expect(safeGet('k', throwingOnUse)).toBeNull();
     expect(safeGet('k', () => memoryStorage({ k: 'v' }))).toBe('v');
+  });
+
+  it('writes and removes safely when storage is missing, disabled, full or throws', () => {
+    expect(safeSet('k', 'v', throwing)).toBe(false);
+    expect(safeSet('k', 'v', () => null)).toBe(false);
+    expect(safeSet('k', 'v', throwingOnUse)).toBe(false);
+    expect(safeSet('k', null, throwingOnUse)).toBe(false);
+    const s = memoryStorage({ other: '1' });
+    expect(safeSet('k', 'v', () => s)).toBe(true);
+    expect(s.getItem('k')).toBe('v');
+    expect(safeSet('k', null, () => s)).toBe(true);
+    expect(s.getItem('k')).toBeNull();
+    expect(s.getItem('other')).toBe('1');
   });
 
   it('clears only the demo keys and keeps the language preference', () => {

@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { MESSAGES } from './messages';
 
@@ -40,6 +42,21 @@ describe('dictionaries', () => {
     for (const [key, value] of leaves(MESSAGES.it)) {
       if (typeof value === 'string' && value !== '') expect(en.get(key), key).not.toBe('');
     }
+  });
+
+  it('have no unused keys (every key name appears in the code outside the dictionaries)', () => {
+    // Cheap static check: a key counts as used when its own name appears as a word in a non-test source file.
+    // Keys read dynamically (`labels[settore]`) pass because their names are enum values written in the code too;
+    // a common name can hide an unused key, so this catches dead keys with distinctive names only.
+    const src = join(__dirname, '..');
+    const walk = (dir: string): string[] =>
+      readdirSync(dir).flatMap((f) => (statSync(join(dir, f)).isDirectory() ? walk(join(dir, f)) : [join(dir, f)]));
+    const code = walk(src)
+      .filter((f) => /\.tsx?$/.test(f) && !f.includes(join('i18n', 'messages')) && !/\.test\.ts$/.test(f))
+      .map((f) => readFileSync(f, 'utf8'))
+      .join('\n');
+    const names = new Set(leaves(MESSAGES.it).map(([key]) => key.split('.').pop()!).filter((k) => !/^\d+$/.test(k)));
+    expect([...names].filter((k) => !new RegExp(`\\b${k}\\b`).test(code))).toEqual([]);
   });
 
   it('use the required disclaimers', () => {

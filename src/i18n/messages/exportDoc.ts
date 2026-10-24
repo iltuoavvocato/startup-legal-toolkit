@@ -4,7 +4,6 @@ const it = {
     eyebrow: 'Match investitori · Prototipo',
     title: 'Esporta il profilo',
     lead: 'Un documento A4 da stampare o salvare in PDF, generato nel tuo browser dal profilo che hai preparato. Nessun dato viene inviato e non esiste una pagina pubblica.',
-    kindLabel: 'Documento',
     kinds: { startup: 'One-pager della startup', investor: 'Scheda della tesi' },
     variantLabel: 'Versione',
     variants: { teaser: 'Teaser anonimo', full: 'Versione completa' },
@@ -50,7 +49,6 @@ const it = {
   doc: {
     brand: 'MatchInvStar (nome provvisorio)',
     startupTitle: { teaser: 'Teaser anonimo della startup', full: 'One-pager della startup' },
-    startupNoName: 'Startup (nome riservato)',
     startupSubtitle: (settore: string, fase: string, regione: string) => `${settore} · ${fase} · ${regione}`,
     investorTitle: 'Tesi di investimento',
     investorSubtitle: (n: number) => (n === 1 ? '1 settore' : `${n} settori`),
@@ -114,7 +112,6 @@ const en: typeof it = {
     eyebrow: 'Investor matching · Prototype',
     title: 'Export your profile',
     lead: 'An A4 document to print or save as PDF, generated in your browser from the profile you prepared. Nothing is sent and there is no public page.',
-    kindLabel: 'Document',
     kinds: { startup: 'Startup one-pager', investor: 'Thesis sheet' },
     variantLabel: 'Version',
     variants: { teaser: 'Anonymous teaser', full: 'Full version' },
@@ -160,7 +157,6 @@ const en: typeof it = {
   doc: {
     brand: 'MatchInvStar (working name)',
     startupTitle: { teaser: 'Anonymous startup teaser', full: 'Startup one-pager' },
-    startupNoName: 'Startup (name withheld)',
     startupSubtitle: (settore: string, fase: string, regione: string) => `${settore} · ${fase} · ${regione}`,
     investorTitle: 'Investment thesis',
     investorSubtitle: (n: number) => (n === 1 ? '1 sector' : `${n} sectors`),

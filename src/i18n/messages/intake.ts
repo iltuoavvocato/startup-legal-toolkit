@@ -231,8 +231,6 @@ const it = {
     reading: (page: number, total: number) => `Lettura della pagina ${page} di ${total}…`,
     readingStart: 'Apro il PDF…',
     storageNote: 'La conversazione resta solo in questa scheda del browser (sessionStorage) e si cancella con “Ricomincia”. Il testo del deck non viene mai salvato.',
-    formLink: 'Preferisci il modulo?',
-    talkLink: 'Preferisci la conversazione?',
     errors: {
       required: 'Scegli almeno un’opzione, oppure scrivi una risposta.',
       positive: 'Indica un importo maggiore di zero.',
@@ -419,8 +417,6 @@ const en: typeof it = {
     reading: (page: number, total: number) => `Reading page ${page} of ${total}…`,
     readingStart: 'Opening the PDF…',
     storageNote: 'The conversation is kept only in this browser tab (sessionStorage) and is deleted with “Start over”. The deck’s text is never saved.',
-    formLink: 'Prefer the form?',
-    talkLink: 'Prefer the conversation?',
     errors: {
       required: 'Pick at least one option, or type an answer.',
       positive: 'Enter an amount greater than zero.',

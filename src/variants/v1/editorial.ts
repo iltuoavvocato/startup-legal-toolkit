@@ -1,14 +1,13 @@
 // V1 "Editoriale": small pure helpers for the magazine layout.
 import { WEIGHTS, type Parts } from '../../lib/matching';
 import { bucketOf, type Board, type InvestorBucket } from '../logic/board';
+import { pad2 } from '../../lib/dates';
 
 export type PartKey = keyof Parts;
 export const PART_ORDER: readonly PartKey[] = ['settore', 'ticket', 'fase', 'area'];
 
 /** Rank as a two-digit editorial numeral: 1 → "01". */
-export function rankNumeral(n: number): string {
-  return String(Math.max(0, Math.trunc(n))).padStart(2, '0');
-}
+export const rankNumeral = pad2;
 
 /** Score 0–100 clamped, for the width of the thin score rule. */
 export function barPercent(score: number): number {

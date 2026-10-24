@@ -19,9 +19,7 @@ import { withProfile } from '../../../lib/inbox';
 import type { StartupCore } from '../../../lib/matchQuery';
 import { saveInvestorSheet, saveStartupSheet } from '../useExportStore';
 import { updateInbox } from '../useInbox';
-import { safeGet, storageOf } from '../../../lib/matchStorage';
-
-const storage = () => storageOf();
+import { safeGet, safeSet } from '../../../lib/matchStorage';
 
 const results = (s: IntakeState) => resultIdsFor(s, demoInvestors(), demoStartups());
 
@@ -39,11 +37,8 @@ export function useIntake(mode: IntakeMode) {
   const [state, setState] = useState<IntakeState>(initial.state);
 
   useEffect(() => {
-    try {
-      storage()?.setItem(key, serialize(state));
-    } catch {
-      // Storage full or disabled: the conversation simply isn't kept across reloads.
-    }
+    // Storage full or disabled: the conversation simply isn't kept across reloads.
+    safeSet(key, serialize(state));
   }, [key, state]);
 
   // Once the founder's profile is complete, the directory and the requests inbox can use it (enumerated fields only).
@@ -76,11 +71,7 @@ export function useIntake(mode: IntakeMode) {
 
   const dispatch = useCallback((action: Action) => {
     if (action.type === 'RESTART') {
-      try {
-        storage()?.removeItem(key);
-      } catch {
-        // ignore
-      }
+      safeSet(key, null);
     }
     setState((s) => reduce(s, action, results));
   }, [key]);

@@ -792,25 +792,6 @@
 
 /* ---------- Profile review ---------- */
 
-.mi-source {
-  display: inline-block;
-  margin-left: 0.4rem;
-  padding: 0 0.45rem;
-  border-radius: 6px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  vertical-align: 0.1em;
-  background: var(--cream);
-  border: 1px solid var(--line);
-  color: var(--text-muted);
-}
-
-.mi-source.src-deck {
-  background: #fbf5e7;
-  border-color: #ecdcb5;
-  color: #5a4417;
-}
-
 .mi-review-note {
   margin-bottom: 1.25rem;
 }

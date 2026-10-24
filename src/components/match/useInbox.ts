@@ -1,37 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 import { advance, clockOf, emptyStore, INBOX_STORAGE_KEY, parseStore, serializeStore, type InboxStore } from '../../lib/inbox';
+import { safeGet, safeSet } from '../../lib/matchStorage';
 
 // The requests inbox lives in sessionStorage (this tab only), like the guided intake. Pages and the header badge
 // listen to one window event, so a proposal made on one page shows up everywhere without a reload.
 const EVENT = 'matchinvstar-inbox';
 
-function storage(): Storage | null {
-  try {
-    return window.sessionStorage;
-  } catch {
-    return null;
-  }
-}
-
 /** Reads the stored inbox and applies the simulated answers that arrived by now (demo clock). */
-export function readInbox(realNow = Date.now()): InboxStore {
-  let raw: string | null = null;
-  try {
-    raw = storage()?.getItem(INBOX_STORAGE_KEY) ?? null;
-  } catch {
-    // Storage disabled: start empty.
-  }
-  const store = parseStore(raw);
+function readInbox(realNow = Date.now()): InboxStore {
+  // Storage disabled: start empty.
+  const store = parseStore(safeGet(INBOX_STORAGE_KEY));
   return advance(store, clockOf(store, realNow));
 }
 
 function writeInbox(store: InboxStore | null) {
-  try {
-    if (store) storage()?.setItem(INBOX_STORAGE_KEY, serializeStore(store));
-    else storage()?.removeItem(INBOX_STORAGE_KEY);
-  } catch {
-    // Storage full or disabled: the inbox simply isn't kept across pages.
-  }
+  // Storage full or disabled: the inbox simply isn't kept across pages.
+  safeSet(INBOX_STORAGE_KEY, store ? serializeStore(store) : null);
   window.dispatchEvent(new Event(EVENT));
 }
 

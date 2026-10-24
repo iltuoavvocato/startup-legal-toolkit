@@ -71,13 +71,6 @@ export function optionsOf<T extends string>(values: readonly T[], labels: Record
   return values.map((value) => ({ value, label: labels[value] }));
 }
 
-// Italian labels (default locale).
-export const SETTORE_LABEL = labelsFor('it').settore;
-export const FASE_LABEL = labelsFor('it').fase;
-export const AREA_LABEL = labelsFor('it').area;
-export const REGIONE_LABEL = labelsFor('it').regione;
-export const TIPO_LABEL = labelsFor('it').tipo;
-
 export const isSettore = (v: unknown): v is Settore => SETTORI.includes(v as Settore);
 export const isFase = (v: unknown): v is Fase => FASI.includes(v as Fase);
 export const isArea = (v: unknown): v is Area => AREE.includes(v as Area);

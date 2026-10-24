@@ -8,34 +8,19 @@ import {
   startupSheetOf,
   type ExportStore,
 } from '../../lib/exportDoc';
+import { safeGet, safeSet } from '../../lib/matchStorage';
 
 // The exportable profiles live in sessionStorage (this tab only), like the inbox and the guided intake: whitelisted
 // fields only (see exportDoc.ts), never names or deck text. Names reach the export page as router state.
 const EVENT = 'matchinvstar-export';
 
-function storage(): Storage | null {
-  try {
-    return window.sessionStorage;
-  } catch {
-    return null;
-  }
-}
-
 export function readExportStore(): ExportStore {
-  try {
-    return parseExportStore(storage()?.getItem(EXPORT_STORAGE_KEY) ?? null);
-  } catch {
-    return emptyExportStore();
-  }
+  return parseExportStore(safeGet(EXPORT_STORAGE_KEY));
 }
 
 function write(store: ExportStore | null) {
-  try {
-    if (store) storage()?.setItem(EXPORT_STORAGE_KEY, serializeExportStore(store));
-    else storage()?.removeItem(EXPORT_STORAGE_KEY);
-  } catch {
-    // Storage full or disabled: the export page will show its empty state.
-  }
+  // Storage full or disabled: the export page will show its empty state.
+  safeSet(EXPORT_STORAGE_KEY, store ? serializeExportStore(store) : null);
   window.dispatchEvent(new Event(EVENT));
 }
 

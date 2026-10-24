@@ -11,6 +11,7 @@ import { MESSAGES } from '../i18n/messages';
 import { matchInvestors } from './matching';
 import { isArea, isFase, isRegione, isSettore, AREA_DI, labelsFor, ONE_LINER_MAX, TIPI_INVESTITORE, type Investor } from './matchTaxonomy';
 import { ownStartup, type StartupCore, type Thesis } from './matchQuery';
+import { isoDate } from './dates';
 
 export const EXPORT_STORAGE_KEY = 'matchinvstar-export';
 
@@ -184,8 +185,7 @@ export interface ExportDoc {
 
 /** "2026-10-24" in local time, for file names. */
 export function isoDay(now: number): string {
-  const d = new Date(now);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return isoDate(new Date(now));
 }
 
 /** Investor types among the matches, most frequent first (ties in the taxonomy's order). */

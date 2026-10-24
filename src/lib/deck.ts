@@ -37,8 +37,6 @@ export function agentSteps(locale: Locale = 'it', hasDeck = true): readonly stri
   return hasDeck ? d.steps : d.stepsNoDeck;
 }
 
-export const AGENT_STEPS = agentSteps('it');
-
 /** Labels of the startup flow stepper; without a deck no step talks about reading one. */
 export function startupFlowSteps(locale: Locale = 'it', hasDeck = true): readonly string[] {
   const u = MESSAGES[locale].match.ui.startup;
@@ -49,8 +47,6 @@ export type Fonte = 'deck' | 'modulo' | 'esempio';
 export function fonteLabels(locale: Locale = 'it'): Record<Fonte, string> {
   return MESSAGES[locale].match.deck.fonti;
 }
-
-export const FONTE_LABEL = fonteLabels('it');
 
 export interface StartupForm {
   settore: string;

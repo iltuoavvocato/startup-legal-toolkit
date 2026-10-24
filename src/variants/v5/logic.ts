@@ -1,5 +1,6 @@
 // V5 "Dark premium": small pure helpers (score breakdown bars, list navigation, mono numbering).
 import { WEIGHTS, type Parts } from '../../lib/matching';
+import { pad2 } from '../../lib/dates';
 
 export const PART_KEYS = ['settore', 'ticket', 'fase', 'area'] as const;
 export type PartKey = (typeof PART_KEYS)[number];
@@ -42,7 +43,7 @@ export function nextIndex(key: string, current: number, length: number): number 
 }
 
 /** Two-digit mono numbering: 1 → "01", 12 → "12". */
-export const pad2 = (n: number) => String(Math.max(0, Math.trunc(n))).padStart(2, '0');
+export { pad2 };
 
 /** Width (0–100) of the monthly proposals bar. */
 export const usedPct = (used: number, limit: number) => (limit > 0 ? Math.min(100, Math.max(0, (used / limit) * 100)) : 0);

@@ -4,6 +4,7 @@ import type { Locale } from '../i18n/locales';
 import { MESSAGES } from '../i18n/messages';
 import { MONTHLY_PROPOSAL_LIMIT } from './matchConfig';
 import { labelsFor, type Investor, type StartupProfile } from './matchTaxonomy';
+import { monthKey } from './dates';
 
 export const PRODUCT_NAME = 'MatchInvStar';
 
@@ -33,8 +34,6 @@ export function stateSteps(locale: Locale = 'it'): { state: OptInState; label: s
     { state: 'intro', label: steps.intro },
   ];
 }
-
-export const STATE_STEPS = stateSteps('it');
 
 export type SideAction = { event: OptInEvent; label: string; variant: 'primary' | 'secondary' };
 
@@ -181,7 +180,4 @@ export function consume(c: ProposalCounter, limit = MONTHLY_PROPOSAL_LIMIT, loca
   return { ok: true, counter: { month: c.month, used: c.used + 1 } };
 }
 
-/** 'YYYY-MM' for a date (local time). */
-export function monthKey(date: Date): string {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-}
+export { monthKey };
