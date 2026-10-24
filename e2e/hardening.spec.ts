@@ -113,4 +113,18 @@ for (const lang of LOCALES) {
     await expect(page.locator('.mi-agent-chip').first()).toBeVisible();
   });
 
+  test(`privacy page: demo data section clears only the demo keys (${lang})`, async ({ page }) => {
+    const m = t(lang).hardening.privacy;
+    await open(page, path('privacy', lang));
+    await page.evaluate((keys) => {
+      for (const k of keys) window.sessionStorage.setItem(k, '{}');
+      window.localStorage.setItem('lang', 'en');
+    }, KEYS);
+    await expect(page.getByRole('heading', { name: m.title })).toBeVisible();
+    await expect(page.locator('body')).toContainText(DISCLAIMER[lang]);
+    await page.getByRole('button', { name: m.clear }).click();
+    await expect(page.getByRole('status').filter({ hasText: m.cleared })).toBeVisible();
+    expect(await page.evaluate(() => Object.keys(window.sessionStorage))).toEqual([]);
+    expect(await page.evaluate(() => window.localStorage.getItem('lang'))).toBe('en');
+  });
 }

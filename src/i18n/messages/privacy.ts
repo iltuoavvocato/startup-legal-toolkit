@@ -4,7 +4,7 @@ const it = {
   lead: 'In breve: questo sito non raccoglie i tuoi dati.',
   cookiesTitle: 'Nessun cookie, nessun tracciamento',
   cookiesText: 'Questo sito non usa cookie, strumenti di analisi, pixel o altri sistemi di tracciamento.',
-  storageTitle: 'L’unica cosa salvata: la lingua',
+  storageTitle: 'Nel localStorage solo la lingua',
   storageText:
     'Se usi il selettore di lingua (IT/EN), il sito ricorda la tua scelta nel localStorage del browser, con la chiave “lang” e il valore “it” o “en”. Non contiene altri dati, non viene inviata a nessuno e serve solo a portarti alla versione inglese quando apri la home italiana. Se non usi il selettore non viene salvato nulla, e puoi cancellare la preferenza dalle impostazioni del browser.',
   localTitle: 'I calcoli restano sul tuo dispositivo',
@@ -28,7 +28,7 @@ const en: PrivacyMessages = {
   lead: 'In short: this site does not collect your data.',
   cookiesTitle: 'No cookies, no tracking',
   cookiesText: 'This site does not use cookies, analytics, pixels or any other tracking.',
-  storageTitle: 'The only thing stored: your language',
+  storageTitle: 'In localStorage, only your language',
   storageText:
     'If you use the language switcher (IT/EN), the site remembers your choice in your browser’s localStorage, under the key “lang” with the value “it” or “en”. It holds no other data, is never sent anywhere and is only used to take you to the English version when you open the Italian home page. If you don’t use the switcher, nothing is stored, and you can clear the preference in your browser settings.',
   localTitle: 'Calculations stay on your device',
