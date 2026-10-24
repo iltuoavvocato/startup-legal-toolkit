@@ -202,11 +202,13 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
   ("Modifica" on the bubble or in the live profile panel, "Indietro"). The panel (sticky on desktop, collapsible on
   phones) shows each value with its source ("dal deck, p. 7" / "da te") and the anonymous teaser. At the end the same
   `StartupProfile` / `Investor` objects as the forms go through the matching engine and the agent presents each match:
-  why it fits, what doesn't, and the double opt-in next step, from IT/EN templates; actions are local only
-  (propose within the monthly limit, set aside, simulate the other side's answer, accept or decline the intro; investors
-  get anonymous teasers, interest/pass and a simulated startup answer). A "no" is never revealed: it reads exactly like
+  why it fits, what doesn't, and the double opt-in next step, from IT/EN templates. Founder actions go through the
+  **shared requests inbox** (propose within the same monthly counter as the form results and the directory, set aside,
+  accept or decline the intro once an investor is interested; the investor's simulated answer arrives on the inbox's
+  demo clock, "Simula +7 giorni", and an expired proposal can be sent again; glue in `src/lib/agentInbox.ts`, tested).
+  Investors get anonymous teasers, interest/pass and a simulated startup answer (local to the conversation). A "no" is never revealed: it reads exactly like
   no answer yet. Logic: `src/lib/intakeAgent.ts` (pure reducer: questions, plan/skip rules, validation, edit, deck
-  confirmations, opt-in per match, explanation and transcript text; 42 unit tests). UI: `src/pages/MatchAgentPage.tsx`,
+  confirmations, opt-in per match, explanation and transcript text; 41 unit tests). UI: `src/pages/MatchAgentPage.tsx`,
   `src/components/match/agent/`. Keyboard: focus moves to the new question's first control after each answer and to
   the results when they appear; the transcript is a `role="log"` live region. The typing animation is skipped with
   `prefers-reduced-motion` or "Salta l'animazione". The conversation is kept in **sessionStorage** for this tab only
@@ -239,15 +241,33 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
   tested at every hour of 30 days). A badge with the number of requests waiting for your answer appears next to
   "Investitori" in the header and on the banner's "Richieste" link (only when there are some). Proposals from the
   startup results and the directory share this inbox (and its monthly counter); the founder profile (enumerated fields
-  only) is saved when confirmed in the form or completed with the agent. Stored in **sessionStorage**
+  only) is saved when confirmed in the form or completed with the agent, and the agent's proposals land here too. Stored in **sessionStorage**
   (`matchinvstar-inbox`, this tab only): no names, no descriptions, no deck text.
+- **Local export** (`/match-investitori/esporta/?tipo=startup|investitore`, EN `/en/investor-match/export/?type=startup|investor`;
+  `noindex, nofollow`, not in the sitemap): an A4 document generated in the browser, from this tab's state only.
+  **Founder one-pager** with an **anonymous teaser / full version** toggle (the full version shows the startup's name
+  only if the founder typed one in the form; it travels as router state, never in the URL or storage): sector, stage,
+  round, region, the founder's one-liner, team and traction accepted from the deck, the investor types among the
+  (fictional) matches, the double opt-in explanation, the limits, the disclaimer and the footer "Generato localmente –
+  dati di esempio/prototipo · date". **Investor thesis sheet**: sectors (main first), stages, ticket, areas, base and
+  optional notes typed on the page (not saved); `&id=i01` gives a fictional demo investor's sheet, labelled as such.
+  Buttons: **Stampa / Salva PDF** (`window.print()`, print CSS on a named `@page` A4, only the sheet is printed),
+  **Scarica .md** (Blob download of the Markdown version) and **Copia testo**. Without a profile: an empty state with
+  links to the agent and the form. Entry points: startup and investor form results, the agent's results (both modes),
+  the requests inbox (both tabs) and the investor profile page. The builder `src/lib/exportDoc.ts` is pure and
+  whitelists what may be exported (tests: no deck text, snippets, descriptions, founder names or e-mails can leak, typed
+  text is Markdown-escaped, the disclaimer is always there, IT + EN). The exportable profile is kept in
+  **sessionStorage** (`matchinvstar-export`): enumerated fields, amounts, the one-liner, accepted team size and traction
+  lines; cleared with "Azzera la demo". `npm run screenshots` runs the export flows (IT/EN, desktop/mobile), checks the
+  print media (no header, footer, banner or tools; the disclaimer stays) and saves Chrome print-to-PDF files
+  (`screenshots/*match-export-*.pdf`, one A4 page each).
 - **Matching** (`src/lib/matching.ts`): hard filters (fase, settore, area, ticket minimo ≤ round). Then score =
   settore (30) + ticket coverage (30, full from 40% of the round) + fase (20) + area (20), rounded to an integer.
   Ordering is deterministic: score, then ticket part, then sector part, then name, then id. Italian reasons and why-not strings.
 - **Double opt-in** (`src/lib/optin.ts`): `proposta → attesa-startup → intro`, or a closed state on either no.
   `viewFor(state, side)` guarantees that a "no" looks exactly like no answer to the other side (tested).
 - **URL state**: only enumerated values and amounts go in the query string (never names, descriptions or file names).
-  Step state lives in memory; the guided intake and the requests inbox use sessionStorage (see above). There are
+  Step state lives in memory; the guided intake, the requests inbox and the export profile use sessionStorage (see above). There are
   no network calls with user data: the only requests are same-origin static assets (pdf.js chunk and worker, and the sample deck when asked for).
 
 **A real double opt-in with real investor data requires a backend** (accounts, investor identification, sending

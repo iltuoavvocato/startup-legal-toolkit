@@ -533,3 +533,46 @@ Open decisions for Vincenzo:
 - **D30**: in a real version, should investors be browsable by founders at all, or only after a match (some investors
   won't want a public-ish listing)? The demo shows thesis and criteria only, never contacts.
 - **D31**: route the guided intake's "propose" through the same inbox (one counter everywhere)?
+
+## Milestone 6: local export and one inbox for the agent (2026-10-24)
+
+What exists:
+- **One inbox (D31 → done)**: the guided intake's founder proposals go into the shared requests inbox
+  (`src/lib/agentInbox.ts`, tested), with the same monthly counter as the form results and the directory. Each agent
+  match reads its status from the inbox: waiting (link to the requests and "Simula +7 giorni", the inbox's demo clock),
+  the investor is interested (accept / "Non ora"), intro, declined by you, expired ("Proponi di nuovo"). The agent's
+  own counter, board and "Simula la risposta dell'investitore" for founders are gone; the conversation no longer stores
+  a counter (older stored conversations are still restored). The no-reveal invariant is tested on the agent side too:
+  an investor's no gives the same status and badge count as silence at every day up to and after the deadline, and
+  re-proposing after expiry works the same way. The investor mode of the agent is unchanged (local board).
+- **Local export** `/match-investitori/esporta/?tipo=startup|investitore` (EN `/en/investor-match/export/?type=…`),
+  `noindex, nofollow`, not in the sitemap. Founder one-pager (anonymous teaser / full version), investor thesis sheet,
+  or a fictional demo investor's sheet (`&id=`). Print / Save PDF (A4 named page, only the sheet is printed, the
+  disclaimer stays), Markdown download, copy as text. Empty state with links to agent and form. Entry points: form and
+  agent results (both sides), requests inbox, investor profile. Pure builder `src/lib/exportDoc.ts` with a whitelist
+  (no deck text, snippets, descriptions, founder names or e-mails; typed names Markdown-escaped; disclaimer always
+  present), IT + EN, tested. Exportable profile in sessionStorage `matchinvstar-export`; names typed in the forms reach
+  the page only as router state.
+- **Screenshots**: `screenshots/*match-export-*` (empty, teaser, full, with deck, investor, demo investor, from the
+  agent; IT/EN desktop/mobile), `*-print.png` (print media) and `match-export-startup.pdf`,
+  `en-match-export-startup.pdf`, `match-export-investor.pdf`, `en-match-export-demo-investor.pdf` (Chrome
+  print-to-PDF, checked to be one A4 page), and `*match-requests-from-agent-*` (an agent proposal listed in the inbox).
+
+Known limits:
+- The full version can only name the startup when the founder typed a name in the form in this visit (router state);
+  after a reload, or from the agent (which asks no names, D25), the full version stays unnamed and says so.
+- Traction lines are stored as text in the language used when they were accepted; switching language later keeps them
+  in that language.
+- Client-side navigation into the export page keeps the previous page's robots meta (the existing `usePageMeta`
+  behaviour for pages with a static robots tag); the prerendered export HTML, which crawlers see, is `noindex, nofollow`.
+- Copy uses the Clipboard API; where it is blocked, the page says to copy by hand.
+
+Open decisions for Vincenzo:
+- **D32**: the anonymous teaser export includes accepted team and traction (the founder's own document). Should it
+  follow D18 instead (traction only if investors will see it in the platform teaser too)?
+- **D33**: the "Tipi di investitore in linea" section is computed on the fictional demo investors. Keep it in a real
+  version (it hints at who the platform has), or drop it from shareable exports?
+- **D34**: should the export also offer a QR/link back to the platform? Not done: there are no public pitch pages by
+  design.
+- **D35**: investor mode of the agent: its "interested / pass" stays local to the conversation (the inbox's investor tab
+  shows seeded sample proposals). Route it into the inbox's investor tab too?
