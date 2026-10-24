@@ -4902,3 +4902,21 @@ div.mi-error p {
     transform: none;
   }
 }
+
+/* Milestone 10: deck reading unsupported (no pdf.js features), error fallback, privacy page demo-data section */
+.mi-deck-unsupported {
+  flex-basis: 100%;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.mi-boundary .actions {
+  margin: 0;
+  flex-wrap: wrap;
+}
+.mi-privacy-clear {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}

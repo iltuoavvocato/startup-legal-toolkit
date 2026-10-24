@@ -978,15 +978,58 @@ export function serialize(s: IntakeState): string {
  */
 export function restore(raw: string | null, mode: IntakeMode): IntakeState | null {
   if (!raw) return null;
-  let data: unknown;
   try {
-    data = JSON.parse(raw);
+    return restoreParsed(JSON.parse(raw), mode);
   } catch {
+    // Corrupt JSON, or a stored shape that the checks below let through but the reducer can't handle: start clean.
     return null;
   }
+}
+
+const AGENT_KINDS = ['hello', 'ask', 'deckReading', 'deckRead', 'deckError', 'results', 'match', 'wrap', 'excluded', 'restored'];
+const USER_KINDS = ['answer', 'deckPicked', 'excluded'];
+const isObj = (x: unknown): x is Record<string, unknown> => !!x && typeof x === 'object' && !Array.isArray(x);
+const isQuestionOrNull = (x: unknown) => x === null || x === undefined || (typeof x === 'string' && x.length < 40);
+
+function validMessage(m: unknown): boolean {
+  if (!isObj(m) || !Number.isFinite(m.id) || !isObj(m.body) || typeof m.body.kind !== 'string') return false;
+  const kind = m.body.kind;
+  if (m.from === 'agent') {
+    if (!AGENT_KINDS.includes(kind)) return false;
+    if (kind === 'ask' && (typeof m.body.q !== 'string' || (m.body.finding !== undefined && !isObj(m.body.finding)))) return false;
+    if (kind === 'match' && typeof m.body.id !== 'string') return false;
+    if (kind === 'results' && !Array.isArray(m.body.fromDeck)) return false;
+    return true;
+  }
+  if (m.from === 'user') return USER_KINDS.includes(kind) && (kind !== 'answer' || typeof m.body.q === 'string');
+  return false;
+}
+
+function validSignal(x: unknown): boolean {
+  if (!isObj(x) || !Number.isFinite(x.page)) return false;
+  if (x.kind === 'team') return Number.isFinite(x.count);
+  return x.kind === 'traction' && isObj(x.signal) && typeof x.signal.kind === 'string';
+}
+
+function validDeck(d: unknown): boolean {
+  return (
+    isObj(d) &&
+    ['none', 'reading', 'read', 'error'].includes(d.status as string) &&
+    (d.pages === undefined || Number.isFinite(d.pages)) &&
+    (d.decisions === undefined || isObj(d.decisions)) &&
+    (d.signals === undefined || (Array.isArray(d.signals) && d.signals.every(validSignal)))
+  );
+}
+
+function restoreParsed(data: unknown, mode: IntakeMode): IntakeState | null {
   const s = data as Partial<IntakeState>;
-  if (!s || typeof s !== 'object' || s.version !== 1 || s.mode !== mode || !Array.isArray(s.messages) || !s.answers || !s.deck) return null;
-  if (typeof s.nextId !== 'number') return null;
+  if (!isObj(s) || s.version !== 1 || s.mode !== mode || !Array.isArray(s.messages) || !isObj(s.answers) || !s.deck) return null;
+  if (typeof s.nextId !== 'number' || !Number.isFinite(s.nextId)) return null;
+  if (s.phase !== 'intake' && s.phase !== 'results') return null;
+  if (!isQuestionOrNull(s.current) || !isQuestionOrNull(s.editing)) return null;
+  if (!s.messages.every(validMessage) || !validDeck(s.deck)) return null;
+  if (s.passed !== undefined && !(Array.isArray(s.passed) && s.passed.every((x) => typeof x === 'string'))) return null;
+  if (s.sources !== undefined && !isObj(s.sources)) return null;
   if (!validAnswers(s.answers)) return null;
   // Older stored conversations also carry a monthly counter, founder proposals and the investor's local board: all of
   // them now live in the inbox.
@@ -997,6 +1040,8 @@ export function restore(raw: string | null, mode: IntakeMode): IntakeState | nul
     passed: s.passed ?? [],
     sources: s.sources ?? {},
     deck: { ...EMPTY_DECK, ...s.deck, findings: null },
+    current: s.current ?? null,
+    editing: s.editing ?? null,
     error: null,
   };
   if (base.phase === 'results') return base;

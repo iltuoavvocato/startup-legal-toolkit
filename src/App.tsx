@@ -1,5 +1,6 @@
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { Layout } from './components/Layout';
+import { MatchErrorBoundary } from './components/match/MatchErrorBoundary';
 import { I18nContext, makeI18n } from './i18n/context';
 import { localeFromPath, routePatterns } from './i18n/routes';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -15,7 +16,15 @@ export function App() {
           {routePatterns().map(({ id, locale: l, pattern }) => {
             const Page = PAGES[id];
             // The key remounts the page when switching language, so in-memory state never mixes locales.
-            return <Route key={`${l}-${id}`} path={pattern} element={<Page key={l} />} />;
+            // Matching pages read state saved in this tab: a render error there shows a fallback, never a blank page.
+            const element = id.startsWith('match') ? (
+              <MatchErrorBoundary key={`${l}-${pathname}`}>
+                <Page key={l} />
+              </MatchErrorBoundary>
+            ) : (
+              <Page key={l} />
+            );
+            return <Route key={`${l}-${id}`} path={pattern} element={element} />;
           })}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

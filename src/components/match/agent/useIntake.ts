@@ -19,14 +19,9 @@ import { withProfile } from '../../../lib/inbox';
 import type { StartupCore } from '../../../lib/matchQuery';
 import { saveInvestorSheet, saveStartupSheet } from '../useExportStore';
 import { updateInbox } from '../useInbox';
+import { safeGet, storageOf } from '../../../lib/matchStorage';
 
-function storage(): Storage | null {
-  try {
-    return window.sessionStorage;
-  } catch {
-    return null;
-  }
-}
+const storage = () => storageOf();
 
 const results = (s: IntakeState) => resultIdsFor(s, demoInvestors(), demoStartups());
 
@@ -38,7 +33,7 @@ export function useIntake(mode: IntakeMode) {
   const key = STORAGE_KEYS[mode];
   // `restored`: this visit picked up a conversation already under way in this tab (shown as a short notice).
   const [initial] = useState(() => {
-    const saved = restore(storage()?.getItem(key) ?? null, mode);
+    const saved = restore(safeGet(key), mode);
     return { state: saved ?? initIntake(mode), restored: Boolean(saved && saved.messages.length > initIntake(mode).messages.length) };
   });
   const [state, setState] = useState<IntakeState>(initial.state);
