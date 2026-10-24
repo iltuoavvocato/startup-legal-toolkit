@@ -12,8 +12,10 @@ Draft PR: https://github.com/iltuoavvocato/startup-legal-toolkit/pull/1 (branch 
 
 - 03:29 M6: local export (founder one-pager teaser/full, investor thesis, print A4, .md download, copy) + agent proposals in the shared inbox (455 tests)
 
+- 04:27 M7: Playwright e2e (330 passed, IT/EN, desktop+mobile, no external requests/cookies), axe on all routes (0 serious/critical), Lighthouse mobile 91-95 perf, 100 a11y/BP/SEO; per-page chunks (458 unit tests)
+
 ## In progress
-- 03:35 M7: Playwright e2e IT/EN + axe accessibility + Lighthouse pass
+- 04:35 M8: UI polish, empty states, keyboard support, cross-page consistency
 
 ## Next
 - UI polish, empty states, keyboard support
