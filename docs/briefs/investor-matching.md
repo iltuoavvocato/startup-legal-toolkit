@@ -485,3 +485,51 @@ Open decisions for Vincenzo:
   serie A 1M–30M) and the suggested amounts/ticket ranges: placeholders, please confirm.
 - **D24**: keep "Simula la risposta" in the agent results, or leave simulation only to the double opt-in page?
 - **D25**: ask for the startup / founder names in the conversation (for the intro email), or keep them out?
+
+## Milestone 5: investor directory and double opt-in inbox (2026-10-24)
+
+What exists:
+- **Dataset**: 36 fictional investors (was 15), every type represented, theses in IT and EN, names built from plants and
+  stones so they don't resemble real funds or people; labelled "Dati di esempio fittizi" / "Fictional sample data" on
+  every directory, profile and inbox page. The matching tests still pass on the larger set (the default example now has
+  7 matches).
+- **Directory** `/match-investitori/investitori/` (EN `/en/investor-match/investors/`), indexed and in the sitemap,
+  linked from the landing. Filters stage / sector / startup region / type / ticket range, text search, sort (name,
+  ticket up/down, fit when a profile exists). State in the URL (shareable; Back undoes filter changes; typing replaces),
+  count, chips, "Azzera filtri", empty state with suggestions, bottom sheet on phones. `src/lib/directory.ts` + tests.
+- **Investor profile** `/match-investitori/investitori/scheda/?id=…` (noindex, one prerendered page reading the id):
+  criteria, thesis, fit, "Proponi il tuo profilo" through the inbox, or agent/form links without a profile; link to
+  the double opt-in simulator. No contact details.
+- **Requests inbox** `/match-investitori/richieste/` (EN `/en/investor-match/requests/`, noindex): founder / investor
+  tabs, In attesa / Accettate / Scadute, "Scade tra N giorni", monthly counter, demo time travel "Simula +7 giorni",
+  "Azzera la demo", header/banner badge for requests waiting for your answer. `src/lib/inbox.ts` (pure, injected clock)
+  reuses the `optin.ts` state machine and adds `createdAt` / `stepAt` timestamps and simulated answers. Placeholders in
+  `src/lib/matchConfig.ts` (expiry 14 days, cap 5, time travel 7 days); `MONTHLY_PROPOSAL_LIMIT` moved there and is
+  re-exported by `optin.ts`.
+- **No-reveal invariant**: a declined request keeps the same view as an unanswered one at every moment (waiting with
+  the same days left, then expired at the same deadline); the investor never sees the startup name before the intro;
+  re-proposing is possible after expiry, equally for declined and unanswered. Tested on views, simulated answers, counts,
+  badge and the duplicate rule; `npm run screenshots` also scans both tabs after time travel for wording that would
+  reveal a no.
+- The startup form's results now record proposals in the inbox (same counter across pages) and save the confirmed
+  profile; the guided intake saves the founder profile when it reaches the results.
+
+Known limits:
+- The investor tab shows seeded sample proposals (the demo has no investor account); answers there are simulated.
+- Time travel only moves forward; "Azzera la demo" clears everything (profile included).
+- The monthly counter follows calendar months, so time travel across a month boundary resets it (expected but can
+  surprise in a demo).
+- The guided intake keeps its own in-conversation proposal counter; its proposals are not (yet) added to the inbox.
+- The profile page is one prerendered page reading `?id=`: no per-investor title or meta (it is noindex anyway).
+
+Open decisions for Vincenzo:
+- **D26**: expiry of 14 days per step (the investor's answer, then the founder's) — OK, or one deadline for the whole
+  request? Should a founder be told *why* a request expired (never, under the no-reveal rule)?
+- **D27**: does an expired proposal still count toward the monthly cap (today: yes, the cap counts proposals sent)?
+- **D28**: sessionStorage for the inbox (tab only, consistent with D21) vs localStorage (survives closing the tab). The
+  privacy page still only mentions the language preference (see D17/D21).
+- **D29**: index the directory of fictional investors (today indexed, like the other matching pages) or noindex it until
+  real data exists? The profile and requests pages are noindex.
+- **D30**: in a real version, should investors be browsable by founders at all, or only after a match (some investors
+  won't want a public-ish listing)? The demo shows thesis and criteria only, never contacts.
+- **D31**: route the guided intake's "propose" through the same inbox (one counter everywhere)?

@@ -214,13 +214,40 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
   contains deck text (no findings, no snippets, the cover sentence only if the founder accepted it as the pitch).
   `npm run screenshots` scripts full conversations (deck and no deck, founder and investor, IT and EN, desktop and
   mobile; `scripts/agent-flows.mjs`) and fails on unexpected sessionStorage keys or deck text in storage.
+- **Investor directory** (`/match-investitori/investitori/`, EN `/en/investor-match/investors/`; indexed, in the
+  sitemap, linked from the landing): 36 fictional investors (angels, club deals, micro-VCs, corporate VCs, family
+  offices, accelerators) labelled **"Dati di esempio fittizi" / "Fictional sample data"**. Filters: stage, sector, the
+  startup's region (investors whose area covers it, or all of Italy), investor type, ticket range (overlap, formatted
+  amounts), free-text search (accents and case ignored), sort by name, ticket or, when a founder profile exists, fit.
+  Filters live in the query string (`?fase=seed&settore=fintech&min=…&ordina=…`, same keys in IT and EN): links are
+  shareable, selects and chips add history entries (Back undoes them), typing replaces the entry. Result count,
+  removable chips, "Azzera filtri", empty state with "remove this filter (N results)" suggestions. Phones get the
+  filters in a bottom sheet (native `<dialog>`). Logic: `src/lib/directory.ts` (pure, tested).
+- **Investor profile** (`/match-investitori/investitori/scheda/?id=i01`, noindex): thesis and criteria, fit with the
+  founder's profile (same engine as the matches, reasons or why-not), and **"Proponi il tuo profilo"**, which records a
+  proposal in the requests inbox (monthly cap, duplicates refused while one is open, pairs the agent wouldn't propose
+  explained). Without a profile it offers the agent or the form. No contact details, no public pitch pages.
+- **Requests inbox** (`/match-investitori/richieste/`, EN `/en/investor-match/requests/`, noindex): tabs "Come startup"
+  / "Come investitore", each with In attesa / Accettate / Scadute. Founder: proposals sent with "Scade tra N giorni",
+  investors that said yes (accept the intro or "Non ora"), intros ready (email preview), expired ones; counter
+  "3/5 proposte questo mese – limite indicativo da definire". Investor: sample anonymous teasers of fictional startups
+  (yes / no; the name appears only at the intro). Placeholders in `src/lib/matchConfig.ts`: `REQUEST_EXPIRY_DAYS = 14`,
+  `MONTHLY_PROPOSAL_LIMIT = 5`, `TIME_TRAVEL_DAYS = 7`. The other side's answers are simulated and deterministic; the
+  demo control **"Simula +7 giorni"** moves the demo clock to show answers and expiries, "Azzera la demo" clears it.
+  **A no is never revealed**: to the side that asked, a declined request stays "in attesa" until its deadline and then
+  shows as "scaduta", exactly like no answer, and a no never moves a deadline (`src/lib/inbox.ts`, injectable clock,
+  tested at every hour of 30 days). A badge with the number of requests waiting for your answer appears next to
+  "Investitori" in the header and on the banner's "Richieste" link (only when there are some). Proposals from the
+  startup results and the directory share this inbox (and its monthly counter); the founder profile (enumerated fields
+  only) is saved when confirmed in the form or completed with the agent. Stored in **sessionStorage**
+  (`matchinvstar-inbox`, this tab only): no names, no descriptions, no deck text.
 - **Matching** (`src/lib/matching.ts`): hard filters (fase, settore, area, ticket minimo ≤ round). Then score =
   settore (30) + ticket coverage (30, full from 40% of the round) + fase (20) + area (20), rounded to an integer.
   Ordering is deterministic: score, then ticket part, then sector part, then name, then id. Italian reasons and why-not strings.
 - **Double opt-in** (`src/lib/optin.ts`): `proposta → attesa-startup → intro`, or a closed state on either no.
   `viewFor(state, side)` guarantees that a "no" looks exactly like no answer to the other side (tested).
 - **URL state**: only enumerated values and amounts go in the query string (never names, descriptions or file names).
-  Step state and the monthly counter live in memory (the guided intake alone uses sessionStorage, see above). There are
+  Step state lives in memory; the guided intake and the requests inbox use sessionStorage (see above). There are
   no network calls with user data: the only requests are same-origin static assets (pdf.js chunk and worker, and the sample deck when asked for).
 
 **A real double opt-in with real investor data requires a backend** (accounts, investor identification, sending
