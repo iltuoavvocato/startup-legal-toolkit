@@ -22,7 +22,9 @@ Draft PR: https://github.com/iltuoavvocato/startup-legal-toolkit/pull/1 (branch 
 
 - 06:55 M11 done: 'Come funziona il matching' / 'How matching works' page (/match-investitori/come-funziona/, /en/investor-match/how-it-works/) with numbers generated from matching.ts/matchConfig and an interactive scoring example; 'Perché questo match?' breakdown on every founder result card; EN/IT copy review (consistent terms, D46-D49). Gate: lint 0, 515 unit tests, build ok, e2e 430 passed / 2 skipped. Commits 197d74a, 2576449.
 
+- 07:25 M12 done: variants gallery extended with agent chat + investor directory screens for V1-V5 (IT+EN, compare, e2e/axe); inbox sample teasers now seeded even if the agent's investor answered first (no duplicates); mobile LCP attempt measured (91-92, LCP ~3.1 s) and reverted - real fix needs D38/prerendered hero text. Brief: M12 decisions renumbered D50/D51 (collided with M11's D46/D47). Gate: lint 0, 519 unit tests, build ok, e2e 534 passed / 2 skipped. Commits dcb5c64, bda4a0d.
+
 ## In progress
-- 06:56 M12 (next): extend the variants gallery to the agent chat and directory screens
+- 07:26 M13 (next): review pack for Vincenzo (routes, 10-minute walkthrough, D1-D51 table, compliance checklist, go-live list) + one full-journey e2e per language
 
 ## Next
