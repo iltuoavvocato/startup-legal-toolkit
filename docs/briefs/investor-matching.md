@@ -1,5 +1,8 @@
 # Investor matching: implementation plan (step 1)
 
+> **Reviewing?** Start with [`investor-matching-review.md`](investor-matching-review.md): every route, a 10-minute
+> walkthrough, all open decisions D1–D51, hard-rule compliance, known issues and what is needed before going live.
+
 Source brief: `/workspace/cc-matching/brief.md`. Branch `feature/investor-matching`, this worktree only.
 This is a front-end **prototype**: no backend, no network, no storage, and no LLM. The "agent" is a
 deterministic mock. Product working name **MatchInvStar** (always shown as "nome provvisorio"). All UI copy is in Italian.
@@ -927,3 +930,22 @@ Open decisions for Vincenzo:
 - **D50**: the agent chat in the final product: V3 bubbles everywhere, or V4 question cards on phones?
 - **D51**: should the variants gallery grow further (e.g. inbox, export), or freeze at five screens now that D14 is
   converging?
+
+## Milestone 13: review pack and end-to-end journey (2026-10-24)
+
+What exists:
+- **Review pack** [`investor-matching-review.md`](investor-matching-review.md): every route IT + EN grouped by area, a
+  10-minute walkthrough with exact URLs and labels, the full D1–D51 table (default, status, where described; D5, D9,
+  D17, D24, D31, D35 marked resolved with how, and the D46/D47 → D50/D51 renumbering noted), the hard-rule checklist
+  with how each rule is enforced and tested, the known issues of all milestones and what is needed before going live.
+  Linked from the top of this brief and from the README.
+- **E2E journey** `e2e/journey.spec.ts` (desktop, IT + EN): landing → "Sono una startup" → sample deck → findings →
+  profile → results → "Perché questo match?" (four rows, total = card score) → propose → inbox → investor tab (an
+  anonymous teaser answered "yes") → founder tab, +7 days → the investor is interested → "Accetta l'intro" → intro
+  email with the investor's name → "Esporta il one-pager" (anonymous teaser, disclaimer on the sheet). The disclaimer is
+  checked on every page visited; every request goes through `page.route`: anything off-origin fails the test, and so
+  does any same-origin non-GET. The match it proposes to is the best one whose simulated investor answer is "yes"
+  (`simulatedAnswer`, deterministic), so the run doesn't depend on the demo's random-looking outcomes.
+- README route row now lists every matching route.
+
+No new open decisions.

@@ -10,7 +10,7 @@ Italian startup founders. It routes them to a lawyer at [iltuoavvocato.com](http
 | `/vesting/`  | **Simulatore vesting**: stake, duration, cliff, monthly/quarterly/annual frequency, step chart with a draggable leaver marker, good/bad leaver explanation |
 | `/quiz/`     | **Quali documenti mi servono?**: 7 questions, then a personalized checklist from the 5 documents with priority badges |
 | `/privacy/`  | Privacy notes (no cookies, no tracking, no data sent anywhere; only the language preference is stored) |
-| `/match-investitori/…` | **Match investitori** (prototype, see below): landing, `startup/`, `investitore/`, `agente/startup/`, `agente/investitore/`, `doppio-consenso/`, `note-legali/` |
+| `/match-investitori/…` | **Match investitori** (prototype, see below): landing, `startup/`, `investitore/`, `agente/startup/`, `agente/investitore/`, `doppio-consenso/`, `note-legali/`, `come-funziona/`, `investitori/`, `richieste/`, `esporta/`, `demo/`, `varianti/` |
 | `/en/…`      | English version of every page (see [Languages](#languages)) |
 | anything else | Styled 404 (English under `/en/…`, Italian otherwise, with the disclaimer) |
 
@@ -70,7 +70,10 @@ equivalent page, the stored preference and the redirect, which happens only from
   every main page, the bilingual 404; lazy page chunks and focus on navigation; keyboard-only checks (agent chips, V4
   swipe arrows and buttons, directory filter sheet: focus trap, Escape, focus back to the opener; `e2e/polish.spec.ts`:
   skip link, "/" for the directory search on desktop, "Allarga criteri" on empty results, the propose toast with
-  Escape, chip focus ring, agent restore after reload). HTML report in
+  Escape, chip focus ring, agent restore after reload); `e2e/journey.spec.ts` (desktop, IT + EN): the whole story in
+  one run (landing → sample deck → findings → results → "Perché questo match?" → propose → inbox investor tab → investor
+  interested → founder accepts → intro → export), disclaimer on every page visited, every request intercepted (none
+  off-origin, no non-GET). HTML report in
   `screenshots/e2e-report/`, traces of failures in `node_modules/.e2e-results/`.
 - **Accessibility** (`e2e/a11y.spec.ts`): axe-core (WCAG 2.0/2.1 A + AA) on every route in IT and EN, the 404, and key
   states (deck findings review, form results, agent mid-flow and results, inbox with proposals on both tabs and after
@@ -199,6 +202,8 @@ A **front-end-only prototype** of agentic startup–investor matching with **dou
 **MatchInvStar** (nome provvisorio). Every page shows a "Prototipo dimostrativo" banner and the disclaimer. All
 investors and startups are fictional and labelled "Dati di esempio" (`src/data/matchDemo.ts`; emails use the reserved
 `.example` domain). The full plan and the default decisions are in `docs/briefs/investor-matching.md`.
+**Review pack**: [`docs/briefs/investor-matching-review.md`](docs/briefs/investor-matching-review.md) (routes, a
+10-minute walkthrough, open decisions D1–D51, hard-rule checklist, known issues, go-live needs).
 
 - **Startup flow** (`/match-investitori/startup/`): settore, fase, regione, round, descrizione and an optional PDF deck
   (drag and drop, file picker, or **"Prova con un deck di esempio" / "Try a sample deck"**, which loads a fictional
