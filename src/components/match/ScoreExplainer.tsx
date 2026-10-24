@@ -7,8 +7,9 @@ export function ScoreRulesTable() {
   const { t, f } = useI18n();
   const x = t.match.ui.explainer;
   return (
-    <div className="table-scroll">
-      <table className="data-table mi-table">
+    // Focusable so the table can be scrolled with the keyboard when it is wider than a phone.
+    <div className="table-scroll" tabIndex={0} role="region" aria-label={x.summary}>
+      <table className="data-table mi-table mi-rules-table">
         <thead>
           <tr>
             <th scope="col">{x.head.part}</th>

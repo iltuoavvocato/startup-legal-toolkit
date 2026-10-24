@@ -115,7 +115,7 @@ const en: ExplainMessages = {
   shownTitle: '3. How it is shown',
   shown: (bands: string) =>
     `Each result shows the score out of 100, a bar and a band: ${bands}. Below it, four sentences explain where it comes from. The score only measures how far the stated criteria overlap: it says nothing about the quality of the startup or the investor.`,
-  tieBreak: 'With equal scores, the investor covering more of the round comes first, then the one with more sector points, then alphabetical order.',
+  tieBreak: 'Ties are broken by how much of the round the investor covers, then by sector points, then alphabetically.',
   nearTitle: '4. No matches? “Closest ones” and “Widen criteria”',
   near: [
     'If nobody passes every filter, the agent shows the closest ones: the excluded entries that miss the fewest filters, with the reason.',

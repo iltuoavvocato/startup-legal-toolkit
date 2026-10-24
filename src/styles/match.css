@@ -5048,3 +5048,15 @@ div.mi-error p {
 .mi-why-form .mi-field {
   margin-bottom: 0.75rem;
 }
+
+.mi-rules-table td:last-child,
+.mi-rules-table thead th:last-child {
+  white-space: normal;
+  text-align: left;
+}
+
+@media (max-width: 600px) {
+  .mi-rules-table td:last-child {
+    min-width: 0;
+  }
+}

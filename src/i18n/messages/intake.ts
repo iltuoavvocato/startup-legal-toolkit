@@ -210,7 +210,7 @@ const it = {
       fase: 'Fase',
       round: 'Importo del round',
       regione: 'Sede',
-      oneLiner: 'Presentazione anonima',
+      oneLiner: 'Pitch anonimo',
       settori: 'Settori',
       fasi: 'Fasi',
       ticket: 'Ticket',
@@ -294,7 +294,7 @@ const it = {
       fase: (value: string, page: number) => `Nel deck (p. ${page}) leggo che siete in fase ${value}. Confermi?`,
       round: (value: string, page: number) => `Nel deck (p. ${page}) leggo che cercate ${value}. Confermi l’importo?`,
       regione: (value: string, page: number) => `Nel deck (p. ${page}) leggo che la sede è a ${value}. Confermi?`,
-      oneLiner: (page: number) => `Ho trovato questa frase in copertina (p. ${page}). La uso come presentazione anonima?`,
+      oneLiner: (page: number) => `Ho trovato questa frase in copertina (p. ${page}). La uso come pitch anonimo?`,
       extras: (list: string) => `Ho trovato anche: ${list}. Non entrano nel punteggio, ma posso citarli nelle spiegazioni dei match. Li uso?`,
     },
     conflict: (yours: string) => `Prima mi avevi detto: ${yours}. Se confermi, uso il valore del deck.`,
@@ -372,7 +372,7 @@ const en: typeof it = {
       summaryNote: 'What the agent will use to pick the startups it suggests.',
     },
     agentName: 'MatchInvStar agent',
-    agentRole: 'Follows fixed rules, no artificial intelligence',
+    agentRole: 'Follows fixed rules, not AI',
     logLabel: 'Conversation with the agent',
     you: 'You',
     typing: 'The agent is typing…',
@@ -455,9 +455,9 @@ const en: typeof it = {
   },
   hello: {
     startup:
-      'Hi! I’m the MatchInvStar agent (working name). I’ll ask you a few questions about your round, then suggest the investors that fit best and explain why. I follow fixed rules, with no artificial intelligence, and nothing leaves your browser.',
+      'Hi! I’m the MatchInvStar agent (working name). I’ll ask you a few questions about your round, then suggest the investors that fit best and explain why. I follow fixed rules, not AI, and nothing leaves your browser.',
     investor:
-      'Hi! I’m the MatchInvStar agent (working name). I’ll ask you five questions about your thesis, then suggest startups that fit, anonymously. I follow fixed rules, with no artificial intelligence, and nothing leaves your browser.',
+      'Hi! I’m the MatchInvStar agent (working name). I’ll ask you five questions about your thesis, then suggest startups that fit, anonymously. I follow fixed rules, not AI, and nothing leaves your browser.',
   },
   questions: {
     deck: 'Do you have a pitch deck as a PDF? If you give it to me I’ll read it here, in your browser, and ask you to confirm what I find. Otherwise I’ll ask the questions myself.',

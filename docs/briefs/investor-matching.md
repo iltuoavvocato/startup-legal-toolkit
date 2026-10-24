@@ -830,5 +830,46 @@ What exists:
 - **Screenshots**: `screenshots/{,en-}match-how-it-works-{desktop,mobile}.png`,
   `{,en-}match-how-it-works-excluded-*`, `{,en-}match-startup-why-*`. `scripts/screenshots.mjs` now accepts
   `ONLY=<regex>` to capture just some pages or states (and skip the global checks).
+- Accessibility fix found by the per-route axe test on phones: the score table and the breakdown table are
+  wrapped in focusable, labelled regions (`tabIndex=0`, `role="region"`), and the description column wraps, so
+  `scrollable-region-focusable` passes even when a table is wider than the screen.
 - Layout fix found by the screenshots: `.mi-matches` and the example grid use `minmax(0, 1fr)` columns, so a wide
   table can no longer stretch a card past a phone's width.
+
+Copy review (English and Italian dictionaries, `src/i18n/messages/*`):
+- Reviewed the English copy on every matching page and message. It was already mostly natural and in sentence case
+  (headings and buttons). Notable changes:
+  - **"working name"** everywhere: banner, landing, legal notes, home card, email signature. "provisional name" had
+    been mixed with the agent's "working name".
+  - **"email"**, never "e-mail" (guided demo).
+  - **"not AI" / "without AI"** instead of "with no artificial intelligence" in the agent's welcome, role line and deck
+    note. The legal notes keep the full phrase.
+  - Score explainer: "Filters come first: a pair appears only if …" replaces a sentence where "appear" came at the
+    very end. The tie-break now reads "Ties are broken by ticket coverage, then sector points, then alphabetical
+    order". It used to leave out the sector step the code applies. Same fix in Italian ("poi i punti di settore").
+  - "Region where you're based" (was "Region of your headquarters"). Investor door: "See only startups that match
+    your thesis, shown anonymously" (was "Receive only startups…, anonymously").
+- Terms (English): startup, investor, **proposal** (what a startup sends), **request** (an item in the inbox, either
+  side), **intro** for short labels and states ("Accept the intro", "Intro ready") and **introduction email** for the
+  email itself. "intro" is the usual word in fundraising, so it stays as the short form rather than being expanded
+  everywhere.
+- Italian: **proposta** (sent by the startup), **richiesta** (inbox item), **intro** (the moment both say yes) and
+  **email di presentazione** were already used consistently. The one clash was "presentazione", which also meant the
+  anonymous one-liner. That label is now **"Pitch anonimo"** (form, findings review, agent: "La uso come pitch
+  anonimo?"), with "un pitch di una frase" in the teaser text, so "presentazione" now means only the introduction
+  email.
+- Italian tone: the site uses *tu* for the person and *voi* when it addresses the founding team ("Quanti siete a
+  fondare la startup?", "In che fase siete?") or both parties ("Avete detto sì entrambi"). The matching copy already
+  follows this, so nothing changed.
+
+Decisions:
+- **D46**: should "Come funziona il matching" also be linked from the investor flow's empty state and the directory?
+  Today the links are on the landing, both results pages and the guided demo.
+- **D47**: should the "Perché questo match?" breakdown also appear on the investor results (the teaser cards)? It
+  would show the startup's region and round once more, which the teaser already shows, so it is founder-only for now.
+- **D48**: in English, keep "intro" as the short form (current choice) or always write "introduction"?
+- **D49**: should the how-it-works page say that weights are not tuned per investor (everyone is scored on the same
+  four criteria)? It is implied, not stated.
+
+Known limits:
+- The example uses one fixed demo investor. Changing the investor isn't offered, to keep the page short.

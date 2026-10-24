@@ -53,7 +53,7 @@ export function MatchBreakdown({ startup, investor, evaluation }: Props) {
 
   return (
     <div className="mi-breakdown">
-      <div className="table-scroll">
+      <div className="table-scroll" tabIndex={0} role="region" aria-label={b.caption}>
         <table className="data-table mi-table mi-breakdown-table">
           <caption className="sr-only">{b.caption}</caption>
           <thead>

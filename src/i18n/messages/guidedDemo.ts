@@ -132,7 +132,7 @@ const en: typeof it = {
     },
     intro: {
       title: 'Both say yes: intro',
-      caption: 'Only now are the names revealed to both sides, and the introduction e-mail goes out.',
+      caption: 'Only now are the names revealed to both sides, and the introduction email goes out.',
     },
     declined: {
       title: 'The investor says no',

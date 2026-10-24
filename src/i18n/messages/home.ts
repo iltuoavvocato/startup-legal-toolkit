@@ -114,7 +114,7 @@ const en: HomeMessages = {
   matchBand: {
     tag: 'Demo prototype',
     title: 'Investor matching, with double opt-in',
-    text: 'MatchInvStar (provisional name): an agent suggests startups and investors that fit, and the intro happens only if you both say yes. Try it with sample data.',
+    text: 'MatchInvStar (working name): an agent suggests startups and investors that fit, and the intro happens only if you both say yes. Try it with sample data.',
     cta: 'See how it works',
   },
   whyEyebrow: 'Why think about it now',

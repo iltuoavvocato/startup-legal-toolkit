@@ -142,7 +142,7 @@ const it = {
     },
     investorTeaser: {
       titolo: 'Una startup in linea con la tua tesi',
-      testo: 'Vedi solo settore, regione, fase, importo e una frase di presentazione. Il nome arriva solo con l’intro.',
+      testo: 'Vedi solo settore, regione, fase, importo e un pitch di una frase. Il nome arriva solo con l’intro.',
     },
     investorClosed: {
       titolo: 'Va bene, non te la riproporremo',
@@ -262,7 +262,7 @@ const it = {
       confidence: { alta: 'Affidabilità alta', media: 'Affidabilità media', bassa: 'Affidabilità bassa' },
       quote: (page: number) => `Dal deck, pagina ${page}`,
       page: (page: number) => `p. ${page}`,
-      labels: { settore: 'Settore', fase: 'Fase', round: 'Importo del round', regione: 'Sede', oneLiner: 'Presentazione anonima', team: 'Team' },
+      labels: { settore: 'Settore', fase: 'Fase', round: 'Importo del round', regione: 'Sede', oneLiner: 'Pitch anonimo', team: 'Team' },
       profileTitle: 'Per il profilo',
       profileNote: 'Settore, fase, sede e importo servono a trovare gli investitori in linea; la presentazione la legge l’investitore nel teaser anonimo.',
       taglineHint: 'Togli il nome della startup, se c’è: il teaser resta anonimo.',
@@ -299,7 +299,7 @@ const it = {
     teaser: {
       label: 'Teaser anonimo',
       lock: 'Nome riservato fino all’intro',
-      placeholder: 'La frase di presentazione comparirà qui.',
+      placeholder: 'Il pitch di una frase comparirà qui.',
       settore: 'Settore',
       fase: 'Fase',
       regione: 'Regione',
@@ -326,7 +326,7 @@ const it = {
         `${region} stessa regione, ${area} stessa macro-area, ${italy} se investe in tutta Italia`,
       band: (label: string, min: number) => `${label} da ${min}`,
       bands: (list: string) =>
-        `Fasce: ${list}. A parità di punteggio conta la copertura del ticket, poi l’ordine alfabetico. Pesi e soglie sono valori provvisori.`,
+        `Fasce: ${list}. A parità di punteggio conta la copertura del ticket, poi i punti di settore, poi l’ordine alfabetico. Pesi e soglie sono valori provvisori.`,
     },
     counter: {
       used: (used: number, limit: number) => `${used} di ${limit}`,
@@ -450,7 +450,7 @@ const it = {
       optional: '(facoltativo)',
       namesHint: 'Nome e contatti restano riservati: l’investitore li vede solo nell’email di presentazione.',
       source: (fonte: string) => `Fonte: ${fonte}`,
-      oneLiner: 'Presentazione anonima',
+      oneLiner: 'Pitch anonimo',
       oneLinerHint: 'Una frase, senza il nome della startup: è ciò che legge l’investitore nel teaser.',
       oneLinerSource: (fonte: string) => ` Fonte: ${fonte}.`,
       back: 'Torna ai dati',
@@ -619,7 +619,7 @@ const reasonsInvestorEn: ReasonSet = {
 };
 
 const en: MatchMessages = {
-  provisional: '(provisional name)',
+  provisional: '(working name)',
   demoLabel: 'Sample data',
   taxonomy: {
     settori: {
@@ -711,7 +711,7 @@ const en: MatchMessages = {
       next: 'We’ll leave it to you from here: reply all to set up a first call.',
       disclaimer: (product: string) =>
         `This email is only an introduction: ${product} does not give investment advice, does not assess the startup and does not handle money.`,
-      signature: (product: string) => `The ${product} team (provisional name)`,
+      signature: (product: string) => `The ${product} team (working name)`,
     },
     limitReached: (limit: number) => `You’ve reached the limit of ${limit} proposals for this month (placeholder value).`,
   },
@@ -793,7 +793,7 @@ const en: MatchMessages = {
       done: ' (done)',
       active: ' (in progress)',
       ready: 'Profile draft ready.',
-      note: 'The deck is read in your browser with fixed rules (keywords and number formats), with no artificial intelligence and nothing sent anywhere.',
+      note: 'The deck is read in your browser with fixed rules (keywords and number formats), without AI and without sending anything.',
       pagesRead: (pages: number) => (pages === 1 ? '1 page' : `${pages} pages`),
       found: (n: number) => (n === 1 ? '1 finding' : `${n} findings`),
       tractionFound: (n: number) => (n === 1 ? 'traction: 1 signal' : `traction: ${n} signals`),
@@ -859,7 +859,7 @@ const en: MatchMessages = {
     explainer: {
       summary: 'How we calculate the fit',
       intro:
-        'Filters first: only pairs with a compatible stage, sector and area, and a minimum ticket no higher than the round, appear. Then a score from 0 to 100, the sum of four parts:',
+        'Filters come first: a pair appears only if stage, sector and area are compatible and the minimum ticket is no higher than the round. Then a score from 0 to 100, the sum of four parts:',
       head: { part: 'Part', max: 'Max', how: 'How' },
       rows: { settore: 'Sector', ticket: 'Ticket', fase: 'Stage', area: 'Area' },
       settore: (main: number, other: number, generalist: number) =>
@@ -871,7 +871,7 @@ const en: MatchMessages = {
         `${region} same region, ${area} same macro-area, ${italy} if they invest across Italy`,
       band: (label: string, min: number) => `${label} from ${min}`,
       bands: (list: string) =>
-        `Bands: ${list}. With equal scores, ticket coverage counts first, then alphabetical order. Weights and thresholds are placeholder values.`,
+        `Bands: ${list}. Ties are broken by ticket coverage, then sector points, then alphabetical order. Weights and thresholds are placeholder values.`,
     },
     counter: {
       used: (used: number, limit: number) => `${used} of ${limit}`,
@@ -897,7 +897,7 @@ const en: MatchMessages = {
     landing: {
       eyebrow: 'Investor matching · prototype',
       title: 'The right investors, *only if you both say yes*',
-      lead: 'MatchInvStar (provisional name) is a demo prototype: an agent drafts your startup’s profile, suggests the investors that fit best and introduces you only with the consent of both sides.',
+      lead: 'MatchInvStar (working name) is a demo prototype: an agent drafts your startup’s profile, suggests the investors that fit best and introduces you only with the consent of both sides.',
       ctaStartup: 'I’m a startup',
       ctaInvestor: 'I’m an investor',
       howTitle: 'How it works, in four steps',
@@ -931,7 +931,7 @@ const en: MatchMessages = {
       },
       investorDoor: {
         title: 'I’m an investor',
-        lead: 'Receive only startups that match your thesis, anonymously.',
+        lead: 'See only startups that match your thesis, shown anonymously.',
         items: [
           'Sectors, stages and regions of interest',
           'Minimum and maximum ticket',
@@ -962,7 +962,7 @@ const en: MatchMessages = {
       useExample: 'Use an example',
       settore: 'Sector',
       settorePlaceholder: 'Choose a sector',
-      regione: 'Region of your headquarters',
+      regione: 'Region where you’re based',
       regionePlaceholder: 'Choose a region',
       fase: 'Stage',
       round: 'Round size',
@@ -1096,7 +1096,7 @@ const en: MatchMessages = {
       title: 'Limits and legal notes',
       lead: 'What this prototype does, what it doesn’t do and what needs checking before a real version.',
       doesTitle: 'What it does',
-      does: 'MatchInvStar (provisional name) is designed as a **directory and introduction service**: it shows startup and investor profiles and, when both sides say yes, introduces them by email. It makes no judgement on the merits of a startup or an investment.',
+      does: 'MatchInvStar (working name) is designed as a **directory and introduction service**: it shows startup and investor profiles and, when both sides say yes, introduces them by email. It makes no judgement on the merits of a startup or an investment.',
       doesNotTitle: 'What it doesn’t do',
       doesNot: [
         '**No investment advice.** The fit score only measures how well the startup’s profile matches the investor’s stated thesis: it is not a recommendation to invest or not to invest.',
