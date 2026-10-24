@@ -371,6 +371,38 @@
       }
     },
     {
+      "id": "matchV1Requests",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v1/richieste/",
+        "title": "V1 Editoriale · Richieste (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V1 “Editoriale” di MatchInvStar: richieste a doppio consenso, lato founder e lato investitore. Prototipo con dati fittizi.",
+        "heading": "V1 Editoriale · Richieste"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v1/requests/",
+        "title": "V1 Editorial · Requests (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V1 “Editorial”: double opt-in requests, founder side and investor side. Prototype with fictional data.",
+        "heading": "V1 Editorial · Requests"
+      }
+    },
+    {
+      "id": "matchV1Export",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v1/esporta/",
+        "title": "V1 Editoriale · One-pager teaser (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V1 “Editoriale” di MatchInvStar: one-pager anonimo della startup da esportare. Prototipo con dati fittizi.",
+        "heading": "V1 Editoriale · One-pager teaser"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v1/export/",
+        "title": "V1 Editorial · Teaser one-pager (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V1 “Editorial”: the startup's anonymous one-pager, ready to export. Prototype with fictional data.",
+        "heading": "V1 Editorial · Teaser one-pager"
+      }
+    },
+    {
       "id": "matchV2Landing",
       "robots": "noindex, nofollow",
       "it": {
@@ -448,6 +480,38 @@
         "title": "V2 Dashboard · Investor directory (design variant) | Startup Legal Toolkit",
         "description": "MatchInvStar design variant V2 “Dashboard”: list of sample investors, filterable by type. Prototype with fictional data.",
         "heading": "V2 Dashboard · Investor directory"
+      }
+    },
+    {
+      "id": "matchV2Requests",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v2/richieste/",
+        "title": "V2 Dashboard · Richieste (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V2 “Dashboard” di MatchInvStar: richieste a doppio consenso, lato founder e lato investitore. Prototipo con dati fittizi.",
+        "heading": "V2 Dashboard · Richieste"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v2/requests/",
+        "title": "V2 Dashboard · Requests (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V2 “Dashboard”: double opt-in requests, founder side and investor side. Prototype with fictional data.",
+        "heading": "V2 Dashboard · Requests"
+      }
+    },
+    {
+      "id": "matchV2Export",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v2/esporta/",
+        "title": "V2 Dashboard · One-pager teaser (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V2 “Dashboard” di MatchInvStar: one-pager anonimo della startup da esportare. Prototipo con dati fittizi.",
+        "heading": "V2 Dashboard · One-pager teaser"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v2/export/",
+        "title": "V2 Dashboard · Teaser one-pager (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V2 “Dashboard”: the startup's anonymous one-pager, ready to export. Prototype with fictional data.",
+        "heading": "V2 Dashboard · Teaser one-pager"
       }
     },
     {
@@ -531,6 +595,38 @@
       }
     },
     {
+      "id": "matchV3Requests",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v3/richieste/",
+        "title": "V3 Agente conversazionale · Richieste (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V3 “Agente conversazionale” di MatchInvStar: richieste a doppio consenso, lato founder e lato investitore. Prototipo con dati fittizi.",
+        "heading": "V3 Agente conversazionale · Richieste"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v3/requests/",
+        "title": "V3 Conversational agent · Requests (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V3 “Conversational agent”: double opt-in requests, founder side and investor side. Prototype with fictional data.",
+        "heading": "V3 Conversational agent · Requests"
+      }
+    },
+    {
+      "id": "matchV3Export",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v3/esporta/",
+        "title": "V3 Agente conversazionale · One-pager teaser (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V3 “Agente conversazionale” di MatchInvStar: one-pager anonimo della startup da esportare. Prototipo con dati fittizi.",
+        "heading": "V3 Agente conversazionale · One-pager teaser"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v3/export/",
+        "title": "V3 Conversational agent · Teaser one-pager (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V3 “Conversational agent”: the startup's anonymous one-pager, ready to export. Prototype with fictional data.",
+        "heading": "V3 Conversational agent · Teaser one-pager"
+      }
+    },
+    {
       "id": "matchV4Landing",
       "robots": "noindex, nofollow",
       "it": {
@@ -611,6 +707,38 @@
       }
     },
     {
+      "id": "matchV4Requests",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v4/richieste/",
+        "title": "V4 Card e swipe · Richieste (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V4 “Card e swipe” di MatchInvStar: richieste a doppio consenso, lato founder e lato investitore. Prototipo con dati fittizi.",
+        "heading": "V4 Card e swipe · Richieste"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v4/requests/",
+        "title": "V4 Cards and swipe · Requests (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V4 “Cards and swipe”: double opt-in requests, founder side and investor side. Prototype with fictional data.",
+        "heading": "V4 Cards and swipe · Requests"
+      }
+    },
+    {
+      "id": "matchV4Export",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v4/esporta/",
+        "title": "V4 Card e swipe · One-pager teaser (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V4 “Card e swipe” di MatchInvStar: one-pager anonimo della startup da esportare. Prototipo con dati fittizi.",
+        "heading": "V4 Card e swipe · One-pager teaser"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v4/export/",
+        "title": "V4 Cards and swipe · Teaser one-pager (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V4 “Cards and swipe”: the startup's anonymous one-pager, ready to export. Prototype with fictional data.",
+        "heading": "V4 Cards and swipe · Teaser one-pager"
+      }
+    },
+    {
       "id": "matchV5Landing",
       "robots": "noindex, nofollow",
       "it": {
@@ -688,6 +816,38 @@
         "title": "V5 Dark premium · Investor directory (design variant) | Startup Legal Toolkit",
         "description": "MatchInvStar design variant V5 “Dark premium”: list of sample investors, filterable by type. Prototype with fictional data.",
         "heading": "V5 Dark premium · Investor directory"
+      }
+    },
+    {
+      "id": "matchV5Requests",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v5/richieste/",
+        "title": "V5 Dark premium · Richieste (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V5 “Dark premium” di MatchInvStar: richieste a doppio consenso, lato founder e lato investitore. Prototipo con dati fittizi.",
+        "heading": "V5 Dark premium · Richieste"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v5/requests/",
+        "title": "V5 Dark premium · Requests (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V5 “Dark premium”: double opt-in requests, founder side and investor side. Prototype with fictional data.",
+        "heading": "V5 Dark premium · Requests"
+      }
+    },
+    {
+      "id": "matchV5Export",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v5/esporta/",
+        "title": "V5 Dark premium · One-pager teaser (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V5 “Dark premium” di MatchInvStar: one-pager anonimo della startup da esportare. Prototipo con dati fittizi.",
+        "heading": "V5 Dark premium · One-pager teaser"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v5/export/",
+        "title": "V5 Dark premium · Teaser one-pager (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V5 “Dark premium”: the startup's anonymous one-pager, ready to export. Prototype with fictional data.",
+        "heading": "V5 Dark premium · Teaser one-pager"
       }
     }
   ],

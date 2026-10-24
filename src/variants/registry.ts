@@ -1,8 +1,8 @@
-// Design variants gallery (internal, noindex): five design directions × five screens of MatchInvStar.
+// Design variants gallery (internal, noindex): five design directions × seven screens of MatchInvStar.
 export const VARIANT_IDS = ['v1', 'v2', 'v3', 'v4', 'v5'] as const;
 export type VariantId = (typeof VARIANT_IDS)[number];
 
-export const SCREENS = ['landing', 'results', 'investor', 'agent', 'directory'] as const;
+export const SCREENS = ['landing', 'results', 'investor', 'agent', 'directory', 'requests', 'export'] as const;
 export type Screen = (typeof SCREENS)[number];
 
 export type VariantRouteId = `match${Uppercase<VariantId>}${Capitalize<Screen>}`;
@@ -13,7 +13,7 @@ export function variantRouteId(variant: VariantId, screen: Screen): VariantRoute
 
 /** Inverse of variantRouteId; null for any other route id. */
 export function parseVariantRouteId(id: string): { variant: VariantId; screen: Screen } | null {
-  const m = id.match(/^match(V\d)(Landing|Results|Investor|Agent|Directory)$/);
+  const m = id.match(/^match(V\d)(Landing|Results|Investor|Agent|Directory|Requests|Export)$/);
   if (!m) return null;
   const variant = m[1]!.toLowerCase() as VariantId;
   const screen = m[2]!.toLowerCase() as Screen;

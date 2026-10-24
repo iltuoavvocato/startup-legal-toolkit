@@ -920,3 +920,327 @@
     grid-template-columns: 5.5rem minmax(0, 1fr);
   }
 }
+
+/* ---------- Double opt-in requests (as a letters column) ---------- */
+.v1-root .v1-requests .v1-kicker {
+  overflow-wrap: anywhere;
+}
+.v1-req-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 2rem;
+  border-bottom: 1px solid var(--v1-hair);
+}
+.v1-req-tab {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  padding: 0.5rem 0;
+  min-height: 44px;
+  font: inherit;
+  font-family: var(--font-serif);
+  font-size: 1.1875rem;
+  font-weight: 400;
+  color: var(--v1-soft);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.v1-req-tab:hover {
+  color: var(--v1-ink);
+}
+.v1-req-tab[aria-pressed='true'] {
+  color: var(--v1-ink);
+  font-weight: 600;
+  font-style: italic;
+  border-bottom-color: var(--v1-gold);
+}
+.v1-req-tab-count {
+  font-family: var(--v1-mono);
+  font-size: 0.8125rem;
+  font-style: normal;
+  font-weight: 400;
+}
+.v1-req-list {
+  list-style: none;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 0;
+}
+.v1-req {
+  padding: 1.5rem 0 1.25rem 1.25rem;
+  border-bottom: 1px solid var(--v1-line);
+  border-left: 3px solid transparent;
+  min-width: 0;
+}
+.v1-req-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.85rem;
+  margin: 0 0 0.4rem;
+}
+.v1-req-badge {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--v1-hair);
+  color: var(--v1-ink);
+  background: #fff;
+}
+.v1-req-due {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.9375rem;
+  color: var(--v1-soft);
+}
+.v1-root .v1-req-title {
+  font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+  line-height: 1.2;
+  margin: 0 0 0.25rem;
+  overflow-wrap: anywhere;
+}
+.v1-req-detail {
+  font-family: var(--font-serif);
+  color: var(--v1-soft);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.v1-root .v1-req-detail {
+  margin: 0;
+}
+/* Waiting: a plain hairline badge, nothing more. */
+.v1-req[data-status='waiting'] .v1-req-badge {
+  border-style: dashed;
+  color: var(--v1-soft);
+}
+/* Your turn: the gold accent, a gold rule in the margin. */
+.v1-req[data-status='your-turn'] {
+  border-left-color: var(--v1-gold);
+  background: #fbf8f1;
+}
+.v1-req[data-status='your-turn'] .v1-req-badge {
+  background: var(--v1-gold);
+  color: #111;
+  border-color: #111;
+}
+/* Intro: black and white, a double rule on top like a closing section. */
+.v1-req[data-status='intro'] {
+  border-top: 4px double var(--v1-hair);
+}
+.v1-req[data-status='intro'] .v1-req-badge {
+  background: #111;
+  color: #fff;
+}
+.v1-req[data-status='intro'] .v1-req-title {
+  font-style: italic;
+}
+/* Expired: the entry fades to grey, the badge is dotted and struck through. */
+.v1-req[data-status='expired'] .v1-req-badge {
+  border-style: dotted;
+  color: var(--v1-muted);
+  text-decoration: line-through;
+}
+.v1-req[data-status='expired'] .v1-req-title,
+.v1-req[data-status='expired'] .v1-req-detail {
+  color: var(--v1-muted);
+}
+/* Passed by you (investor side only). */
+.v1-req[data-status='declined-by-you'] .v1-req-badge {
+  border-color: var(--v1-muted);
+  color: var(--v1-muted);
+  font-style: italic;
+}
+.v1-req-note {
+  font-style: italic;
+}
+
+/* ---------- Teaser one-pager (as a printed page) ---------- */
+.v1-exp-sheet {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2rem clamp(1rem, 4vw, 3rem) 2.5rem;
+  background: #fff;
+  border: 1px solid var(--v1-line);
+  border-top: 4px double var(--v1-hair);
+  box-shadow: 0 1px 0 #d9d9d9, 0 12px 28px -18px rgba(0, 0, 0, 0.35);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.v1-exp-brand {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--v1-hair);
+}
+.v1-root .v1-exp-title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.1;
+  margin: 1.25rem 0 0.5rem;
+}
+.v1-exp-subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.125rem;
+  color: var(--v1-soft);
+}
+.v1-exp-tags {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+}
+.v1-exp-tags li {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--v1-hair);
+  padding: 0.1rem 0.55rem;
+}
+.v1-exp-section {
+  border-top: 1px solid var(--v1-hair);
+  padding-top: 1rem;
+  margin-top: 1.5rem;
+}
+.v1-root .v1-exp-h3 {
+  font-size: 1.3125rem;
+  line-height: 1.3;
+  margin: 0 0 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+}
+.v1-exp-num {
+  font-family: var(--v1-mono);
+  font-size: 0.8125rem;
+  color: var(--v1-gold-ink);
+}
+.v1-exp-rows {
+  margin: 0 0 0.75rem;
+  display: grid;
+  gap: 0.35rem;
+}
+.v1-exp-rows > div {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--v1-line);
+  padding-bottom: 0.35rem;
+}
+.v1-exp-rows dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--v1-soft);
+  padding-top: 0.2rem;
+}
+.v1-exp-rows dd {
+  margin: 0;
+}
+.v1-exp-para {
+  font-family: var(--font-serif);
+  line-height: 1.55;
+}
+.v1-exp-note,
+.v1-exp-limits,
+.v1-exp-footer {
+  font-size: 0.875rem;
+  color: var(--v1-soft);
+}
+.v1-exp-note {
+  font-style: italic;
+}
+.v1-exp-limits {
+  margin-top: 2rem;
+  padding-top: 0.75rem;
+  border-top: 4px double var(--v1-hair);
+}
+.v1-root .v1-exp-footer {
+  margin-bottom: 0;
+  font-family: var(--v1-mono);
+  font-size: 0.75rem;
+}
+@media (max-width: 640px) {
+  .v1-exp-rows > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.1rem;
+  }
+  .v1-req {
+    padding-left: 0.85rem;
+  }
+}
+
+/* ---------- Forced colours: every selected / active state stays visible ---------- */
+@media (forced-colors: active) {
+  .v1-root :focus-visible,
+  .v1-dir-option:has(input:focus-visible) {
+    outline: 3px solid Highlight;
+    box-shadow: none;
+  }
+  .v1-dir-option {
+    border: 1px solid ButtonText;
+  }
+  .v1-dir-option.is-on,
+  .v1-dir-option:has(input:checked),
+  .v1-req-tab[aria-pressed='true'] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    outline: 2px solid CanvasText;
+    outline-offset: 1px;
+  }
+  .v1-req-tab[aria-pressed='true'] {
+    border-bottom: 3px solid CanvasText;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .v1-req-tab[aria-pressed='false'] {
+    color: ButtonText;
+  }
+  .v1-req-badge,
+  .v1-exp-tags li {
+    border: 1px solid CanvasText;
+  }
+  .v1-req[data-status='your-turn'] .v1-req-badge,
+  .v1-req[data-status='intro'] .v1-req-badge {
+    border-width: 2px;
+    border-style: solid;
+  }
+  .v1-req[data-status='your-turn'] {
+    border-left: 3px solid CanvasText;
+  }
+  .v1-score-track {
+    border: 1px solid CanvasText;
+    height: 6px;
+  }
+  .v1-score-fill {
+    forced-color-adjust: none;
+    background: CanvasText;
+    height: 6px;
+  }
+  .v1-redacted-bar {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+  .v1-kicker::before,
+  .v1-pull p::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+  .v1-root .v1-cta {
+    border: 2px solid ButtonText;
+  }
+}

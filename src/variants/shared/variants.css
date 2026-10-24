@@ -118,3 +118,20 @@
     padding: 0.5rem 0.9rem;
   }
 }
+/* Forced colours (round 3): the current screen and variant in the banner stay marked without the brand fills. */
+@media (forced-colors: active) {
+  .vx-root .vx-seg {
+    border: 1px solid CanvasText;
+  }
+  .vx-root .vx-seg a {
+    border: 1px solid transparent;
+  }
+  .vx-root .vx-seg a[aria-current='page'] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: CanvasText;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
