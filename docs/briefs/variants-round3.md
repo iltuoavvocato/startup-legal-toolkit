@@ -50,3 +50,15 @@ variants-round3 + variants + a11y specs: 452 passed, 5 failed, 5 skipped. NOT me
 - V5 requests (it/en, desktop+mobile): "declined proposal looks like an unanswered one" fails. On the founder side the V5 row for a declined proposal still renders differently from an unanswered one. This breaks the opt-in rule, so it must be fixed before merging (compare the V5 row markup in the requests screen with V1).
 - Forced colours: V2 requests, "pressed tab vs the other": in forced-colors mode the pressed and unpressed tabs look the same. Add a border/outline or underline for aria-pressed/aria-selected under @media (forced-colors: active).
 Screenshots for round 3 were not taken.
+
+## e2e re-run after the fixes (10:49 Europe/Rome, E2E_PORT=4289)
+`npx playwright test e2e/variants-round3.spec.ts e2e/variants.spec.ts`: **213 passed, 0 failed, 5 skipped** (the
+desktop-only forced-colours tests skip on the mobile project). The a11y spec was not re-run this time. Lint, vitest
+(570) and build + check:dist were green before the run.
+- V5 requests: the row number was rendered as text (`pad2(k + 1)`), so the declined row and the unanswered row
+  differed by position. The number now comes from a CSS counter (`::before`, aria-hidden), so both rows have the same
+  markup, classes, text and status.
+- V2 requests tabs: under `forced-colors: active` the pressed tab gets a `Highlight` bottom border, a `CanvasText`
+  outline and an underlined label (forced colours drops the inset box-shadow).
+Still pending: reviewing the round-3 screenshots (the full screenshot script was not run) and the V1–V5 comparison
+table.
