@@ -2,6 +2,7 @@
 import { FORMATTERS } from '../i18n/format';
 import type { Locale } from '../i18n/locales';
 import { MESSAGES } from '../i18n/messages';
+import { MONTHLY_PROPOSAL_LIMIT } from './matchConfig';
 import { labelsFor, type Investor, type StartupProfile } from './matchTaxonomy';
 
 export const PRODUCT_NAME = 'MatchInvStar';
@@ -149,8 +150,8 @@ export function introEmail(s: StartupProfile, i: Investor, locale: Locale = 'it'
 
 // ---------- Monthly proposal limit ----------
 
-/** Max proposals the agent sends on behalf of one startup per calendar month. Valore provvisorio. */
-export const MONTHLY_PROPOSAL_LIMIT = 5;
+/** Max proposals per startup per calendar month (valore provvisorio, defined in matchConfig.ts). */
+export { MONTHLY_PROPOSAL_LIMIT };
 
 export interface ProposalCounter {
   /** 'YYYY-MM' */

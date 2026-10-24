@@ -204,7 +204,7 @@ describe('demo dataset', () => {
   it('is well formed', () => {
     const ids = [...DEMO_INVESTORS, ...DEMO_STARTUPS].map((x) => x.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(DEMO_INVESTORS).toHaveLength(15);
+    expect(DEMO_INVESTORS).toHaveLength(36);
     expect(DEMO_STARTUPS).toHaveLength(8);
     for (const i of DEMO_INVESTORS) {
       expect(i.ticketMin).toBeLessThanOrEqual(i.ticketMax);
