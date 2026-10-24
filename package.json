@@ -12,9 +12,10 @@
     "lint": "eslint . --max-warnings 0",
     "screenshots": "node scripts/screenshots.mjs",
     "og": "node scripts/og-image.mjs",
-    "e2e": "npm run build && playwright test",
+    "e2e": "npm run build && npm run check:dist && playwright test",
     "e2e:only": "playwright test",
-    "lighthouse": "node scripts/lighthouse.mjs"
+    "lighthouse": "node scripts/lighthouse.mjs",
+    "check:dist": "node scripts/check-dist.mjs"
   },
   "dependencies": {
     "pdfjs-dist": "^4.10.38",

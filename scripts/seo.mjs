@@ -112,9 +112,9 @@ export function headTags(page, { abs, base, siteNoindex }) {
     .join('\n    ');
 }
 
-/** Minimal static content shown before JavaScript runs (replaced by React on mount). */
+/** Minimal static content shown before JavaScript runs (replaced by React on mount), disclaimer included. */
 export function fallbackBody({ heading, description, locale = 'it' }) {
-  return `<main style="max-width:44rem;margin:0 auto;padding:4rem 1.25rem;font-family:system-ui,sans-serif;color:#0B1730"><h1>${esc(heading)}</h1><p>${esc(description)}</p><noscript><p>${NOSCRIPT[locale]}</p></noscript></main>`;
+  return `<main style="max-width:44rem;margin:0 auto;padding:4rem 1.25rem;font-family:system-ui,sans-serif;color:#0B1730"><h1>${esc(heading)}</h1><p>${esc(description)}</p><p style="font-size:.85rem">${esc(DISCLAIMER[locale])}</p><noscript><p>${NOSCRIPT[locale]}</p></noscript></main>`;
 }
 
 /** Static 404 content in both languages; without JavaScript both are shown. */

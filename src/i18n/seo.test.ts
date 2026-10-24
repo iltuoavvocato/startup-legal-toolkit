@@ -45,6 +45,8 @@ describe('prerender meta', () => {
     expect(html).toContain('hreflang="en" href="https://example.test/en/investor-match/"');
     expect(html).toContain('<meta property="og:locale" content="it_IT" />');
     expect(fallbackBody({ heading: 'H', description: 'D' })).toContain('attiva JavaScript');
+    expect(fallbackBody({ heading: 'H', description: 'D' })).toContain(DISCLAIMER.it);
+    expect(fallbackBody({ heading: 'H', description: 'D', locale: 'en' })).toContain(DISCLAIMER.en);
   });
 
   it('applies NOINDEX to every page, English included, and noindex to the 404', () => {

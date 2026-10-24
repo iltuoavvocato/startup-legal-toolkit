@@ -949,3 +949,41 @@ What exists:
 - README route row now lists every matching route.
 
 No new open decisions.
+
+## Milestone 14: guardrail tests and build checks (2026-10-24)
+
+What exists:
+- **Copy guardrails** `src/lib/copyGuardrails.ts` + `.test.ts`: forbidden-phrase patterns (commissione/commission,
+  success fee, percentage of the round, pagamento/payment, paga/pay now, denaro/money, bonifico/escrow/deposito,
+  ordini/orders, investi ora/invest now, consigliamo/we recommend, raccomandazione/recommendation, investment advice,
+  rendimento garantito/guaranteed return, senza rischi/risk-free) checked over every string of the match dictionaries
+  (`match`, `matchDemo`, `intake`, `directory`, `exportDoc`, `guidedDemo`, `polish`, `hardening`, `explain`,
+  `variants` with the per-variant copy, `privacy`, `common`) in IT and EN, function strings included, and over the demo
+  data (investors and startups in both languages, sample deck text, example forms). An explicit allow-list (39 phrases, capped at 40 by a test)
+  removes the negations first, e.g. "Non gestiamo denaro", "nessuna success fee", "No investment advice", plus four
+  demo theses per language that name payments as a market sector. A test checks that every allow-list entry is really
+  used and that the disclaimers are still present, so the list can't silently grow or go stale. Demo data: every
+  investor email matches `name@label.example`, every email literal in `src/` ends with `.example`, and no demo name or
+  email domain contains a real TLD, `www`, a URL or `@`.
+- **Build check** `npm run check:dist` (`scripts/check-dist.mjs`; pure checks in `scripts/dist-check.mjs`, unit tested
+  in `src/i18n/distCheck.test.ts` with broken inputs). Wired into `npm run e2e` after the build; the GitHub workflow is
+  unchanged. It fails with one line per problem when: a `<script>`, `<link>`, `<img>`, `<iframe>`, `<source>` loads an
+  absolute URL (only the page's own canonical/hreflang links may be absolute); a JS/CSS asset contains an origin outside
+  an allow-list (W3C/XFA/Adobe/Apache namespaces, React's error-decoder URL, the site's own domains) or a literal
+  external `fetch`/XHR/`import`/CSS `@import`/`url()`; any tracker signature appears (gtag, Google Tag Manager/Analytics,
+  dataLayer, Facebook pixel, Hotjar, Segment, Plausible, Matomo, Mixpanel, Amplitude, Clarity, PostHog, Umami,
+  Cloudflare analytics, LinkedIn, TikTok, `sendBeacon`); a page's robots meta differs from the policy written out in
+  the script (variants and export `noindex, nofollow`; guided demo, inbox, investor profile `noindex, follow`; all
+  others indexed; everything `noindex, nofollow` on a `NOINDEX=true` build); a prerendered page lacks the disclaimer;
+  the sitemap lists a noindex page or misses an indexed one; an HTML file exists that is not a route.
+- **Disclaimer in the prerendered HTML**: the static fallback of every page (`fallbackBody` in `scripts/seo.mjs`) now
+  carries the disclaimer, as the 404 already did, so it is there before JavaScript runs and for crawlers. React still
+  replaces the fallback on mount (`createRoot`), so nothing changes after load.
+- Review pack: the hard-rule rows that relied on copy review now point to these tests.
+
+Not done: **prerendered landing hero** (item 3). The app mounts with `createRoot`, not hydration, so a static hero only
+helps LCP if the header, prototype banner and hero are prerendered with the real markup; otherwise the header appearing
+above it shifts the page, and a hand-copied hero would drift from the real one. Doing it properly means an SSR build of
+the layout and `hydrateRoot`, which is not contained. Skipped, not measured; D38 / real SSR remain the levers.
+
+No new open decisions.

@@ -43,7 +43,8 @@ npm run build        # tsc -b → vite build → scripts/prerender.mjs (per-rout
 npm run preview      # serve dist/
 npm test             # vitest run (unit tests only, fast)
 npm run lint         # eslint, zero warnings allowed
-npm run e2e          # build, then Playwright e2e + axe accessibility scans on the production build (desktop + mobile)
+npm run e2e          # build, check:dist, then Playwright e2e + axe accessibility scans on the production build (desktop + mobile)
+npm run check:dist   # build first; fails on external origins / trackers in dist/, wrong robots, missing disclaimer, sitemap leaks
 npm run e2e:only     # the same without rebuilding (dist/ must be current); add `-- e2e/a11y.spec.ts` etc. to filter
 npm run lighthouse   # build first; Lighthouse mobile + desktop on 5 pages → screenshots/lighthouse/ (`-- --lang=en`)
 npm run screenshots  # build first; full-page PNGs at 1440×900 and 390×844@2x into screenshots/ (git-ignored)
@@ -204,6 +205,15 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
 `.example` domain). The full plan and the default decisions are in `docs/briefs/investor-matching.md`.
 **Review pack**: [`docs/briefs/investor-matching-review.md`](docs/briefs/investor-matching-review.md) (routes, a
 10-minute walkthrough, open decisions D1–D51, hard-rule checklist, known issues, go-live needs).
+**Guardrails** (Milestone 14): `src/lib/copyGuardrails.test.ts` fails on payment, money-handling, order,
+investment-advice, guaranteed-return, commission or success-fee phrases in any match dictionary (IT + EN) or the demo
+data, except a short allow-list of negations in `src/lib/copyGuardrails.ts` (so "Non gestiamo denaro" and "nessuna
+success fee" stay); it also requires every email literal in `src/` to end with `.example`. `npm run check:dist`
+(`scripts/check-dist.mjs`, pure checks in `scripts/dist-check.mjs`, run by `npm run e2e`) scans the build: no external
+`<script>`/`<link>`/`<img>` origins, no external URLs in bundles beyond an allow-list of XML namespaces and the site's
+own domains, no analytics/tracker signatures, the intended robots meta on every page (variants and export
+`noindex, nofollow`; guided demo, inbox and investor profile `noindex, follow`; the rest indexed), the disclaimer in
+every prerendered HTML file, and the sitemap listing exactly the indexed pages.
 
 - **Startup flow** (`/match-investitori/startup/`): settore, fase, regione, round, descrizione and an optional PDF deck
   (drag and drop, file picker, or **"Prova con un deck di esempio" / "Try a sample deck"**, which loads a fictional
