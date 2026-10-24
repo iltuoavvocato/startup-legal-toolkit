@@ -28,7 +28,9 @@ Draft PR: https://github.com/iltuoavvocato/startup-legal-toolkit/pull/1 (branch 
 
 - 08:01 M14 done: copy guardrail tests over every match dictionary (IT+EN) and demo data (no money/payments/orders/advice/guaranteed returns/success fee; explicit allow-list for negations; all demo emails .example); `npm run check:dist` (in `npm run e2e`) scans the build for external origins, trackers, robots/noindex policy, sitemap and disclaimer; real fix: the prerendered no-JS fallback of every page now includes the disclaimer (scripts/seo.mjs, replaced by React on load). Hero prerender for LCP skipped (app uses createRoot, needs SSR/hydration, not contained). Gate: lint 0, 557 unit, build ok, check:dist ok (89 pages), e2e 536 passed / 4 skipped. Commits 98a0d51, 391dc0a.
 
+- 08:44 M15 done: responsive spec at 320/768/1366 on all 13 match routes + findings/results (overflow, clipped buttons, focus vs sticky header, 24px targets) with fixes (scroll-padding, directory sort select, inbox tabs, gallery buttons, V2 sort targets); forced-colours support + e2e on 3 screens; flakiness: 3 sequential full runs, one axe timing flake fixed with a settle() helper, no waitForTimeout left in e2e. Gate: lint 0, 557 unit, build ok, check:dist ok, e2e 628 passed / 4 skipped. Commits f1a463e, 460995e, 53f9018, 5cbd9c1.
+
 ## In progress
-- 08:02 M15 (next): small phone/tablet/small laptop viewports, tap targets, forced-colors, flakiness runs
+- 08:45 M16 (next): code health - dead code/dupes, bundle budgets in check:dist, stricter TS if small; no behaviour changes
 
 ## Next
