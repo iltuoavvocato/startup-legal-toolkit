@@ -1108,3 +1108,11 @@ Open decisions:
   under time travel)?
 - **D53**: keep the deck's findings, without page snippets and without an unaccepted tagline, in this tab so a reload
   resumes the deck review? Today: not stored.
+
+Checks at the end of M17 (machine load average 70–125 from other jobs):
+- e2e: 631 passed, 1 timeout (`responsive.spec.ts` phone-320 founder results, a click waiting on an unstable
+  element); that spec alone: 86/86 passed.
+- `npm run screenshots`: not completed. Three full runs timed out partway (page.goto / waitFor 10 s), once after the
+  variants gallery; a fourth, batched run couldn't launch the browser in 180 s. Re-run on a quiet machine.
+- `npm run lighthouse`: only the home page finished within the time limit: mobile Perf 91 / A11y 100 / BP 100 /
+  SEO 100, LCP 3.1 s, CLS 0; desktop 100 / 100 / 100 / 100, LCP 0.7 s. Unchanged from M12/M15.
