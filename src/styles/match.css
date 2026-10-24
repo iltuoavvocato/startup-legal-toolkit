@@ -2919,6 +2919,7 @@ div.mi-error p {
 
 .mi-dir-toolbar {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0 1rem;
   align-items: end;
 }
@@ -2931,13 +2932,14 @@ div.mi-error p {
 
 .mi-dir-toolbar-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   gap: 0.75rem;
 }
 
 .mi-dir-toolbar-row .mi-field {
   flex: 1 1 auto;
-  min-width: 12.5rem;
+  min-width: min(12.5rem, 100%);
 }
 
 .mi-dir-open {
@@ -3416,6 +3418,7 @@ div.mi-error p {
 
 .mi-inbox-top {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   align-items: start;
   margin-bottom: 1.5rem;
@@ -3464,6 +3467,26 @@ div.mi-error p {
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
+}
+
+/* Small phones (320px, 400% zoom): the two tabs share the row and their labels may wrap. */
+@media (max-width: 419px) {
+  .mi-inbox-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-self: stretch;
+    border-radius: var(--radius);
+  }
+
+  .mi-inbox-tabs button {
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: var(--radius-sm);
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+  }
 }
 
 .mi-inbox-tabs button.is-active {

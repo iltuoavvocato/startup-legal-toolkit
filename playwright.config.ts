@@ -23,7 +23,8 @@ export default defineConfig({
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, ...chrome } },
-    { name: 'mobile', use: { ...devices['Pixel 7'], ...chrome } },
+    // The responsive and forced-colours specs set their own viewports: desktop project only.
+    { name: 'mobile', testIgnore: /(responsive|forced-colors)\.spec\.ts$/, use: { ...devices['Pixel 7'], ...chrome } },
   ],
   webServer: {
     command: `node scripts/serve-dist.mjs ${PORT}`,

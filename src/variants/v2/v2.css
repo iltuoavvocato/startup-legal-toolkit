@@ -618,8 +618,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  min-height: 1.5rem; /* 24px target (WCAG 2.2 2.5.8) */
   padding: 0.1rem 0.15rem;
-  margin: -0.1rem -0.15rem;
+  margin: -0.2rem -0.15rem;
   font: inherit;
   text-transform: inherit;
   letter-spacing: inherit;
