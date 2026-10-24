@@ -234,22 +234,35 @@ export function answer(store: InboxStore, requestId: string, choice: SimAnswer, 
 /** Days ago each demo proposal reached "you as an investor", so deadlines differ (14-day placeholder). */
 export const INVESTOR_DEMO_AGE_DAYS = [1, 4, 8, 12] as const;
 
-/** Demo proposals received as an investor (anonymous teasers of demo startups), added once. */
+/** Id prefix of the seeded sample teasers (the agent's investor answers use `a-`). */
+const SEED_PREFIX = 'i-';
+
+/** Whether the sample teasers were already added to this store (requests from the agent don't count). */
+export const isInvestorInboxSeeded = (store: InboxStore) =>
+  store.requests.some((r) => r.role === 'investor' && r.id.startsWith(SEED_PREFIX));
+
+/**
+ * Demo proposals received as an investor (anonymous teasers of demo startups), added once. Seeding also happens when
+ * the agent's investor mode answered first: a sample startup that already has a request from the agent is skipped,
+ * so there is never a second teaser for the same startup.
+ */
 export function seedInvestorInbox(store: InboxStore, startupIds: readonly string[], now: number): InboxStore {
-  if (store.requests.some((r) => r.role === 'investor')) return store;
-  const seeded = startupIds.slice(0, INVESTOR_DEMO_AGE_DAYS.length).map((id, k): InboxRequest => {
+  if (isInvestorInboxSeeded(store)) return store;
+  const taken = new Set(store.requests.filter((r) => r.role === 'investor').map((r) => r.counterpartId));
+  const seeded = startupIds.slice(0, INVESTOR_DEMO_AGE_DAYS.length).flatMap((id, k): InboxRequest[] => {
+    if (taken.has(id)) return [];
     const createdAt = now - INVESTOR_DEMO_AGE_DAYS[k]! * DAY_MS;
-    return {
-      id: `i-${id}-${createdAt}`,
+    return [{
+      id: `${SEED_PREFIX}${id}-${createdAt}`,
       role: 'investor',
       counterpartId: id,
       state: 'proposta',
       createdAt,
       stepAt: createdAt,
       sim: simulatedAnswer(`investor:${id}`),
-    };
+    }];
   });
-  return { ...store, requests: [...store.requests, ...seeded] };
+  return seeded.length ? { ...store, requests: [...store.requests, ...seeded] } : store;
 }
 
 export interface Grouped {

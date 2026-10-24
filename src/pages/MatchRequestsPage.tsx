@@ -20,6 +20,7 @@ import {
   answer,
   DAY_MS,
   groupRequests,
+  isInvestorInboxSeeded,
   proposalCounter,
   propose,
   seedInvestorInbox,
@@ -71,8 +72,11 @@ export function MatchRequestsPage() {
   const tabRefs = useRef<Record<InboxRole, HTMLButtonElement | null>>({ founder: null, investor: null });
 
   // The investor view comes with sample teasers of fictional startups (added once, on the demo clock).
+  // Tried once per visit: when the agent already answered every sample startup there is nothing to add.
+  const seedTried = useRef(false);
   useEffect(() => {
-    if (!store.requests.some((r) => r.role === 'investor')) {
+    if (!seedTried.current && !isInvestorInboxSeeded(store)) {
+      seedTried.current = true;
       updateInbox((s, at) => seedInvestorInbox(s, DEMO_STARTUPS.map((x) => x.id), at));
     }
   }, [store]);

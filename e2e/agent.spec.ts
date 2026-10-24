@@ -31,4 +31,35 @@ for (const lang of LOCALES) {
     await restartWorks(page, baseURL, lang, problems);
     expect(problems).toEqual([]);
   });
+
+  test(`agent: investor answers before the inbox was opened → sample teasers still seeded, once (${lang})`, async ({ page, baseURL }) => {
+    const problems: string[] = [];
+    await investorFlow(page, baseURL, lang, problems);
+    expect(problems).toEqual([]);
+    const investorRequests = () =>
+      page.evaluate(() => {
+        const s = JSON.parse(window.sessionStorage.getItem('matchinvstar-inbox') ?? '{"requests":[]}') as {
+          requests: { id: string; role: string; counterpartId: string }[];
+        };
+        return s.requests.filter((r) => r.role === 'investor');
+      });
+    const before = await investorRequests();
+    expect(before.map((r) => r.id.slice(0, 2))).toEqual(['a-']);
+
+    await open(page, `${path('matchRequests', lang)}?vista=investitore`);
+    const cards = page.locator('article.mi-request');
+    await expect(cards.first()).toBeVisible();
+    const after = await investorRequests();
+    // The four sample teasers (minus the agent's startup if it is one of them) next to the agent's request.
+    expect(after.filter((r) => r.id.startsWith('i-')).length).toBeGreaterThanOrEqual(3);
+    expect(after.some((r) => r.id === before[0]!.id)).toBe(true);
+    expect(new Set(after.map((r) => r.counterpartId)).size).toBe(after.length);
+    await expect(cards).toHaveCount(after.length);
+
+    // Idempotent: another visit adds nothing.
+    await page.reload();
+    await expect(cards.first()).toBeVisible();
+    expect(await investorRequests()).toEqual(after);
+    await expect(page.locator('main')).not.toContainText(REVEAL[lang]);
+  });
 }

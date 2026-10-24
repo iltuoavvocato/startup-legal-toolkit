@@ -9,6 +9,7 @@ import {
   deadlineOf,
   emptyStore,
   groupRequests,
+  isInvestorInboxSeeded,
   parseStore,
   propose,
   proposalCounter,
@@ -257,6 +258,25 @@ describe('demo clock, seeding and grouping', () => {
     expect(inv).toHaveLength(4);
     expect(new Set(inv.map((r) => viewOf(r, T0).daysLeft)).size).toBe(4);
     expect(seedInvestorInbox(s, ['s06'], T0)).toBe(s);
+  });
+
+  it('still seeds the sample teasers when the agent answered first, without duplicating its startup', () => {
+    const fromAgent: InboxStore = {
+      ...emptyStore(),
+      requests: [
+        { id: `a-s02-${T0}`, role: 'investor', counterpartId: 's02', state: 'attesa-startup', createdAt: T0, stepAt: T0, sim: { answer: 'yes', afterDays: 2 } },
+      ],
+    };
+    expect(isInvestorInboxSeeded(fromAgent)).toBe(false);
+    const s = seedInvestorInbox(fromAgent, ['s01', 's02', 's03', 's04'], T0);
+    expect(isInvestorInboxSeeded(s)).toBe(true);
+    expect(s.requests.map((r) => r.counterpartId).sort()).toEqual(['s01', 's02', 's03', 's04']);
+    // The agent's request is kept as it was, and seeding again changes nothing.
+    expect(s.requests.find((r) => r.counterpartId === 's02')).toBe(fromAgent.requests[0]);
+    expect(seedInvestorInbox(s, ['s01', 's02', 's03', 's04'], T0 + DAY_MS)).toBe(s);
+    // Every sample startup already answered from the agent: nothing to add, same store.
+    const all: InboxStore = { ...emptyStore(), requests: ['s01', 's02'].map((id) => ({ ...fromAgent.requests[0]!, id: `a-${id}`, counterpartId: id })) };
+    expect(seedInvestorInbox(all, ['s01', 's02'], T0)).toBe(all);
   });
 
   it('groups by role: pending soonest deadline first', () => {
