@@ -1,6 +1,6 @@
 import { useRef, type PointerEvent } from 'react';
 import { useElementWidth } from '../hooks/useElementWidth';
-import { formatMonthYear, formatPercent } from '../lib/format';
+import { useI18n } from '../i18n/context';
 import { addMonths, vestingSchedule, type VestingParams } from '../lib/vesting';
 
 interface Props {
@@ -14,6 +14,9 @@ const TICK_STEPS = [1, 3, 6, 12, 24, 36];
 
 /** SVG step chart of the vested share over time, with cliff and a draggable leaver marker. */
 export function VestingChart({ params, start, leaverMonth, onLeaverChange }: Props) {
+  const { t, f } = useI18n();
+  const c = t.vesting.chart;
+  const { percent: formatPercent, monthYear: formatMonthYear } = f;
   const [wrapRef, width] = useElementWidth<HTMLDivElement>();
   const dragging = useRef(false);
   const compact = width < 520;
@@ -59,7 +62,7 @@ export function VestingChart({ params, start, leaverMonth, onLeaverChange }: Pro
         width={Math.max(200, width)}
         height={height}
         role="img"
-        aria-label={`Grafico della maturazione: 0% fino al mese ${cliff}, poi crescita fino al 100% al mese ${D}. Uscita al mese ${marker}: maturato ${formatPercent(markerFraction * 100)} del pacchetto.`}
+        aria-label={c.aria(cliff, D, marker, formatPercent(markerFraction * 100))}
         onPointerDown={(e) => {
           dragging.current = true;
           e.currentTarget.setPointerCapture(e.pointerId);
@@ -91,7 +94,7 @@ export function VestingChart({ params, start, leaverMonth, onLeaverChange }: Pro
           <g>
             <line className="cliff-line" x1={x(cliff)} x2={x(cliff)} y1={pad.top - 6} y2={y(0)} />
             <text className="cliff-label" x={x(cliff) + 6} y={pad.top - 10}>
-              Cliff · mese {cliff}
+              {c.cliff(cliff)}
             </text>
           </g>
         )}
@@ -104,11 +107,11 @@ export function VestingChart({ params, start, leaverMonth, onLeaverChange }: Pro
             y={Math.min(y(markerFraction) + (markerFraction > 0.85 ? 24 : -16), y(0) - 10)}
             textAnchor={labelRight ? 'start' : 'end'}
           >
-            {compact ? `Mese ${marker}: ${formatPercent(markerFraction * 100)}` : `Esce al mese ${marker}: ${formatPercent(markerFraction * 100)}`}
+            {compact ? c.markerShort(marker, formatPercent(markerFraction * 100)) : c.markerLong(marker, formatPercent(markerFraction * 100))}
           </text>
         </g>
         <text className="axis-title" x={pad.left + w} y={height - 6} textAnchor="end">
-          {compact ? '' : 'Trascina sul grafico per spostare l’uscita'}
+          {compact ? '' : c.drag}
         </text>
       </svg>
     </div>

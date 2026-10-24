@@ -1,23 +1,34 @@
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { EquityPage } from './pages/EquityPage';
-import { HomePage } from './pages/HomePage';
+import { MatchErrorBoundary } from './components/match/MatchErrorBoundary';
+import { I18nContext, makeI18n } from './i18n/context';
+import { localeFromPath, routePatterns } from './i18n/routes';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { PrivacyPage } from './pages/PrivacyPage';
-import { QuizPage } from './pages/QuizPage';
-import { VestingPage } from './pages/VestingPage';
+import { PAGES } from './routePages';
 
 export function App() {
+  const { pathname } = useLocation();
+  const locale = localeFromPath(pathname);
   return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/equity" element={<EquityPage />} />
-        <Route path="/vesting" element={<VestingPage />} />
-        <Route path="/quiz" element={<QuizPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Layout>
+    <I18nContext.Provider value={makeI18n(locale)}>
+      <Layout>
+        <Routes>
+          {routePatterns().map(({ id, locale: l, pattern }) => {
+            const Page = PAGES[id];
+            // The key remounts the page when switching language, so in-memory state never mixes locales.
+            // Matching pages read state saved in this tab: a render error there shows a fallback, never a blank page.
+            const element = id.startsWith('match') ? (
+              <MatchErrorBoundary key={`${l}-${pathname}`}>
+                <Page key={l} />
+              </MatchErrorBoundary>
+            ) : (
+              <Page key={l} />
+            );
+            return <Route key={`${l}-${id}`} path={pattern} element={element} />;
+          })}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Layout>
+    </I18nContext.Provider>
   );
 }

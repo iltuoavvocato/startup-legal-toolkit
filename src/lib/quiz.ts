@@ -1,3 +1,6 @@
+import type { Locale } from '../i18n/locales';
+import { MESSAGES } from '../i18n/messages';
+
 export type QuestionId = 'fondatori' | 'societa' | 'accordi' | 'investimenti' | 'equity' | 'ip' | 'uscita';
 
 export interface QuizOption {
@@ -12,109 +15,44 @@ export interface QuizQuestion {
   options: QuizOption[];
 }
 
-export const QUESTIONS: readonly QuizQuestion[] = [
-  {
-    id: 'fondatori',
-    text: 'Quanti siete a fondare la startup?',
-    options: [
-      { value: 'solo', label: 'Da solo' },
-      { value: 'due', label: 'Siamo in 2' },
-      { value: 'tre', label: 'Siamo in 3 o più' },
-    ],
-  },
-  {
-    id: 'societa',
-    text: 'Avete già costituito la società?',
-    options: [
-      { value: 'no', label: 'No, non ancora' },
-      { value: 'srl', label: 'Sì, una s.r.l.' },
-      { value: 'innovativa', label: 'Sì, una startup innovativa' },
-      { value: 'nonso', label: 'Non so' },
-    ],
-  },
-  {
-    id: 'accordi',
-    text: 'Avete messo per iscritto come dividere quote e ruoli?',
-    help: 'Se fondi da solo, pensa agli accordi con eventuali soci futuri.',
-    options: [
-      { value: 'si', label: 'Sì, è tutto per iscritto' },
-      { value: 'no', label: 'No' },
-      { value: 'voce', label: 'Solo a voce' },
-    ],
-  },
-  {
-    id: 'investimenti',
-    text: 'Pensate di raccogliere investimenti nei prossimi 12 mesi?',
-    help: 'Per esempio da business angel o in un round pre-seed.',
-    options: [
-      { value: 'si', label: 'Sì' },
-      { value: 'forse', label: 'Forse' },
-      { value: 'no', label: 'No' },
-    ],
-  },
-  {
-    id: 'equity',
-    text: 'Ci sono collaboratori, advisor o dipendenti che vorreste pagare (anche) in equity?',
-    options: [
-      { value: 'si', label: 'Sì' },
-      { value: 'no', label: 'No' },
-    ],
-  },
-  {
-    id: 'ip',
-    text: 'Codice, brand, design o altri asset sono stati creati prima della società o da singoli founder o freelance?',
-    options: [
-      { value: 'si', label: 'Sì' },
-      { value: 'no', label: 'No' },
-      { value: 'nonso', label: 'Non so' },
-    ],
-  },
-  {
-    id: 'uscita',
-    text: 'Cosa succede se uno di voi lascia il progetto: l’avete previsto?',
-    help: 'Se fondi da solo, pensa a cosa succederebbe con soci o collaboratori che entrano in futuro.',
-    options: [
-      { value: 'si', label: 'Sì, l’abbiamo previsto' },
-      { value: 'no', label: 'No' },
-    ],
-  },
-] as const;
+// Option values in display order; the copy (question text, help, labels) comes from the dictionaries.
+const STRUCTURE: { id: QuestionId; options: string[] }[] = [
+  { id: 'fondatori', options: ['solo', 'due', 'tre'] },
+  { id: 'societa', options: ['no', 'srl', 'innovativa', 'nonso'] },
+  { id: 'accordi', options: ['si', 'no', 'voce'] },
+  { id: 'investimenti', options: ['si', 'forse', 'no'] },
+  { id: 'equity', options: ['si', 'no'] },
+  { id: 'ip', options: ['si', 'no', 'nonso'] },
+  { id: 'uscita', options: ['si', 'no'] },
+];
+
+export function getQuestions(locale: Locale = 'it'): QuizQuestion[] {
+  const q = MESSAGES[locale].quiz.questions;
+  return STRUCTURE.map(({ id, options }) => {
+    const copy = q[id];
+    const labels = copy.options as Record<string, string>;
+    return {
+      id,
+      text: copy.text,
+      ...(copy.help ? { help: copy.help } : {}),
+      options: options.map((value) => ({ value, label: labels[value]! })),
+    };
+  });
+}
+
+/** Italian questions (default locale). */
+export const QUESTIONS: readonly QuizQuestion[] = getQuestions('it');
 
 export type Answers = Partial<Record<QuestionId, string>>;
 
 export type DocumentId = 'patti' | 'vesting' | 'safe' | 'wfe' | 'ip';
 export type Priority = 'prioritario' | 'consigliato' | 'valutare';
 
-export const PRIORITY_LABELS: Record<Priority, string> = {
-  prioritario: 'Prioritario',
-  consigliato: 'Consigliato',
-  valutare: 'Da valutare',
-};
+export const PRIORITY_LABELS: Record<Priority, string> = MESSAGES.it.quiz.priorities;
 
 const PRIORITY_RANK: Record<Priority, number> = { prioritario: 0, consigliato: 1, valutare: 2 };
 
-export const DOCUMENTS: Record<DocumentId, { title: string; what: string }> = {
-  patti: {
-    title: 'Patti tra fondatori',
-    what: 'Un accordo scritto tra i soci fondatori (spesso un patto parasociale) che fissa quote, ruoli, decisioni importanti e cosa succede se qualcuno esce.',
-  },
-  vesting: {
-    title: 'Clausole di vesting (good/bad leaver)',
-    what: 'Regole in base alle quali le quote maturano nel tempo: chi lascia presto conserva solo la parte maturata. In una s.r.l. di solito si realizzano con patti parasociali, opzioni call o clausole statutarie.',
-  },
-  safe: {
-    title: 'SAFE (o strumento equivalente per investitori)',
-    what: 'Uno strumento con cui l’investitore versa denaro oggi e riceve quote in un round futuro. In Italia non è un contratto tipico: va adattato al diritto italiano e alla forma della società (s.r.l. o startup innovativa).',
-  },
-  wfe: {
-    title: 'Accordo di work for equity',
-    what: 'Un contratto per chi lavora per la startup ricevendo, in tutto o in parte, quote al posto di un compenso: stabilisce quante quote, a quali condizioni e con quali tempi.',
-  },
-  ip: {
-    title: 'Cessione e tutela della proprietà intellettuale',
-    what: 'Documenti che trasferiscono alla società i diritti su codice, marchio, design e contenuti, e che ne proteggono il valore.',
-  },
-};
+export const DOCUMENTS: Record<DocumentId, { title: string; what: string }> = MESSAGES.it.quiz.documents;
 
 const DOCUMENT_ORDER: DocumentId[] = ['patti', 'vesting', 'safe', 'wfe', 'ip'];
 
@@ -132,8 +70,8 @@ export interface Recommendation {
   triggers: Trigger[];
 }
 
-function trigger(id: QuestionId, answers: Answers): Trigger {
-  const q = QUESTIONS.find((x) => x.id === id)!;
+function trigger(id: QuestionId, answers: Answers, questions: readonly QuizQuestion[]): Trigger {
+  const q = questions.find((x) => x.id === id)!;
   const value = answers[id];
   const option = q.options.find((o) => o.value === value);
   return { question: q.text, answer: option?.label ?? '—' };
@@ -144,10 +82,19 @@ export function isComplete(answers: Answers): boolean {
 }
 
 /** Returns the personalized checklist, sorted by priority (then by a fixed document order). */
-export function getRecommendations(answers: Answers): Recommendation[] {
+export function getRecommendations(answers: Answers, locale: Locale = 'it'): Recommendation[] {
+  const { documents, why: W } = MESSAGES[locale].quiz;
+  const questions = getQuestions(locale);
   const recs: Recommendation[] = [];
   const add = (id: DocumentId, priority: Priority, why: string, triggerIds: QuestionId[]) =>
-    recs.push({ id, priority, why, title: DOCUMENTS[id].title, what: DOCUMENTS[id].what, triggers: triggerIds.map((t) => trigger(t, answers)) });
+    recs.push({
+      id,
+      priority,
+      why,
+      title: documents[id].title,
+      what: documents[id].what,
+      triggers: triggerIds.map((t) => trigger(t, answers, questions)),
+    });
 
   const team = answers.fondatori === 'due' || answers.fondatori === 'tre';
   const investors = answers.investimenti === 'si';
@@ -162,8 +109,8 @@ export function getRecommendations(answers: Answers): Recommendation[] {
         'patti',
         'prioritario',
         answers.accordi === 'voce'
-          ? 'Gli accordi presi solo a voce sono difficili da dimostrare e ognuno tende a ricordarli a modo suo. Metterli per iscritto adesso, mentre siete d’accordo, è molto più semplice che farlo durante un disaccordo.'
-          : 'La startup ha più fondatori e non c’è ancora nulla di scritto su quote e ruoli. I patti tra fondatori sono la base su cui poggiano tutti gli altri documenti.',
+          ? W.pattiVoce
+          : W.pattiNo,
         ['fondatori', 'accordi'],
       );
     } else {
@@ -171,8 +118,8 @@ export function getRecommendations(answers: Answers): Recommendation[] {
         'patti',
         investors ? 'consigliato' : 'valutare',
         investors
-          ? 'Avete già degli accordi scritti: con l’arrivo di investitori conviene verificare che coprano governance, trasferimento delle quote e uscita dei soci.'
-          : 'Avete già degli accordi scritti: vale la pena verificare che siano completi e aggiornati rispetto a come sta crescendo il progetto.',
+          ? W.pattiInvestors
+          : W.pattiCheck,
         investors ? ['fondatori', 'accordi', 'investimenti'] : ['fondatori', 'accordi'],
       );
     }
@@ -184,14 +131,14 @@ export function getRecommendations(answers: Answers): Recommendation[] {
       add(
         'vesting',
         'prioritario',
-        'La startup ha più fondatori e non avete previsto cosa succede se uno di voi lascia. Senza vesting, chi esce dopo pochi mesi potrebbe tenere tutte le sue quote.',
+        W.vestingNoExit,
         ['fondatori', 'uscita'],
       );
     } else {
       add(
         'vesting',
         'valutare',
-        'Avete già pensato all’uscita di un socio: conviene controllare che le regole siano scritte in modo vincolante e che distinguano tra good e bad leaver.',
+        W.vestingCheck,
         ['fondatori', 'uscita'],
       );
     }
@@ -199,7 +146,7 @@ export function getRecommendations(answers: Answers): Recommendation[] {
     add(
       'vesting',
       'valutare',
-      'Anche a chi fonda da solo gli investitori possono chiedere un vesting sulle proprie quote, a garanzia dell’impegno nel progetto.',
+      W.vestingSolo,
       ['fondatori', 'investimenti'],
     );
   }
@@ -207,12 +154,12 @@ export function getRecommendations(answers: Answers): Recommendation[] {
   // SAFE
   if (investors || maybeInvestors) {
     const base = investors
-      ? 'Pensate di raccogliere investimenti a breve: serve uno strumento chiaro per regolare l’ingresso degli investitori.'
-      : 'Un round è possibile: sapere in anticipo come funziona uno strumento come il SAFE vi permetterà di arrivare preparati.';
+      ? W.safeSoon
+      : W.safeMaybe;
     add(
       'safe',
       investors ? 'prioritario' : 'consigliato',
-      notIncorporated ? `${base} Di solito, per usarlo, la società deve essere già costituita.` : base,
+      notIncorporated ? `${base} ${W.safeIncorporate}` : base,
       notIncorporated ? ['investimenti', 'societa'] : ['investimenti'],
     );
   }
@@ -222,7 +169,7 @@ export function getRecommendations(answers: Answers): Recommendation[] {
     add(
       'wfe',
       'prioritario',
-      'Volete pagare qualcuno (anche) in quote. Senza un accordo scritto è facile che nascano dubbi su quante quote spettino, quando e a quali condizioni.',
+      W.wfe,
       ['equity'],
     );
   }
@@ -232,28 +179,28 @@ export function getRecommendations(answers: Answers): Recommendation[] {
     add(
       'ip',
       'prioritario',
-      'Alcuni asset sono nati prima della società o sono stati creati da singole persone: in genere i diritti restano a chi li ha creati finché non vengono ceduti per iscritto alla società.',
+      W.ipBefore,
       ['ip'],
     );
   } else if (answers.ip === 'nonso') {
     add(
       'ip',
       'consigliato',
-      'Non è chiaro chi abbia creato codice, brand o design: conviene ricostruirlo e, se serve, formalizzare la cessione dei diritti alla società.',
+      W.ipUnknown,
       ['ip'],
     );
   } else if (equityCollaborators) {
     add(
       'ip',
       'consigliato',
-      'Chi collabora in cambio di equity crea spesso codice o contenuti: l’accordo dovrebbe prevedere che i diritti su ciò che realizza passino alla società.',
+      W.ipCollaborators,
       ['equity'],
     );
   } else if (investors) {
     add(
       'ip',
       'valutare',
-      'Gli investitori di solito verificano che la società sia titolare di codice, marchio e altri asset: meglio avere tutto in ordine prima della due diligence.',
+      W.ipInvestors,
       ['investimenti'],
     );
   }
@@ -264,15 +211,16 @@ export function getRecommendations(answers: Answers): Recommendation[] {
 }
 
 /** Plain-text checklist for the clipboard. */
-export function checklistText(recs: Recommendation[]): string {
-  const lines = ['Quali documenti mi servono? — Startup Legal Toolkit (ilTuoAvvocato.com)', ''];
+export function checklistText(recs: Recommendation[], locale: Locale = 'it'): string {
+  const m = MESSAGES[locale];
+  const lines = [m.quiz.checklist.heading, ''];
   if (recs.length === 0) {
-    lines.push('Per ora nessun documento risulta urgente in base alle risposte date.');
+    lines.push(m.quiz.checklist.none);
   }
   recs.forEach((r, i) => {
-    lines.push(`${i + 1}. [${PRIORITY_LABELS[r.priority]}] ${r.title}`);
+    lines.push(`${i + 1}. [${m.quiz.priorities[r.priority]}] ${r.title}`);
     lines.push(`   ${r.why}`);
   });
-  lines.push('', 'Strumento indicativo: non sostituisce una consulenza legale.');
+  lines.push('', m.common.disclaimer);
   return lines.join('\n');
 }

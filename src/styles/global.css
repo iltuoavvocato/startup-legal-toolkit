@@ -9,6 +9,8 @@
   --gold: #c9a45c;
   --gold-light: #e2c88e;
   --gold-dark: #7a5b22;
+  /* Gold for large headings on white/cream: --gold is 2.3:1 there, this is ≥3.3:1 (WCAG AA for large text). */
+  --gold-heading: #9c7a33;
   --cream: #f7f3ea;
   --cream-2: #efe8d8;
   --white: #ffffff;
@@ -36,6 +38,8 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* Keep focused and anchored elements clear of the sticky header (64px + border) when the page scrolls to them. */
+  scroll-padding-top: 5rem;
 }
 
 body {
@@ -71,6 +75,11 @@ h2 em {
   font-style: italic;
   font-weight: 500;
   color: var(--gold);
+}
+
+.section-white h2 em,
+.section-cream h2 em {
+  color: var(--gold-heading);
 }
 
 p {
@@ -173,6 +182,15 @@ main:focus {
     transform 0.2s var(--ease),
     box-shadow 0.2s var(--ease);
   white-space: nowrap;
+}
+
+/* Small phones (320px, 400% zoom): a long label wraps inside the button instead of running off the screen. */
+@media (max-width: 479px) {
+  .btn {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
 }
 
 .btn:active {
@@ -500,6 +518,73 @@ main:focus {
 
   .site-nav .btn {
     width: auto;
+  }
+}
+
+/* Language switcher (IT / EN) */
+.lang-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(201, 164, 92, 0.35);
+  border-radius: 999px;
+}
+
+.lang-switch a {
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 36px;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-decoration: none;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.lang-switch a:hover {
+  color: var(--ink);
+}
+
+.lang-switch a.is-current {
+  background: rgba(201, 164, 92, 0.18);
+  color: var(--gold-light);
+}
+
+@media (min-width: 900px) {
+  .lang-switch {
+    margin-bottom: 0;
+  }
+
+  .lang-switch a {
+    min-width: 36px;
+    min-height: 30px;
+    padding: 0 0.45rem;
+  }
+}
+
+/* Narrow desktop: keep four nav items, the language switcher and the CTA on one line. */
+@media (min-width: 900px) and (max-width: 1099px) {
+  .site-nav,
+  .site-nav.is-open,
+  .site-nav ul {
+    gap: 1.1rem;
+  }
+
+  .site-nav li a {
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1023px) {
+  .brand-sub {
+    display: none;
   }
 }
 
@@ -2471,6 +2556,15 @@ input[type='range']:focus-visible::-moz-range-thumb {
   flex: 1;
 }
 
+/* 404: the disclaimer sits in a slim band under the hero. */
+.not-found-note {
+  padding: 1.25rem 0;
+}
+
+.not-found-note .disclaimer {
+  margin: 0;
+}
+
 main:has(> .hero-compact:only-child) {
   display: flex;
   flex-direction: column;
@@ -2522,4 +2616,41 @@ h3,
 .stat-total strong {
   color: var(--navy-950);
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Forced colours (Windows high contrast) ----------
+   Backgrounds and box-shadows are replaced or dropped there, so states and focus that rely on them get a border,
+   an outline or system colours instead. */
+@media (forced-colors: active) {
+  .field input:focus-visible,
+  .founder-name:focus-visible,
+  input[type='range']:focus-visible {
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  .segmented label.is-checked,
+  .option.is-checked {
+    forced-color-adjust: none;
+    background: SelectedItem;
+    color: SelectedItemText;
+    border-color: SelectedItem;
+  }
+
+  .progress {
+    forced-color-adjust: none;
+    background: Canvas;
+    border: 1px solid CanvasText;
+  }
+
+  .progress span {
+    background: CanvasText;
+  }
+
+  /* The light wordmark sits on the navy header/footer, which forced colours repaint: keep a navy plate behind it. */
+  img[src*='logo-light'] {
+    forced-color-adjust: none;
+    background: var(--navy-950);
+    outline: 5px solid var(--navy-950);
+  }
 }

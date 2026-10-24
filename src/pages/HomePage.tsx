@@ -2,91 +2,36 @@ import { Link } from 'react-router-dom';
 import { ChecklistIcon, PieIcon, TimelineIcon } from '../components/Icons';
 import { HeroVisual } from '../components/HeroVisual';
 import { LawyerCta } from '../components/LawyerCta';
+import { useI18n } from '../i18n/context';
+import { Rich } from '../i18n/Rich';
 
-const TOOLS = [
-  {
-    to: '/equity/',
-    title: 'Ripartizione quote',
-    text: 'Dividi le quote tra 2–5 cofondatori in base a idea, tempo, capitale, competenze e ruolo.',
-    Icon: PieIcon,
-  },
-  {
-    to: '/vesting/',
-    title: 'Simulatore vesting',
-    text: 'Vedi come maturano le quote nel tempo e cosa succede se un founder esce al mese X.',
-    Icon: TimelineIcon,
-  },
-  {
-    to: '/quiz/',
-    title: 'Quali documenti mi servono?',
-    text: 'Sette domande per una checklist personalizzata dei documenti legali della tua startup.',
-    Icon: ChecklistIcon,
-  },
-];
-
-const REASONS = [
-  {
-    title: 'Le quote decise a voce non reggono',
-    text: 'All’inizio siete d’accordo su tutto. Poi cambiano l’impegno, i soldi messi, le aspettative. Un accordo scritto oggi evita discussioni domani, quando trovare un’intesa sarà più difficile.',
-  },
-  {
-    title: 'Qualcuno potrebbe uscire presto',
-    text: 'Se un socio lascia dopo pochi mesi e tiene tutte le sue quote, chi resta lavora anche per lui. Il vesting e le clausole di good/bad leaver servono proprio a questo.',
-  },
-  {
-    title: 'Il codice scritto prima della società',
-    text: 'Codice, marchio e design creati prima della costituzione, o da un freelance, in genere non appartengono automaticamente alla società. E gli investitori, di solito, lo verificano.',
-  },
-];
-
-const DOCS = [
-  {
-    title: 'Patti tra fondatori',
-    text: 'L’accordo tra soci su quote, ruoli, decisioni e uscita. Spesso prende la forma di un patto parasociale.',
-  },
-  {
-    title: 'SAFE',
-    text: 'Per raccogliere i primi investimenti rinviando la valutazione al round successivo. In Italia va adattato alla s.r.l.',
-  },
-  {
-    title: 'Work for equity',
-    text: 'Per chi collabora ricevendo quote al posto (o in aggiunta) di un compenso: quante, quando, a quali condizioni.',
-  },
-  {
-    title: 'Vesting',
-    text: 'Le quote maturano nel tempo, con un eventuale cliff iniziale e regole diverse per good e bad leaver.',
-  },
-  {
-    title: 'Cessione IP',
-    text: 'Trasferisce alla società i diritti su codice, marchio, design e contenuti, e ne tutela il valore.',
-  },
-];
+const TOOL_ICONS = { equity: PieIcon, vesting: TimelineIcon, quiz: ChecklistIcon } as const;
+const TOOL_IDS = ['equity', 'vesting', 'quiz'] as const;
 
 export function HomePage() {
+  const { t, path } = useI18n();
+  const h = t.home;
   return (
     <>
       <section className="hero">
         <div className="container hero-inner">
-          <p className="eyebrow">Startup Legal Toolkit · gratuito</p>
+          <p className="eyebrow">{h.eyebrow}</p>
           <h1 tabIndex={-1} id="page-title">
-            Gli strumenti legali per chi <em>fonda una startup</em>
+            <Rich text={h.title} />
           </h1>
-          <p className="hero-lead">
-            Tre strumenti gratuiti per dividere le quote tra soci, simulare il vesting e capire quali documenti ti
-            servono. Così arrivi dall’avvocato con le idee già chiare.
-          </p>
+          <p className="hero-lead">{h.lead}</p>
           <div className="hero-actions">
-            <Link to="/quiz/" className="btn btn-gold btn-lg">
-              Scopri quali documenti ti servono
+            <Link to={path('quiz')} className="btn btn-gold btn-lg">
+              {h.ctaQuiz}
               <span aria-hidden="true" className="btn-arrow">
                 →
               </span>
             </Link>
-            <Link to="/equity/" className="btn btn-ghost btn-lg">
-              Calcola la ripartizione quote
+            <Link to={path('equity')} className="btn btn-ghost btn-lg">
+              {h.ctaEquity}
             </Link>
           </div>
-          <p className="hero-note">Nessuna registrazione. Nessun dato salvato: tutto resta nel tuo browser.</p>
+          <p className="hero-note">{h.note}</p>
           <HeroVisual />
         </div>
       </section>
@@ -94,38 +39,56 @@ export function HomePage() {
       <section className="section section-cream" aria-labelledby="tools-title">
         <div className="container">
           <div className="section-head">
-            <p className="eyebrow eyebrow-dark">Gli strumenti</p>
-            <h2 id="tools-title">Tre strumenti per partire col piede giusto</h2>
+            <p className="eyebrow eyebrow-dark">{h.toolsEyebrow}</p>
+            <h2 id="tools-title">{h.toolsTitle}</h2>
           </div>
           <ul className="tool-grid">
-            {TOOLS.map(({ to, title, text, Icon }) => (
-              <li key={to}>
-                <Link to={to} className="tool-card">
-                  <span className="tool-icon">
-                    <Icon />
-                  </span>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                  <span className="tool-link">
-                    Apri lo strumento <span aria-hidden="true">→</span>
-                  </span>
-                </Link>
-              </li>
-            ))}
+            {TOOL_IDS.map((id) => {
+              const Icon = TOOL_ICONS[id];
+              return (
+                <li key={id}>
+                  <Link to={path(id)} className="tool-card">
+                    <span className="tool-icon">
+                      <Icon />
+                    </span>
+                    <h3>{h.tools[id].title}</h3>
+                    <p>{h.tools[id].text}</p>
+                    <span className="tool-link">
+                      {h.openTool} <span aria-hidden="true">→</span>
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
+        </div>
+      </section>
+
+      <section className="section section-cream mi-section-tight" aria-labelledby="match-band-title">
+        <div className="container">
+          <div className="mi-home-band">
+            <div>
+              <span className="mi-banner-tag">{h.matchBand.tag}</span>
+              <h2 id="match-band-title">{h.matchBand.title}</h2>
+              <p>{h.matchBand.text}</p>
+            </div>
+            <Link to={path('match')} className="btn btn-gold">
+              {h.matchBand.cta} <span aria-hidden="true" className="btn-arrow">→</span>
+            </Link>
+          </div>
         </div>
       </section>
 
       <section className="section section-white" aria-labelledby="why-title">
         <div className="container">
           <div className="section-head">
-            <p className="eyebrow eyebrow-dark">Perché pensarci subito</p>
+            <p className="eyebrow eyebrow-dark">{h.whyEyebrow}</p>
             <h2 id="why-title">
-              I problemi tra soci nascono <em>all’inizio</em>
+              <Rich text={h.whyTitle} />
             </h2>
           </div>
           <ol className="reasons">
-            {REASONS.map((r, i) => (
+            {h.reasons.map((r, i) => (
               <li key={r.title}>
                 <span className="reason-num" aria-hidden="true">
                   {String(i + 1).padStart(2, '0')}
@@ -141,14 +104,12 @@ export function HomePage() {
       <section className="section section-navy" aria-labelledby="docs-title">
         <div className="container">
           <div className="section-head">
-            <p className="eyebrow">I documenti</p>
-            <h2 id="docs-title">Cinque documenti da conoscere</h2>
-            <p className="section-lead">
-              Non servono tutti a tutti. Il quiz ti aiuta a capire da quali partire.
-            </p>
+            <p className="eyebrow">{h.docsEyebrow}</p>
+            <h2 id="docs-title">{h.docsTitle}</h2>
+            <p className="section-lead">{h.docsLead}</p>
           </div>
           <ul className="doc-grid">
-            {DOCS.map((d) => (
+            {h.docs.map((d) => (
               <li key={d.title} className="doc-card">
                 <h3>{d.title}</h3>
                 <p>{d.text}</p>
@@ -156,8 +117,8 @@ export function HomePage() {
             ))}
           </ul>
           <div className="center">
-            <Link to="/quiz/" className="btn btn-outline-light">
-              Fai il quiz <span aria-hidden="true" className="btn-arrow">→</span>
+            <Link to={path('quiz')} className="btn btn-outline-light">
+              {h.docsCta} <span aria-hidden="true" className="btn-arrow">→</span>
             </Link>
           </div>
         </div>
@@ -167,12 +128,9 @@ export function HomePage() {
         <div className="container cta-band-inner">
           <div>
             <h2 id="cta-title">
-              Hai bisogno di una mano? <em>Parla con un avvocato</em> di ilTuoAvvocato.com
+              <Rich text={h.ctaTitle} />
             </h2>
-            <p>
-              Servizi legali online con avvocati iscritti all’Ordine: SAFE, patti tra fondatori, work for equity, vesting
-              e tutela della proprietà intellettuale.
-            </p>
+            <p>{h.ctaText}</p>
           </div>
           <LawyerCta campaign="home" className="btn-lg" />
         </div>

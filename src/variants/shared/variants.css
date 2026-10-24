@@ -1,0 +1,137 @@
+/* Shared chrome of the design variants (banner, footer). Every rule is scoped under .vx-root. */
+.vx-root {
+  --vx-ink: #111;
+  --vx-muted: #5b5b5b;
+  --vx-line: #dcdcdc;
+  background: #fff;
+  color: var(--vx-ink);
+  min-width: 0;
+}
+.vx-root .vx-banner {
+  background: #111;
+  color: #f2f2f2;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  border-bottom: 1px solid #000;
+}
+.vx-root .vx-banner-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0.55rem 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.vx-root .vx-banner-text {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: baseline;
+  min-width: 0;
+}
+.vx-root .vx-banner-tag {
+  background: #c9a24a;
+  color: #111;
+  font-weight: 700;
+  padding: 0.1rem 0.5rem;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.vx-root .vx-banner-name {
+  font-weight: 600;
+}
+.vx-root .vx-banner-note {
+  color: #bdbdbd;
+}
+.vx-root .vx-banner-navs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+}
+.vx-root .vx-seg {
+  list-style: none;
+  margin: 0;
+  padding: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  background: #2a2a2a;
+  border-radius: 6px;
+}
+.vx-root .vx-seg a {
+  display: block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  color: #e6e6e6;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.vx-root .vx-seg a:hover {
+  background: #3a3a3a;
+}
+.vx-root .vx-seg a[aria-current='page'] {
+  background: #f2f2f2;
+  color: #111;
+  font-weight: 600;
+}
+.vx-root .vx-seg a:focus-visible,
+.vx-root .vx-banner-back:focus-visible {
+  outline: 2px solid #c9a24a;
+  outline-offset: 2px;
+}
+.vx-root .vx-banner-back {
+  color: #f2f2f2;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.vx-root .vx-body {
+  min-width: 0;
+}
+.vx-root .vx-foot {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 2rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--vx-muted);
+}
+.vx-root .vx-fictional {
+  margin: 0 0 0.5rem;
+}
+.vx-root .vx-disclaimer {
+  margin: 0;
+}
+.is-embedded {
+  min-height: 100vh;
+}
+@media (max-width: 640px) {
+  .vx-root .vx-banner-note {
+    display: none;
+  }
+  .vx-root .vx-banner-inner {
+    padding: 0.5rem 0.9rem;
+  }
+}
+/* Forced colours (round 3): the current screen and variant in the banner stay marked without the brand fills. */
+@media (forced-colors: active) {
+  .vx-root .vx-seg {
+    border: 1px solid CanvasText;
+  }
+  .vx-root .vx-seg a {
+    border: 1px solid transparent;
+  }
+  .vx-root .vx-seg a[aria-current='page'] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: CanvasText;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}

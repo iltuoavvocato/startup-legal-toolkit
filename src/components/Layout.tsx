@@ -1,26 +1,42 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { usePageMeta } from '../hooks/usePageMeta';
-import { DISCLAIMER, lawyerUrl } from '../site';
+import { useI18n } from '../i18n/context';
+import { routeFromPath, type RouteId } from '../i18n/routes';
+import { initialRedirect, readStoredLocale } from '../i18n/storage';
+import { lawyerUrl, type ToolCampaign } from '../site';
+import { isEmbedded, parseVariantRouteId } from '../variants/registry';
 import { ExternalLink } from './ExternalLink';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { RequestsBadge } from './match/RequestsBadge';
 import { Logo } from './Logo';
 
-const NAV = [
-  { to: '/equity/', label: 'Ripartizione quote' },
-  { to: '/vesting/', label: 'Vesting' },
-  { to: '/quiz/', label: 'Quali documenti?' },
-];
+const NAV = ['equity', 'vesting', 'quiz', 'match'] as const;
 
-function routeKey(pathname: string): string {
-  const p = pathname.endsWith('/') ? pathname : `${pathname}/`;
-  return p;
+function campaignFor(id: RouteId | undefined): ToolCampaign {
+  if (id === 'equity' || id === 'vesting' || id === 'quiz') return id;
+  if (id?.startsWith('match')) return 'match';
+  return 'home';
 }
 
 export function Layout({ children }: { children: ReactNode }) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
   const firstRender = useRef(true);
-  usePageMeta(routeKey(pathname));
+  const { t, path } = useI18n();
+  usePageMeta(pathname);
+  const nav = NAV.map((id) => ({ id, to: path(id), label: t.common.nav[id] }));
+
+  // Only on the first load of the Italian home: honour a language chosen earlier with the switcher.
+  const checkedStoredLocale = useRef(false);
+  useEffect(() => {
+    if (checkedStoredLocale.current) return;
+    checkedStoredLocale.current = true;
+    const target = initialRedirect(pathname, readStoredLocale());
+    if (target) navigate(`${target}${search}`, { replace: true });
+  }, [pathname, search, navigate]);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -28,38 +44,62 @@ export function Layout({ children }: { children: ReactNode }) {
       firstRender.current = false;
       return;
     }
-    // On client-side navigation, start from the top and move focus to the new page heading.
+    // On client-side navigation, start from the top and move focus to the new page heading. A page whose chunk is
+    // still downloading renders its heading a moment later: wait for it.
     window.scrollTo(0, 0);
-    document.getElementById('page-title')?.focus({ preventScroll: true });
+    const focusTitle = () => {
+      const title = document.getElementById('page-title');
+      title?.focus({ preventScroll: true });
+      return Boolean(title);
+    };
+    if (focusTitle()) return;
+    const observer = new MutationObserver(() => focusTitle() && observer.disconnect());
+    observer.observe(document.body, { childList: true, subtree: true });
+    const timer = window.setTimeout(() => observer.disconnect(), 5000);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timer);
+    };
   }, [pathname]);
 
   useEffect(() => {
     if (!menuOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setMenuOpen(false);
+      // Escape from inside the menu: focus goes back to the button that opened it.
+      if (document.getElementById('site-nav')?.contains(document.activeElement)) menuButton.current?.focus();
+    };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [menuOpen]);
 
-  const campaign = pathname.includes('equity')
-    ? 'equity'
-    : pathname.includes('vesting')
-      ? 'vesting'
-      : pathname.includes('quiz')
-        ? 'quiz'
-        : 'home';
+  const routeId = routeFromPath(pathname)?.id;
+  const campaign = campaignFor(routeId);
+
+  // Compare view (design variants gallery): a variant screen inside an iframe, without header and footer.
+  // The variant frame carries its own prototype banner and disclaimer.
+  if (routeId && parseVariantRouteId(routeId) && isEmbedded(search)) {
+    return (
+      <main id="main" tabIndex={-1} className="is-embedded">
+        {children}
+      </main>
+    );
+  }
 
   return (
     <>
       <a className="skip-link" href="#main">
-        Vai al contenuto
+        {t.common.skipLink}
       </a>
       <header className="site-header">
         <div className="container header-inner">
-          <Link to="/" className="brand" aria-label="Startup Legal Toolkit — home">
+          <Link to={path('home')} className="brand" aria-label={t.common.brandLabel}>
             <Logo variant="light" height={15} />
             <span className="brand-sub">Startup Legal Toolkit</span>
           </Link>
           <button
+            ref={menuButton}
             type="button"
             className="menu-toggle"
             aria-expanded={menuOpen}
@@ -67,20 +107,22 @@ export function Layout({ children }: { children: ReactNode }) {
             onClick={() => setMenuOpen((o) => !o)}
           >
             <span className="menu-icon" aria-hidden="true" />
-            <span className="sr-only">{menuOpen ? 'Chiudi il menu' : 'Apri il menu'}</span>
+            <span className="sr-only">{menuOpen ? t.common.menuClose : t.common.menuOpen}</span>
           </button>
-          <nav id="site-nav" className={`site-nav ${menuOpen ? 'is-open' : ''}`} aria-label="Principale">
+          <nav id="site-nav" className={`site-nav ${menuOpen ? 'is-open' : ''}`} aria-label={t.common.navLabel}>
             <ul>
-              {NAV.map((item) => (
+              {nav.map((item) => (
                 <li key={item.to}>
                   <NavLink to={item.to} className={({ isActive }) => (isActive ? 'active' : undefined)}>
                     {item.label}
+                    {item.id === 'match' && <RequestsBadge />}
                   </NavLink>
                 </li>
               ))}
             </ul>
+            <LanguageSwitcher />
             <ExternalLink href={lawyerUrl(campaign)} className="btn btn-gold btn-sm">
-              Parla con un avvocato
+              {t.common.talkToLawyer}
             </ExternalLink>
           </nav>
         </div>
@@ -92,17 +134,17 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="container footer-inner">
           <div className="footer-brand">
             <Logo variant="light" height={16} />
-            <p>Strumenti gratuiti per founder, a cura di ilTuoAvvocato.com</p>
+            <p>{t.common.footerTagline}</p>
           </div>
-          <nav aria-label="Footer" className="footer-nav">
+          <nav aria-label={t.common.footerNavLabel} className="footer-nav">
             <ul>
-              {NAV.map((item) => (
+              {nav.map((item) => (
                 <li key={item.to}>
                   <Link to={item.to}>{item.label}</Link>
                 </li>
               ))}
               <li>
-                <Link to="/privacy/">Privacy</Link>
+                <Link to={path('privacy')}>{t.common.privacy}</Link>
               </li>
               <li>
                 <ExternalLink href={lawyerUrl(campaign)}>iltuoavvocato.com</ExternalLink>
@@ -111,7 +153,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </nav>
         </div>
         <div className="container footer-bottom">
-          <p className="footer-disclaimer">{DISCLAIMER}</p>
+          <p className="footer-disclaimer">{t.common.disclaimer}</p>
           <p>© {new Date().getFullYear()} ilTuoAvvocato.com</p>
         </div>
       </footer>

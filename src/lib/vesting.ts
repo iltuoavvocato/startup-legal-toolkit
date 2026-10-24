@@ -1,4 +1,5 @@
 import { largestRemainder } from './rounding';
+import { isoDate } from './dates';
 
 export type Frequency = 'mensile' | 'trimestrale' | 'annuale';
 
@@ -140,7 +141,4 @@ export function parseISODate(value: string): Date | null {
   return date.getMonth() === Number(mo) - 1 && date.getDate() === Number(d) ? date : null;
 }
 
-export function toISODate(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
+export const toISODate = isoDate;

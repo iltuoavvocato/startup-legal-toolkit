@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { Link } from 'react-router-dom';
 import { CopyButton } from '../components/CopyButton';
 import { CtaPanel } from '../components/CtaPanel';
 import { Disclaimer } from '../components/Disclaimer';
@@ -20,8 +19,8 @@ import {
   type FactorValues,
   type Founder,
 } from '../lib/equity';
-import { formatEuro, formatNumber, formatPercent } from '../lib/format';
-import { DISCLAIMER } from '../site';
+import { useI18n, type I18n } from '../i18n/context';
+import { Rich } from '../i18n/Rich';
 
 const COLORS = ['#16305B', '#C9A45C', '#4F6FA8', '#8C6A2E', '#8A97B3'];
 const POOL_COLOR = '#D6CDB8';
@@ -70,13 +69,17 @@ function serialize(s: State): Record<string, string> {
   };
 }
 
-function formatFactorValue(id: FactorId, v: number): string {
-  if (id === 'capitale') return formatEuro(v);
-  if (id === 'tempo') return `${formatNumber(v)}%${v >= 100 ? ' · full-time' : v > 0 ? ' · part-time' : ''}`;
-  return `${formatNumber(v)}/10`;
+function formatFactorValue(f: I18n['f'], id: FactorId, v: number): string {
+  if (id === 'capitale') return f.euro(v);
+  if (id === 'tempo') return `${f.number(v)}%${v >= 100 ? ' · full-time' : v > 0 ? ' · part-time' : ''}`;
+  return `${f.number(v)}/10`;
 }
 
 export function EquityPage() {
+  const { t, f } = useI18n();
+  const e = t.equity;
+  const label = (id: FactorId) => e.factors[id];
+  const formatPercent = f.percent;
   const [state, setState] = useState<State>(() => parseState(readQuery()));
   const { founders, weights, pool } = state;
   const result = useMemo(() => calculateEquity({ founders, weights, poolPercent: pool }), [founders, weights, pool]);
@@ -109,56 +112,53 @@ export function EquityPage() {
     ...(result.poolPercent > 0 ? [{ label: 'Pool / ESOP', value: result.display[founders.length] ?? 0, color: POOL_COLOR }] : []),
   ];
 
-  const usedFactors = FACTORS.filter((f) => result.effectiveWeights[f.id] > 0);
-  const excludedLabels = FACTORS.filter((f) => result.excludedFactors.includes(f.id)).map((f) => f.label.toLowerCase());
+  const usedFactors = FACTORS.filter((fac) => result.effectiveWeights[fac.id] > 0);
+  const excludedLabels = FACTORS.filter((fac) => result.excludedFactors.includes(fac.id)).map((fac) => label(fac.id).toLowerCase());
 
   const summary = () => {
-    const lines = ['Ripartizione quote indicativa — Startup Legal Toolkit (ilTuoAvvocato.com)', ''];
+    const lines = [e.summary.heading, ''];
     slices.forEach((s) => lines.push(`• ${s.label}: ${formatPercent(s.value)}`));
-    lines.push('', 'Pesi dei fattori usati:');
-    usedFactors.forEach((f) => lines.push(`• ${f.label}: ${formatPercent(result.effectiveWeights[f.id])}`));
-    if (excludedLabels.length) lines.push(`Fattori esclusi (nessun valore inserito): ${excludedLabels.join(', ')}.`);
-    lines.push('', 'Valori inseriti:');
-    founders.forEach((f, i) =>
-      lines.push(`• ${names[i]}: ${FACTORS.map((fac) => `${fac.label.toLowerCase()} ${formatFactorValue(fac.id, f.values[fac.id])}`).join('; ')}`),
+    lines.push('', e.summary.weights);
+    usedFactors.forEach((fac) => lines.push(`• ${label(fac.id)}: ${formatPercent(result.effectiveWeights[fac.id])}`));
+    if (excludedLabels.length) lines.push(e.summary.excluded(excludedLabels.join(', ')));
+    lines.push('', e.summary.values);
+    founders.forEach((fo, i) =>
+      lines.push(
+        `• ${names[i]}: ${FACTORS.map((fac) => `${label(fac.id).toLowerCase()} ${formatFactorValue(f, fac.id, fo.values[fac.id])}`).join('; ')}`,
+      ),
     );
-    lines.push('', 'Formula: quota_i = Σ_f peso_f × (punteggio_i,f / Σ_j punteggio_j,f)');
-    lines.push('', DISCLAIMER);
+    lines.push('', e.summary.formula);
+    lines.push('', t.common.disclaimer);
     return lines.join('\n');
   };
 
   return (
     <>
-      <PageHero eyebrow="Strumento 1 di 3" title={<>Calcolatore <em>ripartizione quote</em></>}>
-        <p>
-          Dai un peso a ciò che ciascun cofondatore porta nel progetto e ottieni una ripartizione indicativa delle quote.
-          Un punto di partenza concreto per parlarne tra soci.
-        </p>
+      <PageHero eyebrow={t.common.toolLabel(1, 3)} title={<Rich text={e.title} />}>
+        <p>{e.lead}</p>
       </PageHero>
 
       <section className="section section-cream tool-section">
         <div className="container tool-layout">
           <div className="tool-inputs">
             <fieldset className="card">
-              <legend className="card-title">1. Quanto conta ogni fattore</legend>
-              <p className="card-intro">
-                Regola l’importanza di ciascun fattore. I pesi vengono normalizzati automaticamente al 100%.
-              </p>
+              <legend className="card-title">{e.weightsTitle}</legend>
+              <p className="card-intro">{e.weightsIntro}</p>
               <div className="weights-grid">
-                {FACTORS.map((f) => (
+                {FACTORS.map((fac) => (
                   <Slider
-                    key={f.id}
-                    label={f.label}
-                    value={weights[f.id]}
+                    key={fac.id}
+                    label={label(fac.id)}
+                    value={weights[fac.id]}
                     min={0}
                     max={100}
                     step={5}
-                    onChange={(v) => setState((s) => ({ ...s, weights: { ...s.weights, [f.id]: v } }))}
+                    onChange={(v) => setState((s) => ({ ...s, weights: { ...s.weights, [fac.id]: v } }))}
                     display={
-                      result.excludedFactors.includes(f.id)
-                        ? 'escluso'
+                      result.excludedFactors.includes(fac.id)
+                        ? e.excluded
                         : weightSum > 0
-                          ? formatPercent(result.effectiveWeights[f.id])
+                          ? formatPercent(result.effectiveWeights[fac.id])
                           : '—'
                     }
                   />
@@ -168,28 +168,23 @@ export function EquityPage() {
 
             <div className="card">
               <div className="card-head">
-                <h2 className="card-title">2. Chi porta cosa</h2>
-                <span className="pill">
-                  {founders.length} {founders.length === 1 ? 'socio' : 'soci'}
-                </span>
+                <h2 className="card-title">{e.foundersTitle}</h2>
+                <span className="pill">{e.partners(founders.length)}</span>
               </div>
-              <p className="card-intro">
-                Per idea, competenze e ruolo usa un punteggio da 0 a 10. Tempo e capitale contano in proporzione al
-                totale del gruppo.
-              </p>
+              <p className="card-intro">{e.foundersIntro}</p>
               <ol className="founder-list">
-                {founders.map((f, i) => (
+                {founders.map((fo, i) => (
                   <li key={i} className="founder-card" style={{ '--founder-color': COLORS[i % COLORS.length] } as CSSProperties}>
                     <div className="founder-head">
                       <span className="founder-dot" aria-hidden="true" />
                       <label className="sr-only" htmlFor={`founder-name-${i}`}>
-                        Nome del cofondatore {i + 1}
+                        {e.founderNameLabel(i + 1)}
                       </label>
                       <input
                         id={`founder-name-${i}`}
                         className="founder-name"
                         type="text"
-                        value={f.name}
+                        value={fo.name}
                         maxLength={30}
                         autoComplete="off"
                         onChange={(e) => updateFounder(i, (x) => ({ ...x, name: e.target.value }))}
@@ -199,7 +194,7 @@ export function EquityPage() {
                           <svg aria-hidden="true" viewBox="0 0 20 20" width="16" height="16">
                             <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                           </svg>
-                          <span className="sr-only">Rimuovi {names[i]}</span>
+                          <span className="sr-only">{e.remove(names[i]!)}</span>
                         </button>
                       )}
                     </div>
@@ -207,7 +202,7 @@ export function EquityPage() {
                       {FACTORS.map((fac) =>
                         fac.kind === 'euro' ? (
                           <div key={fac.id} className="field">
-                            <label htmlFor={`cap-${i}`}>{fac.label}</label>
+                            <label htmlFor={`cap-${i}`}>{label(fac.id)}</label>
                             <div className="input-affix">
                               <span aria-hidden="true">€</span>
                               <input
@@ -216,7 +211,7 @@ export function EquityPage() {
                                 inputMode="numeric"
                                 min={0}
                                 step={500}
-                                value={f.values.capitale === 0 ? '' : f.values.capitale}
+                                value={fo.values.capitale === 0 ? '' : fo.values.capitale}
                                 placeholder="0"
                                 onChange={(e) => setValue(i, 'capitale', Math.min(fac.max, Math.max(0, Number(e.target.value) || 0)))}
                               />
@@ -225,13 +220,13 @@ export function EquityPage() {
                         ) : (
                           <Slider
                             key={fac.id}
-                            label={fac.label}
-                            value={f.values[fac.id]}
+                            label={label(fac.id)}
+                            value={fo.values[fac.id]}
                             min={0}
                             max={fac.max}
                             step={fac.kind === 'percent' ? 5 : 1}
                             onChange={(v) => setValue(i, fac.id, v)}
-                            display={formatFactorValue(fac.id, f.values[fac.id])}
+                            display={formatFactorValue(f, fac.id, fo.values[fac.id])}
                           />
                         ),
                       )}
@@ -241,21 +236,18 @@ export function EquityPage() {
               </ol>
               {founders.length < MAX_FOUNDERS ? (
                 <button type="button" className="btn btn-dashed" onClick={addFounder}>
-                  <span aria-hidden="true">+</span> Aggiungi cofondatore
+                  <span aria-hidden="true">+</span> {e.addFounder}
                 </button>
               ) : (
-                <p className="field-hint">Massimo {MAX_FOUNDERS} cofondatori.</p>
+                <p className="field-hint">{e.maxFounders(MAX_FOUNDERS)}</p>
               )}
             </div>
 
             <div className="card">
-              <h2 className="card-title">3. Riserva per pool / ESOP (facoltativa)</h2>
-              <p className="card-intro">
-                Puoi accantonare una parte delle quote per futuri collaboratori chiave. La riserva riduce in proporzione la
-                quota di tutti i fondatori.
-              </p>
+              <h2 className="card-title">{e.poolTitle}</h2>
+              <p className="card-intro">{e.poolIntro}</p>
               <Slider
-                label="Riserva pool / ESOP"
+                label={e.poolLabel}
                 value={pool}
                 min={0}
                 max={MAX_POOL}
@@ -275,14 +267,14 @@ export function EquityPage() {
               aria-live="polite"
             >
               <h2 id="equity-result-title" className="card-title">
-                Ripartizione indicativa
+                {e.resultTitle}
               </h2>
               <div className="donut-wrap">
                 <Donut
                   slices={slices}
                   centerValue={String(founders.length)}
-                  centerLabel="cofondatori"
-                  ariaLabel={`Grafico a ciambella: ${slices.map((s) => `${s.label} ${formatPercent(s.value)}`).join(', ')}`}
+                  centerLabel={e.donutCenter}
+                  ariaLabel={e.donutAria(slices.map((s) => `${s.label} ${formatPercent(s.value)}`).join(', '))}
                 />
               </div>
               <ul className="bar-list">
@@ -300,52 +292,46 @@ export function EquityPage() {
                 ))}
               </ul>
               <p className="total-line">
-                Totale <strong>{formatPercent(100, 1, 1)}</strong>
+                {e.total} <strong>{formatPercent(100, 1, 1)}</strong>
               </p>
               {result.fallbackEqual && (
-                <p className="notice">
-                  Non ci sono ancora valori da confrontare: per ora la ripartizione è in parti uguali.
-                </p>
+                <p className="notice">{e.fallbackEqual}</p>
               )}
               {!result.fallbackEqual && excludedLabels.length > 0 && (
-                <p className="notice">
-                  Nessuno ha inserito valori per {excludedLabels.join(', ')}: {excludedLabels.length === 1 ? 'il fattore è escluso' : 'i fattori sono esclusi'} e
-                  i pesi degli altri vengono ridistribuiti.
-                </p>
+                <p className="notice">{e.excludedNotice(excludedLabels.join(', '), excludedLabels.length)}</p>
               )}
               <Disclaimer />
               <div className="actions no-print">
-                <CopyButton label="Copia riepilogo" getText={summary} />
+                <CopyButton label={e.copySummary} getText={summary} />
                 <button type="button" className="btn btn-outline" onClick={() => window.print()}>
-                  Stampa / salva PDF
+                  {e.print}
                 </button>
                 <button type="button" className="btn btn-text" onClick={() => setState(initialState())}>
-                  Ripristina
+                  {e.reset}
                 </button>
               </div>
             </section>
 
             <section className="card formula-card" aria-labelledby="formula-title">
               <h2 id="formula-title" className="card-title">
-                Come calcoliamo
+                {e.formulaTitle}
               </h2>
-              <p className="formula" aria-label="quota di i uguale alla somma sui fattori f di peso f per punteggio di i su f diviso la somma dei punteggi di tutti su f">
-                quota<sub>i</sub> = Σ<sub>f</sub> peso<sub>f</sub> × (punteggio<sub>i,f</sub> / Σ<sub>j</sub> punteggio<sub>j,f</sub>)
+              <p className="formula" aria-label={e.formulaAria} tabIndex={0}>
+                {e.formulaWords.share}
+                <sub>i</sub> = Σ<sub>f</sub> {e.formulaWords.weight}
+                <sub>f</sub> × ({e.formulaWords.score}
+                <sub>i,f</sub> / Σ<sub>j</sub> {e.formulaWords.score}
+                <sub>j,f</sub>)
               </p>
-              <p>
-                Per ogni fattore, ciascuno riceve una parte del peso in proporzione a quanto ha portato rispetto al totale del
-                gruppo. I pesi sono normalizzati al 100%. Se per un fattore il totale è zero (per esempio nessuno mette
-                capitale), quel fattore viene escluso e i pesi degli altri sono ricalcolati. Le percentuali sono arrotondate
-                a un decimale con il metodo dei resti più alti, così il totale fa sempre 100,0%.
-              </p>
+              <p>{e.formulaText}</p>
               <details className="details">
-                <summary>Dettaglio per fattore</summary>
+                <summary>{e.breakdown}</summary>
                 <div className="table-scroll">
                   <table className="data-table">
-                    <caption className="sr-only">Contributo di ciascun fattore alla quota di ogni cofondatore, prima della riserva pool</caption>
+                    <caption className="sr-only">{e.breakdownCaption}</caption>
                     <thead>
                       <tr>
-                        <th scope="col">Fattore (peso)</th>
+                        <th scope="col">{e.breakdownHead}</th>
                         {names.map((n, i) => (
                           <th key={i} scope="col">
                             {n}
@@ -357,7 +343,7 @@ export function EquityPage() {
                       {FACTORS.map((fac) => (
                         <tr key={fac.id}>
                           <th scope="row">
-                            {fac.label} ({result.effectiveWeights[fac.id] > 0 ? formatPercent(result.effectiveWeights[fac.id]) : 'escluso'})
+                            {label(fac.id)} ({result.effectiveWeights[fac.id] > 0 ? formatPercent(result.effectiveWeights[fac.id]) : e.excluded})
                           </th>
                           {result.breakdown.map((row, i) => (
                             <td key={i}>{formatPercent(row[fac.id])}</td>
@@ -383,43 +369,26 @@ export function EquityPage() {
           ))}
         </span>
         <span className="mobile-summary-link">
-          Risultato <span aria-hidden="true">↓</span>
+          {e.result} <span aria-hidden="true">↓</span>
         </span>
       </a>
 
       <section className="section section-white">
         <div className="container">
           <div className="section-head">
-            <h2>Prima di firmare</h2>
+            <h2>{e.notesTitle}</h2>
           </div>
           <ul className="note-grid">
-            <li>
-              <h3>È un punto di partenza</h3>
-              <p>
-                Il risultato serve ad aprire la discussione, non a chiuderla. Pesi e punteggi sono soggettivi: confrontateli
-                apertamente e rivedeteli insieme.
-              </p>
-            </li>
-            <li>
-              <h3>Abbinalo al vesting</h3>
-              <p>
-                Le quote premiano un impegno che in gran parte deve ancora arrivare. Con il vesting maturano un po’ alla volta.{' '}
-                <Link to="/vesting/">Prova il simulatore</Link>.
-              </p>
-            </li>
-            <li>
-              <h3>Mettilo per iscritto</h3>
-              <p>
-                La ripartizione concordata, i ruoli e le regole di uscita andrebbero scritti nei patti tra fondatori, adattati
-                alla vostra società.
-              </p>
-            </li>
+            {e.notes.map((n) => (
+              <li key={n.title}>
+                <h3>{n.title}</h3>
+                <p>
+                  <Rich text={n.text} />
+                </p>
+              </li>
+            ))}
           </ul>
-          <CtaPanel
-            campaign="equity"
-            title="Vuoi trasformare la ripartizione in un accordo?"
-            text="Un avvocato di ilTuoAvvocato.com può aiutarti a scrivere i patti tra fondatori e le clausole di vesting."
-          />
+          <CtaPanel campaign="equity" title={e.ctaTitle} text={e.ctaText} />
         </div>
       </section>
     </>

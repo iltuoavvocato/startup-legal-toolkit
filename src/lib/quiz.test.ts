@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { QUESTIONS, checklistText, getRecommendations, isComplete, type Answers, type DocumentId } from './quiz';
+import { QUESTIONS, checklistText, getQuestions, getRecommendations, isComplete, type Answers, type DocumentId } from './quiz';
 
 const base: Answers = {
   fondatori: 'solo',
@@ -90,5 +90,34 @@ describe('isComplete and checklistText', () => {
     expect(text).toContain('[Prioritario] SAFE');
     expect(text).toContain('Strumento indicativo: non sostituisce una consulenza legale.');
     expect(checklistText([])).toContain('nessun documento');
+  });
+});
+
+describe('English quiz content', () => {
+  it('asks the same questions with the same option values', () => {
+    const it_ = getQuestions('it');
+    const en = getQuestions('en');
+    expect(en.map((q) => q.id)).toEqual(it_.map((q) => q.id));
+    expect(en.map((q) => q.options.map((o) => o.value))).toEqual(it_.map((q) => q.options.map((o) => o.value)));
+    expect(en[0]!.text).toBe('How many of you are founding the startup?');
+  });
+
+  it('gives the same recommendations, in English', () => {
+    const answers: Answers = { ...base, fondatori: 'tre', accordi: 'voce', investimenti: 'si', societa: 'no', uscita: 'no' };
+    const itRecs = getRecommendations(answers);
+    const enRecs = getRecommendations(answers, 'en');
+    expect(enRecs.map((r) => [r.id, r.priority])).toEqual(itRecs.map((r) => [r.id, r.priority]));
+    expect(enRecs.find((r) => r.id === 'patti')?.title).toBe('Founders’ agreement');
+    expect(enRecs.find((r) => r.id === 'safe')?.why).toContain('To use it, the company usually needs to be incorporated already.');
+    expect(enRecs.find((r) => r.id === 'patti')?.triggers).toContainEqual({
+      question: 'Have you put in writing how equity and roles are split?',
+      answer: 'Only verbally',
+    });
+  });
+
+  it('writes the English checklist with the English disclaimer', () => {
+    const text = checklistText(getRecommendations({ ...base, investimenti: 'si' }, 'en'), 'en');
+    expect(text).toContain('[Priority] SAFE (or an equivalent investor instrument)');
+    expect(text.endsWith('Indicative tool: not a substitute for legal advice.')).toBe(true);
   });
 });

@@ -4,7 +4,9 @@ import { CtaPanel } from '../components/CtaPanel';
 import { Disclaimer } from '../components/Disclaimer';
 import { PageHero } from '../components/PageHero';
 import { readQuery, useSyncQuery } from '../hooks/useQueryState';
-import { PRIORITY_LABELS, QUESTIONS, checklistText, getRecommendations, isComplete, type Answers } from '../lib/quiz';
+import { useI18n } from '../i18n/context';
+import { Rich } from '../i18n/Rich';
+import { QUESTIONS, checklistText, getQuestions, getRecommendations, isComplete, type Answers } from '../lib/quiz';
 
 function parseAnswers(q: URLSearchParams): Answers | null {
   const raw = q.get('r');
@@ -18,6 +20,9 @@ function parseAnswers(q: URLSearchParams): Answers | null {
 }
 
 export function QuizPage() {
+  const { locale, t } = useI18n();
+  const q = t.quiz.page;
+  const questions = getQuestions(locale);
   const [initial] = useState(() => parseAnswers(readQuery()));
   const [answers, setAnswers] = useState<Answers>(initial ?? {});
   const [step, setStep] = useState(initial ? QUESTIONS.length : 0);
@@ -45,29 +50,22 @@ export function QuizPage() {
   };
 
   if (done) {
-    const recs = getRecommendations(answers);
+    const recs = getRecommendations(answers, locale);
     return (
       <>
-        <PageHero eyebrow="Strumento 3 di 3 · risultato" title={<>Quali documenti <em>mi servono?</em></>}>
-          <p>{recs.length > 0 ? 'Ecco la tua checklist personalizzata, ordinata per priorità.' : 'Ecco cosa emerge dalle tue risposte.'}</p>
+        <PageHero eyebrow={q.resultEyebrow(t.common.toolLabel(3, 3))} title={<Rich text={q.title} />}>
+          <p>{recs.length > 0 ? q.resultLead : q.resultLeadEmpty}</p>
         </PageHero>
         <section className="section section-cream tool-section">
           <div className="container narrow">
             <div className="card quiz-result">
               <h2 className="card-title" tabIndex={-1} ref={resultRef}>
-                {recs.length > 0 ? `La tua checklist: ${recs.length} ${recs.length === 1 ? 'documento' : 'documenti'}` : 'Per ora nessun documento urgente'}
+                {recs.length > 0 ? q.resultTitle(recs.length) : q.emptyTitle}
               </h2>
               {recs.length === 0 ? (
                 <div className="empty-result">
-                  <p>
-                    Dalle tue risposte non emerge un documento da preparare subito. Tieni d’occhio la proprietà intellettuale:
-                    se qualcuno, anche un freelance, crea codice, marchio o design per il progetto, conviene che i diritti
-                    vengano ceduti alla società.
-                  </p>
-                  <p>
-                    Rifai il quiz quando le cose cambiano: un nuovo socio, un collaboratore pagato in equity o un
-                    round di investimento sono i momenti giusti.
-                  </p>
+                  <p>{q.empty1}</p>
+                  <p>{q.empty2}</p>
                 </div>
               ) : (
                 <ol className="checklist">
@@ -75,13 +73,13 @@ export function QuizPage() {
                     <li key={r.id} className={`check-item priority-${r.priority}`}>
                       <div className="check-head">
                         <h3>{r.title}</h3>
-                        <span className={`badge badge-${r.priority}`}>{PRIORITY_LABELS[r.priority]}</span>
+                        <span className={`badge badge-${r.priority}`}>{t.quiz.priorities[r.priority]}</span>
                       </div>
                       <p>{r.what}</p>
                       <p>
-                        <strong>Perché ti riguarda.</strong> {r.why}
+                        <strong>{q.whyLabel}</strong> {r.why}
                       </p>
-                      <ul className="triggers" aria-label="Risposte che lo hanno fatto emergere">
+                      <ul className="triggers" aria-label={q.triggersLabel}>
                         {r.triggers.map((t) => (
                           <li key={t.question}>
                             <span className="trigger-q">{t.question}</span> <span className="trigger-a">{t.answer}</span>
@@ -94,17 +92,13 @@ export function QuizPage() {
               )}
               <Disclaimer />
               <div className="actions no-print">
-                <CopyButton label="Copia checklist" getText={() => checklistText(recs)} />
+                <CopyButton label={q.copy} getText={() => checklistText(recs, locale)} />
                 <button type="button" className="btn btn-outline" onClick={restart}>
-                  Rifai il quiz
+                  {q.restart}
                 </button>
               </div>
             </div>
-            <CtaPanel
-              campaign="quiz"
-              title="Vuoi preparare questi documenti?"
-              text="ilTuoAvvocato.com offre servizi legali online per startup: SAFE, patti tra fondatori, work for equity, vesting e tutela della proprietà intellettuale."
-            />
+            <CtaPanel campaign="quiz" title={q.ctaTitle} text={q.ctaText} />
           </div>
         </section>
       </>
@@ -112,7 +106,7 @@ export function QuizPage() {
   }
 
   const index = Math.min(step, QUESTIONS.length - 1);
-  const question = QUESTIONS[index]!;
+  const question = questions[index]!;
   const selected = answers[question.id];
   const last = index === QUESTIONS.length - 1;
   const progress = ((index + (selected ? 1 : 0)) / QUESTIONS.length) * 100;
@@ -124,18 +118,15 @@ export function QuizPage() {
 
   return (
     <>
-      <PageHero eyebrow="Strumento 3 di 3" title={<>Quali documenti <em>mi servono?</em></>}>
-        <p>
-          Sette domande veloci sulla tua startup. Alla fine ricevi una checklist dei documenti legali da cui partire, con il
-          motivo per cui ti servono.
-        </p>
+      <PageHero eyebrow={t.common.toolLabel(3, 3)} title={<Rich text={q.title} />}>
+        <p>{q.lead}</p>
       </PageHero>
       <section className="section section-cream tool-section">
         <div className="container narrow">
           <form className="card quiz-card" onSubmit={submit}>
             <div className="quiz-progress">
               <p className="quiz-step" id={`${id}-step`}>
-                Domanda {index + 1} di {QUESTIONS.length}
+                {q.step(index + 1, QUESTIONS.length)}
               </p>
               <div
                 className="progress"
@@ -173,10 +164,10 @@ export function QuizPage() {
             </fieldset>
             <div className="quiz-nav">
               <button type="button" className="btn btn-text" onClick={() => go(index - 1)} disabled={index === 0}>
-                <span aria-hidden="true">←</span> Indietro
+                <span aria-hidden="true">←</span> {q.back}
               </button>
               <button type="submit" className="btn btn-navy" disabled={!selected}>
-                {last ? 'Vedi i risultati' : 'Avanti'} <span aria-hidden="true">→</span>
+                {last ? q.seeResults : q.next} <span aria-hidden="true">→</span>
               </button>
             </div>
           </form>

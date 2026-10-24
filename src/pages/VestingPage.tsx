@@ -1,15 +1,14 @@
 import { useId, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { CtaPanel } from '../components/CtaPanel';
 import { Disclaimer } from '../components/Disclaimer';
 import { PageHero } from '../components/PageHero';
 import { Slider } from '../components/Slider';
 import { VestingChart } from '../components/VestingChart';
 import { readQuery, useSyncQuery } from '../hooks/useQueryState';
-import { formatLongDate, formatMonthYear, formatNumber, formatPercent } from '../lib/format';
+import { useI18n } from '../i18n/context';
+import { Rich } from '../i18n/Rich';
 import {
   DEFAULT_VESTING,
-  FREQUENCY_LABELS,
   FREQUENCY_MONTHS,
   MAX_DURATION,
   addMonths,
@@ -53,11 +52,12 @@ function parseState(q: URLSearchParams): State {
   return { params, start, leaverMonth, leaver: q.get('l') === 'bad' ? 'bad' : 'good' };
 }
 
-function pluralMonths(n: number): string {
-  return `${formatNumber(n)} ${n === 1 ? 'mese' : 'mesi'}`;
-}
-
 export function VestingPage() {
+  const { t, f } = useI18n();
+  const v = t.vesting;
+  const { percent: formatPercent, number: formatNumber, monthYear: formatMonthYear, longDate: formatLongDate } = f;
+  const pluralMonths = (n: number) => v.months(formatNumber(n), n);
+  const FREQUENCIES = Object.keys(v.frequencies) as Frequency[];
   const [state, setState] = useState<State>(() => parseState(readQuery()));
   const { params, leaverMonth, leaver } = state;
   const id = useId();
@@ -92,64 +92,61 @@ export function VestingPage() {
 
   return (
     <>
-      <PageHero eyebrow="Strumento 2 di 3" title={<>Simulatore <em>vesting</em></>}>
-        <p>
-          Con il vesting le quote di un founder maturano nel tempo. Imposta durata, cliff e frequenza e scopri cosa
-          succede se un socio lascia il progetto in un certo mese.
-        </p>
+      <PageHero eyebrow={t.common.toolLabel(2, 3)} title={<Rich text={v.title} />}>
+        <p>{v.lead}</p>
       </PageHero>
 
       <section className="section section-cream tool-section">
         <div className="container vesting-layout">
           <fieldset className="card vesting-inputs">
-            <legend className="card-title">Parametri</legend>
+            <legend className="card-title">{v.params}</legend>
             <Slider
-              label="Quote totali del founder"
+              label={v.stake}
               value={params.totalPercent}
               min={1}
               max={100}
               step={1}
               onChange={(v) => setParams({ totalPercent: v })}
-              display={`${formatPercent(params.totalPercent, 0)} della società`}
+              display={v.stakeDisplay(formatPercent(params.totalPercent, 0))}
             />
             <Slider
-              label="Durata del vesting"
+              label={v.duration}
               value={params.durationMonths}
               min={6}
               max={MAX_DURATION}
               step={6}
               onChange={(v) => setParams({ durationMonths: v, cliffMonths: Math.min(params.cliffMonths, v) })}
-              display={`${pluralMonths(params.durationMonths)}${params.durationMonths % 12 === 0 ? ` (${params.durationMonths / 12} ${params.durationMonths === 12 ? 'anno' : 'anni'})` : ''}`}
+              display={`${pluralMonths(params.durationMonths)}${params.durationMonths % 12 === 0 ? ` (${v.years(params.durationMonths / 12)})` : ''}`}
             />
             <Slider
-              label="Cliff"
+              label={v.cliff}
               value={params.cliffMonths}
               min={0}
               max={Math.min(params.durationMonths, 36)}
               step={1}
               onChange={(v) => setParams({ cliffMonths: v })}
-              display={params.cliffMonths === 0 ? 'nessun cliff' : pluralMonths(params.cliffMonths)}
-              hint="Periodo iniziale in cui non matura nulla; alla scadenza matura in una volta sola quanto accumulato fino a quel momento."
+              display={params.cliffMonths === 0 ? v.noCliff : pluralMonths(params.cliffMonths)}
+              hint={v.cliffHint}
             />
             <fieldset className="segmented-field">
-              <legend>Frequenza di maturazione</legend>
+              <legend>{v.frequency}</legend>
               <div className="segmented">
-                {(Object.keys(FREQUENCY_LABELS) as Frequency[]).map((f) => (
-                  <label key={f} className={params.frequency === f ? 'is-checked' : undefined}>
+                {FREQUENCIES.map((fr) => (
+                  <label key={fr} className={params.frequency === fr ? 'is-checked' : undefined}>
                     <input
                       type="radio"
                       name={`${id}-freq`}
-                      value={f}
-                      checked={params.frequency === f}
-                      onChange={() => setParams({ frequency: f })}
+                      value={fr}
+                      checked={params.frequency === fr}
+                      onChange={() => setParams({ frequency: fr })}
                     />
-                    <span>{FREQUENCY_LABELS[f]}</span>
+                    <span>{v.frequencies[fr]}</span>
                   </label>
                 ))}
               </div>
             </fieldset>
             <div className="field">
-              <label htmlFor={`${id}-start`}>Data di inizio</label>
+              <label htmlFor={`${id}-start`}>{v.startDate}</label>
               <input
                 id={`${id}-start`}
                 type="date"
@@ -158,7 +155,7 @@ export function VestingPage() {
                 onChange={(e) => setState((s) => ({ ...s, start: parseISODate(e.target.value) ? e.target.value : s.start }))}
               />
               <p id={`${id}-start-it`} className="field-hint date-it">
-                Inizio: <strong>{formatLongDate(start)}</strong>
+                {v.startLabel} <strong>{formatLongDate(start)}</strong>
               </p>
             </div>
           </fieldset>
@@ -167,10 +164,10 @@ export function VestingPage() {
             <section className="card" aria-labelledby={`${id}-chart-title`}>
               <div className="card-head">
                 <h2 id={`${id}-chart-title`} className="card-title">
-                  Quote maturate nel tempo
+                  {v.chartTitle}
                 </h2>
                 <span className="pill">
-                  {pluralMonths(params.durationMonths)} · {FREQUENCY_LABELS[params.frequency].toLowerCase()}
+                  {pluralMonths(params.durationMonths)} · {v.frequencies[params.frequency].toLowerCase()}
                 </span>
               </div>
               <VestingChart
@@ -181,7 +178,7 @@ export function VestingPage() {
               />
               <Slider
                 className="leaver-slider"
-                label="Il founder esce al mese"
+                label={v.leaverSlider}
                 value={leaverMonth}
                 min={0}
                 max={params.durationMonths}
@@ -190,16 +187,16 @@ export function VestingPage() {
                 display={`${formatNumber(leaverMonth)} · ${formatMonthYear(exitDate)}`}
               />
               <details className="details">
-                <summary>Tabella di maturazione</summary>
+                <summary>{v.table}</summary>
                 <div className="table-scroll">
                   <table className="data-table">
-                    <caption className="sr-only">Quote maturate per mese</caption>
+                    <caption className="sr-only">{v.tableCaption}</caption>
                     <thead>
                       <tr>
-                        <th scope="col">Mese</th>
-                        <th scope="col">Data</th>
-                        <th scope="col">Del pacchetto</th>
-                        <th scope="col">Della società</th>
+                        <th scope="col">{v.tableHead.month}</th>
+                        <th scope="col">{v.tableHead.date}</th>
+                        <th scope="col">{v.tableHead.package}</th>
+                        <th scope="col">{v.tableHead.company}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -219,30 +216,30 @@ export function VestingPage() {
 
             <section className="card leaver-card" aria-labelledby={`${id}-leaver-title`}>
               <h2 id={`${id}-leaver-title`} className="card-title">
-                Cosa succede se esce al mese {leaverMonth}
+                {v.leaverTitle(leaverMonth)}
               </h2>
-              <p className="leaver-date">Uscita il {formatLongDate(exitDate)}</p>
+              <p className="leaver-date">{v.exitOn(formatLongDate(exitDate))}</p>
               <div className="stat-grid" aria-live="polite">
                 <div className="stat stat-vested">
-                  <span className="stat-label">Quote maturate</span>
+                  <span className="stat-label">{v.vested}</span>
                   <strong className="stat-value">{vested}</strong>
-                  <span className="stat-sub">{pkg} del suo pacchetto</span>
+                  <span className="stat-sub">{v.ofPackage(pkg)}</span>
                 </div>
                 <div className="stat stat-unvested">
-                  <span className="stat-label">Quote non maturate</span>
+                  <span className="stat-label">{v.unvested}</span>
                   <strong className="stat-value">{unvested}</strong>
-                  <span className="stat-sub">{formatPercent(shown.unvestedOfPackage)} del suo pacchetto</span>
+                  <span className="stat-sub">{v.ofPackage(formatPercent(shown.unvestedOfPackage))}</span>
                 </div>
               </div>
               <p className="stat-total">
-                Totale del founder: <strong>{formatPercent(shown.total, 2, 0)}</strong> della società
+                {v.founderTotalBefore} <strong>{formatPercent(shown.total, 2, 0)}</strong> {v.founderTotalAfter}
               </p>
               <div className="split-bar" aria-hidden="true">
                 <span style={{ width: `${outcome.vestedFraction * 100}%` }} />
               </div>
 
               <fieldset className="segmented-field">
-                <legend>Tipo di uscita</legend>
+                <legend>{v.leaverType}</legend>
                 <div className="segmented segmented-2">
                   {(['good', 'bad'] as Leaver[]).map((l) => (
                     <label key={l} className={leaver === l ? 'is-checked' : undefined}>
@@ -263,31 +260,19 @@ export function VestingPage() {
                 {leaver === 'good' ? (
                   <>
                     <p className="leaver-examples">
-                      <strong>Good leaver</strong>: per esempio malattia, licenziamento senza giusta causa, uscita concordata.
+                      <Rich text={v.goodExamples} />
                     </p>
-                    <p>
-                      In genere conserva le quote maturate ({vested} della società). Le quote non maturate ({unvested}) tornano
-                      alla società o agli altri soci, di solito con un riacquisto a valore nominale o di mercato, secondo quanto
-                      previsto negli accordi.
-                    </p>
+                    <p>{v.goodText(vested, unvested)}</p>
                   </>
                 ) : (
                   <>
                     <p className="leaver-examples">
-                      <strong>Bad leaver</strong>: per esempio dimissioni prima di un termine concordato, violazione del
-                      patto di non concorrenza, licenziamento per giusta causa.
+                      <Rich text={v.badExamples} />
                     </p>
-                    <p>
-                      Le quote non maturate ({unvested}) tornano alla società o agli altri soci. In più, gli accordi possono
-                      prevedere che perda anche parte o tutte le quote maturate ({vested}), o che debba cederle a un prezzo
-                      penalizzante (per esempio al valore nominale).
-                    </p>
+                    <p>{v.badText(vested, unvested)}</p>
                   </>
                 )}
-                <p className="small-note">
-                  Queste sono opzioni contrattuali tipiche, non regole di legge: vanno definite nei patti tra fondatori. In una
-                  s.r.l. il vesting di solito si realizza con patti parasociali, opzioni call o clausole statutarie.
-                </p>
+                <p className="small-note">{v.leaverNote}</p>
               </div>
               <Disclaimer />
             </section>
@@ -298,46 +283,29 @@ export function VestingPage() {
       <section className="section section-white">
         <div className="container two-col">
           <div className="example-box">
-            <p className="eyebrow eyebrow-dark">Esempio rapido</p>
-            <h2>4 anni di vesting, cliff di 1 anno</h2>
-            <p>Il founder ha il 25% della società, che matura mese per mese in 48 mesi.</p>
+            <p className="eyebrow eyebrow-dark">{v.exampleEyebrow}</p>
+            <h2>{v.exampleTitle}</h2>
+            <p>{v.exampleLead}</p>
             <ul className="example-list">
-              <li>
-                <span>Esce a 11 mesi</span>
-                <strong>0%</strong>
-                <span className="small-note">il cliff non è ancora passato</span>
-              </li>
-              <li>
-                <span>Esce a 12 mesi</span>
-                <strong>25%</strong>
-                <span className="small-note">del suo pacchetto, cioè il 6,25% della società</span>
-              </li>
-              <li>
-                <span>Esce a 30 mesi</span>
-                <strong>62,5%</strong>
-                <span className="small-note">del suo pacchetto, cioè il 15,63% della società</span>
-              </li>
+              {v.examples.map((x) => (
+                <li key={x.label}>
+                  <span>{x.label}</span>
+                  <strong>{x.value}</strong>
+                  <span className="small-note">{x.note}</span>
+                </li>
+              ))}
             </ul>
           </div>
           <div className="prose">
-            <h2>Perché il vesting conviene a tutti</h2>
+            <h2>{v.whyTitle}</h2>
+            <p>{v.whyText1}</p>
             <p>
-              Le quote assegnate al momento della costituzione premiano un lavoro che in gran parte deve ancora essere fatto.
-              Con il vesting, chi resta non si trova a dividere la società con chi ha smesso di contribuire, e chi entra sa
-              che il suo impegno verrà riconosciuto nel tempo.
-            </p>
-            <p>
-              Gli investitori, di solito, lo guardano con favore: è un segnale che il team ha pensato al proprio futuro. Se
-              non avete ancora deciso come dividere le quote, parti dal <Link to="/equity/">calcolatore</Link>.
+              <Rich text={v.whyText2} />
             </p>
           </div>
         </div>
         <div className="container">
-          <CtaPanel
-            campaign="vesting"
-            title="Vuoi mettere il vesting nero su bianco?"
-            text="Un avvocato di ilTuoAvvocato.com può aiutarti a scrivere clausole di vesting e di good/bad leaver adatte alla tua s.r.l."
-          />
+          <CtaPanel campaign="vesting" title={v.ctaTitle} text={v.ctaText} />
         </div>
       </section>
     </>
