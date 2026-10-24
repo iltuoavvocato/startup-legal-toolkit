@@ -1,7 +1,7 @@
 // Local export: anonymous teaser ↔ full version, Markdown download (always carries the disclaimer), noindex.
 import { readFileSync } from 'node:fs';
 import { NAME, exportStartupTeaser } from '../scripts/export-flows.mjs';
-import { DISCLAIMER, LOCALES, expect, expectDisclaimer, t, test } from './fixtures';
+import { DISCLAIMER, LOCALES, expect, expectDisclaimer, path, t, test } from './fixtures';
 
 for (const lang of LOCALES) {
   test(`export: teaser/full toggle and .md download with the disclaimer (${lang})`, async ({ page, baseURL }) => {
@@ -10,6 +10,9 @@ for (const lang of LOCALES) {
     // Form with the example and a typed startup name → results → "Export the one-pager" (anonymous teaser).
     await exportStartupTeaser(page, baseURL, lang, problems);
     expect(problems).toEqual([]);
+    // Reached client-side from the results: the robots meta follows the route.
+    const robots = page.locator('meta[name="robots"]');
+    await expect(robots).toHaveAttribute('content', 'noindex, nofollow');
     const sheet = page.locator('.mi-sheet');
     const title = page.locator('.mi-sheet-title');
     await expect(page.getByRole('radio', { name: x.page.variants.teaser })).toBeChecked();
@@ -41,5 +44,10 @@ for (const lang of LOCALES) {
 
     const html = await (await page.request.get(page.url().split('?')[0])).text();
     expect(html).toContain('<meta name="robots" content="noindex, nofollow" />');
+
+    // Back to the (indexable) results page: the directive is removed again.
+    await page.goBack();
+    await page.waitForURL((u) => !u.pathname.endsWith(`/${path('matchExport', lang)}`));
+    await expect(robots).toHaveCount(0);
   });
 }

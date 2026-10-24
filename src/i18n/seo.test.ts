@@ -51,7 +51,7 @@ describe('prerender meta', () => {
 
   it('applies NOINDEX to every page, English included, and noindex to the 404', () => {
     for (const p of pages(routesMeta)) {
-      expect(headTags(p, { ...config, siteNoindex: true })).toContain('<meta name="robots" content="noindex, nofollow" />');
+      expect(headTags(p, { ...config, siteNoindex: true })).toContain('<meta name="robots" content="noindex, nofollow" data-site-noindex />');
       if (!p.robots) expect(headTags(p, config)).not.toContain('name="robots"');
     }
     const nf = headTags(notFoundPage(routesMeta), config);

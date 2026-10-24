@@ -84,7 +84,8 @@ export function headTags(page, { abs, base, siteNoindex }) {
   return [
     `<meta name="description" content="${esc(page.description)}" />`,
     siteNoindex
-      ? '<meta name="robots" content="noindex, nofollow" />'
+      ? // Marked so the client-side route sync leaves the site-wide directive alone.
+        '<meta name="robots" content="noindex, nofollow" data-site-noindex />'
       : page.robots
         ? `<meta name="robots" content="${esc(page.robots)}" />`
         : page.noindex

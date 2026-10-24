@@ -75,6 +75,11 @@ export function robotsFor(id: RouteId): string | null {
   return ROUTES.find((r) => r.id === id)?.robots ?? null;
 }
 
+/** Robots directive a page should carry after client-side navigation: unknown paths (the 404) are noindex. */
+export function routeRobots(id: RouteId | null): string | null {
+  return id ? robotsFor(id) : 'noindex';
+}
+
 export function metaFor(pathname: string): { meta: Omit<PageMeta, 'path'>; path: string | null; id: RouteId | null; locale: Locale } {
   const route = routeFromPath(pathname);
   if (route) {

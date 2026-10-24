@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FORMATTERS } from './format';
-import { localeFromPath, metaFor, pathFor, robotsFor, routeFromPath, ROUTES, routePatterns, switchLocalePath } from './routes';
+import { localeFromPath, metaFor, pathFor, robotsFor, routeFromPath, routeRobots, ROUTES, routePatterns, switchLocalePath } from './routes';
 import { parseVariantRouteId, SCREENS, VARIANT_IDS, VARIANT_ROUTE_IDS, variantRouteId } from '../variants/registry';
 import { initialRedirect } from './storage';
 
@@ -95,6 +95,20 @@ describe('design variant routes', () => {
     for (const id of VARIANT_ROUTE_IDS) expect(robotsFor(id)).toBe('noindex, nofollow');
     expect(robotsFor('match')).toBeNull();
     expect(robotsFor('home')).toBeNull();
+  });
+});
+
+describe('robots after client-side navigation', () => {
+  it('follows the route: noindex pages keep their directive, public pages none, unknown paths noindex', () => {
+    expect(routeRobots('matchExport')).toBe('noindex, nofollow');
+    expect(routeRobots('matchGuidedDemo')).toBe('noindex, follow');
+    expect(routeRobots('matchRequests')).toBe('noindex, follow');
+    expect(routeRobots('matchInvestorProfile')).toBe('noindex, follow');
+    expect(routeRobots('matchVariants')).toBe('noindex, nofollow');
+    expect(routeRobots('match')).toBeNull();
+    expect(routeRobots('home')).toBeNull();
+    expect(routeRobots(null)).toBe('noindex');
+    expect(routeRobots(metaFor('/non-esiste/').id)).toBe('noindex');
   });
 });
 

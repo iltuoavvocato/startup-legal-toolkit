@@ -28,4 +28,16 @@ for (const lang of LOCALES) {
     await open(page, path('matchDirectory', lang));
     expect(seen).toEqual([]);
   });
+
+  test(`the robots meta follows the route on client-side navigation (${lang})`, async ({ page }) => {
+    const robots = page.locator('meta[name="robots"]');
+    await open(page, path('match', lang));
+    await expect(robots).toHaveCount(0);
+    await page.getByRole('link', { name: t(lang).directory.dir.requestsLink }).first().click();
+    await page.waitForURL((u) => u.pathname.endsWith(`/${path('matchRequests', lang)}`));
+    await expect(robots).toHaveAttribute('content', 'noindex, follow');
+    await page.goBack();
+    await page.waitForURL((u) => u.pathname.endsWith(`/${path('match', lang)}`));
+    await expect(robots).toHaveCount(0);
+  });
 }
