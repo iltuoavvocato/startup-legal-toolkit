@@ -3,6 +3,7 @@ import common from './common';
 import directory from './directory';
 import equity from './equity';
 import exportDoc from './exportDoc';
+import explain from './explain';
 import guidedDemo from './guidedDemo';
 import hardening from './hardening';
 import home from './home';
@@ -15,7 +16,7 @@ import quiz from './quiz';
 import variants from './variants';
 import vesting from './vesting';
 
-const modules = { common, home, equity, vesting, quiz, privacy, match, matchDemo, intake, directory, exportDoc, guidedDemo, polish, hardening, variants };
+const modules = { common, home, equity, vesting, quiz, privacy, match, matchDemo, intake, directory, exportDoc, guidedDemo, polish, hardening, explain, variants };
 
 type Modules = typeof modules;
 export type Messages = { [K in keyof Modules]: Modules[K]['it'] };

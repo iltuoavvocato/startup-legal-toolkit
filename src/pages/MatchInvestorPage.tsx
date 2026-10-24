@@ -355,6 +355,11 @@ function InvestorResults({ thesis, nome, onEdit, onRelax, headingRef }: ResultsP
         }))}
       />
       <ScoreExplainer />
+      <p className="mi-how-link">
+        <Link to={path('matchHowItWorks')}>
+          {t.explain.link} <span aria-hidden="true">→</span>
+        </Link>
+      </p>
       <ConsentExplainer compact />
     </div>
   );

@@ -252,6 +252,7 @@ function RealLinks() {
       <Link to={path('matchAgentStartup')}>{g.links.agent}</Link>
       <Link to={path('matchRequests')}>{g.links.requests}</Link>
       <Link to={path('matchOptIn')}>{g.links.simulator}</Link>
+      <Link to={path('matchHowItWorks')}>{t.explain.link}</Link>
     </>
   );
 }

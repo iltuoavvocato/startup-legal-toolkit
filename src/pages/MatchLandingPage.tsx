@@ -96,6 +96,7 @@ export function MatchLandingPage() {
             <Link to={path('matchRequests')}>{t.directory.dir.requestsLink}</Link>
             <Link to={path('matchOptIn')}>{l.simulatorLink}</Link>
             <Link to={path('matchGuidedDemo')}>{t.guidedDemo.landingLink}</Link>
+            <Link to={path('matchHowItWorks')}>{t.explain.link}</Link>
           </p>
         </div>
       </section>

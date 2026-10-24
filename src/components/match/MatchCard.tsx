@@ -12,9 +12,11 @@ interface Props {
   /** Shown under the reasons (e.g. deck signals the agent mentions). */
   footnote?: ReactNode;
   actions?: ReactNode;
+  /** "Perché questo match?": a per-part breakdown, shown in a collapsed details. */
+  why?: ReactNode;
 }
 
-export function MatchCard({ rank, title, meta, evaluation, children, footnote, actions }: Props) {
+export function MatchCard({ rank, title, meta, evaluation, children, footnote, actions, why }: Props) {
   const { t } = useI18n();
   return (
     <li className="mi-match">
@@ -38,6 +40,12 @@ export function MatchCard({ rank, title, meta, evaluation, children, footnote, a
         ))}
       </ul>
       {footnote}
+      {why && (
+        <details className="details mi-why">
+          <summary>{t.explain.why}</summary>
+          {why}
+        </details>
+      )}
       {actions && <div className="mi-match-actions">{actions}</div>}
     </li>
   );

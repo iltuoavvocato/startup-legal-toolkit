@@ -4921,3 +4921,130 @@ div.mi-error p {
   gap: 12px;
   margin-top: 8px;
 }
+
+/* Milestone 11: "Come funziona il matching" and "Perché questo match?" */
+
+.mi-how-works {
+  margin-top: 2rem;
+}
+
+.mi-how-works:first-child {
+  margin-top: 0;
+}
+
+.mi-how-works + .table-scroll,
+.mi-how-works + .mi-consent {
+  margin-top: 1rem;
+}
+
+.mi-how-link {
+  margin: 0.75rem 0 0;
+  font-size: 0.925rem;
+  font-weight: 600;
+}
+
+.mi-why {
+  margin-top: 0.75rem;
+}
+
+.mi-breakdown {
+  margin-top: 0.5rem;
+}
+
+/* Grid items default to min-width: auto, which would let the table widen the card on phones. */
+.mi-matches {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.mi-breakdown .table-scroll {
+  max-height: none;
+}
+
+.mi-breakdown-table td:last-child,
+.mi-breakdown-table thead th:last-child {
+  min-width: 0;
+  white-space: normal;
+  text-align: left;
+}
+
+.mi-breakdown-table tfoot td {
+  text-align: left;
+}
+
+.mi-why-result .mi-match-head {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.mi-breakdown .small-note {
+  margin: 0.5rem 0 0;
+}
+
+.mi-breakdown-table td:nth-child(2) {
+  min-width: 6.5rem;
+  white-space: nowrap;
+}
+
+.mi-breakdown-points {
+  display: block;
+}
+
+.mi-breakdown-bar {
+  display: block;
+  width: 100%;
+  max-width: 6rem;
+  height: 4px;
+  margin-top: 0.3rem;
+  border-radius: 2px;
+  background: var(--chart-track);
+  overflow: hidden;
+}
+
+.mi-breakdown-bar span {
+  display: block;
+  height: 100%;
+  background: var(--navy-800);
+}
+
+.mi-breakdown-table tr.is-out th,
+.mi-breakdown-out {
+  color: #9b2c2c;
+}
+
+.mi-breakdown-table tfoot th,
+.mi-breakdown-total {
+  font-weight: 700;
+  color: var(--navy-950);
+  border-top: 2px solid var(--line-strong);
+}
+
+.mi-why-example > p {
+  color: var(--text-muted);
+}
+
+.mi-why-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.mi-why-grid > * {
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .mi-why-grid {
+    grid-template-columns: minmax(14rem, 1fr) minmax(0, 2.2fr);
+    align-items: start;
+  }
+}
+
+.mi-why-form h3,
+.mi-why-result h3 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.mi-why-form .mi-field {
+  margin-bottom: 0.75rem;
+}

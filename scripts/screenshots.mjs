@@ -9,6 +9,9 @@ import * as dir from './directory-flows.mjs';
 import * as ex from './export-flows.mjs';
 
 const OUT = 'screenshots';
+// ONLY=<regex>: capture just the matching page/state names (both viewports) and skip the extra checks below.
+const ONLY = process.env.ONLY ? new RegExp(process.env.ONLY) : null;
+const wanted = (name) => !ONLY || ONLY.test(name);
 if (!existsSync('dist/index.html')) {
   console.error('dist/ not found: run `npm run build` first.');
   process.exit(1);
@@ -45,6 +48,8 @@ const PAGES = [
   ['match-investor', 'match-investitori/investitore/'],
   ['match-optin', 'match-investitori/doppio-consenso/'],
   ['match-legal', 'match-investitori/note-legali/'],
+  ['match-how-it-works', 'match-investitori/come-funziona/'],
+  ['en-match-how-it-works', 'en/investor-match/how-it-works/'],
   ['match-agent-startup', 'match-investitori/agente/startup/'],
   ['match-agent-investor', 'match-investitori/agente/investitore/'],
   ['match-directory', 'match-investitori/investitori/'],
@@ -151,6 +156,32 @@ async function openDeckReview(page, base, lang) {
 }
 
 const STATES = {
+  // Milestone 11: "Perché questo match?" opened on the first founder result, and the how-it-works example excluded.
+  ...Object.fromEntries(
+    ['it', 'en'].flatMap((lang) => {
+      const it = lang === 'it';
+      const p = it ? '' : 'en-';
+      return [
+        [
+          `${p}match-startup-why`,
+          async (page, base) => {
+            await page.goto(`${base}${it ? 'match-investitori/startup/' : 'en/investor-match/startup/'}?settore=fintech&fase=seed&regione=lombardia&round=500000`);
+            const first = page.locator('.mi-matches > li').first();
+            await first.locator('.mi-why summary').click();
+            await first.locator('.mi-breakdown').waitFor();
+          },
+        ],
+        [
+          `${p}match-how-it-works-excluded`,
+          async (page, base) => {
+            await page.goto(`${base}${it ? 'match-investitori/come-funziona/' : 'en/investor-match/how-it-works/'}`);
+            await page.locator('#ex-round').selectOption('150000');
+            await page.locator('.mi-why-result tr.is-out').waitFor();
+          },
+        ],
+      ];
+    }),
+  ),
   // Investor directory, investor profile and requests inbox (double opt-in with expiry; a "no" is never revealed).
   ...Object.fromEntries(
     ['it', 'en'].flatMap((lang) => {
@@ -455,6 +486,7 @@ try {
     };
 
     for (const [name, path] of PAGES) {
+      if (!wanted(name)) continue;
       await page.goto(`${base}${path}`);
       await page.locator('#page-title').waitFor();
       if (name.includes('variant')) await checkVariantPage(page, name);
@@ -465,10 +497,11 @@ try {
       await shoot(name);
     }
     for (const [name, run] of Object.entries(STATES)) {
+      if (!wanted(name)) continue;
       await run(page, base);
       await shoot(name);
     }
-    if (vpName === 'mobile') {
+    if (vpName === 'mobile' && !ONLY) {
       await page.goto(base);
       await page.getByRole('button', { name: 'Apri il menu' }).click();
       await page.waitForTimeout(100);
@@ -495,7 +528,7 @@ try {
 
   // Milestone 10 hardening: the error fallback (a page chunk that can't load), the form when pdf.js can't run, and the
   // privacy page's demo-data section after "Cancella i dati della demo". Own contexts: the fallback logs console errors.
-  for (const [vpName, opts] of Object.entries(VIEWPORTS)) {
+  for (const [vpName, opts] of Object.entries(ONLY ? {} : VIEWPORTS)) {
     for (const lang of ['it', 'en']) {
       const p = lang === 'en' ? 'en-' : '';
       const it = lang === 'it';
@@ -552,7 +585,7 @@ try {
   }
 
   // Print: the export page as Chrome prints it (print media emulated, A4 PDF via Chrome's print-to-PDF).
-  {
+  if (!ONLY) {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
     const page = await context.newPage();
     page.setDefaultTimeout(10000);
@@ -582,7 +615,7 @@ try {
   }
 
   // Language switcher: equivalent page, stored preference, and the redirect from "/" only.
-  {
+  if (!ONLY) {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
     await page.goto(`${base}vesting/`);
@@ -618,7 +651,7 @@ try {
   }
 
   // Static 404.html as GitHub Pages / Vercel serve it for unknown paths (vite preview would serve index.html).
-  {
+  if (!ONLY) {
     const html404 = readFileSync('dist/404.html', 'utf8');
     const cases = [
       ['pagina-che-non-esiste/', 'it', 'Pagina non trovata', 'Strumento indicativo: non sostituisce una consulenza legale.'],

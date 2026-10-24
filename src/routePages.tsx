@@ -56,6 +56,7 @@ const LOADERS: Record<RouteId, Loader> = {
   matchAgentInvestor: () => import('./pages/MatchAgentPage').then((m) => m.MatchAgentInvestorPage),
   matchOptIn: () => import('./pages/MatchOptInPage').then((m) => m.MatchOptInPage),
   matchLegal: () => import('./pages/MatchLegalPage').then((m) => m.MatchLegalPage),
+  matchHowItWorks: () => import('./pages/MatchHowItWorksPage').then((m) => m.MatchHowItWorksPage),
   matchDirectory: () => import('./pages/MatchDirectoryPage').then((m) => m.MatchDirectoryPage),
   matchInvestorProfile: () => import('./pages/MatchInvestorProfilePage').then((m) => m.MatchInvestorProfilePage),
   matchRequests: () => import('./pages/MatchRequestsPage').then((m) => m.MatchRequestsPage),

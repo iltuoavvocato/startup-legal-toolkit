@@ -181,6 +181,21 @@
       }
     },
     {
+      "id": "matchHowItWorks",
+      "it": {
+        "path": "/match-investitori/come-funziona/",
+        "title": "Come funziona il matching con gli investitori | Startup Legal Toolkit",
+        "description": "Filtri, punteggio da 0 a 100 e doppio consenso del prototipo MatchInvStar, spiegati con le regole reali. Nessun consiglio di investimento.",
+        "heading": "Come funziona il matching"
+      },
+      "en": {
+        "path": "/en/investor-match/how-it-works/",
+        "title": "How investor matching works | Startup Legal Toolkit",
+        "description": "Filters, the 0 to 100 score and the double opt-in of the MatchInvStar prototype, explained with the real rules. No investment advice.",
+        "heading": "How matching works"
+      }
+    },
+    {
       "id": "matchDirectory",
       "it": {
         "path": "/match-investitori/investitori/",

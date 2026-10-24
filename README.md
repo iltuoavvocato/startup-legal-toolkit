@@ -165,6 +165,7 @@ dictionary plus a React context.
   | `/match-investitori/agente/investitore/` | `/en/investor-match/agent/investor/` |
   | `/match-investitori/doppio-consenso/` | `/en/investor-match/double-opt-in/` |
   | `/match-investitori/note-legali/` | `/en/investor-match/legal-notes/` |
+  | `/match-investitori/come-funziona/` | `/en/investor-match/how-it-works/` |
   | `/match-investitori/demo/` (noindex) | `/en/investor-match/demo/` |
   | `/match-investitori/varianti/…` (noindex) | `/en/investor-match/variants/…` |
 
@@ -316,6 +317,14 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
   `Array.prototype.at`, `Blob.arrayBuffer`); without them the deck picker is replaced by a bilingual note and the form /
   agent continue without a deck. The privacy page has a section on the demo's browser-only storage with a
   **Cancella i dati della demo** button (same key list). E2E: `e2e/hardening.spec.ts`.
+- **How matching works, "Come funziona il matching"** (Milestone 11; `/match-investitori/come-funziona/`, EN
+  `/en/investor-match/how-it-works/`; indexed, linked from the landing, both results pages and the guided demo): the four
+  hard filters, the score table (`ScoreRulesTable`, rendered from the constants in `matching.ts`), bands and tie-breaks,
+  near misses / "Allarga criteri", the double opt-in with the monthly cap and expiry read from `matchConfig.ts`, and what
+  the service does not do. An interactive "Prova: perché questo match?" scores a fictional startup against a demo
+  investor with the real `evaluate()`. The same `MatchBreakdown` table opens under **Perché questo match? / Why this
+  match?** on every founder result card. Logic: `src/lib/explain.ts` (`SCORING_RULES`, `breakdown()`, `bandList()`;
+  unit tests check it against the constants and every demo pair). E2E: `e2e/how-it-works.spec.ts`.
 - **Matching** (`src/lib/matching.ts`): hard filters (fase, settore, area, ticket minimo ≤ round). Then score =
   settore (30) + ticket coverage (30, full from 40% of the round) + fase (20) + area (20), rounded to an integer.
   Ordering is deterministic: score, then ticket part, then sector part, then name, then id. Italian reasons and why-not strings.

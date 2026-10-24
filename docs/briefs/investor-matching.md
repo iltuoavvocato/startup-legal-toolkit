@@ -784,3 +784,51 @@ Known limits:
   fallback shows again.
 - The feature check covers what pdf.js 4.x uses unconditionally; a browser that passes it but fails inside pdf.js still
   gets the existing "can't read this PDF" message and the form.
+
+## Milestone 11: explainability and copy review (2026-10-24)
+
+What exists:
+- **"Come funziona il matching" / "How matching works"** (`/match-investitori/come-funziona/`,
+  `/en/investor-match/how-it-works/`; indexed, in the sitemap). It is linked from the landing, from both results pages
+  (under "Come calcoliamo l'affinità") and from the guided demo's "Prova davvero" links. Sections:
+  1. the four hard filters;
+  2. the score table, rendered from `WEIGHTS`, `SETTORE_POINTS`, `FASE_POINTS`, `AREA_POINTS` and `LEAD_COVERAGE` (the
+     same `ScoreRulesTable` the results pages show);
+  3. how the score is shown, with bands from `SCORE_BANDS`, the tie-break order and a statement that the score
+     measures how far the stated criteria overlap, not quality;
+  4. near misses and "Allarga criteri" (investor: sectors / stages / areas / minimum ticket; startup: round only;
+     nothing changes until you press the button);
+  5. the double opt-in explainer, plus the monthly cap (`MONTHLY_PROPOSAL_LIMIT`) and the expiry
+     (`REQUEST_EXPIRY_DAYS`), which also applies when the other side said no;
+  6. what matching does not do (no money, no advice, no public pitch, nothing sent, no promised results).
+
+  Every number on the page is passed in from code. A unit test fails if a static sentence contains a digit.
+- **"Prova: perché questo match?"**: a fictional startup (B2B SaaS, Series A, Piedmont, €3,000,000) against demo
+  investor Ardesia Ventures (i01). By default every part scores something and none scores full marks (66, "Affine").
+  Selects change sector, stage, region and round (€150,000 fails the ticket filter). The score comes from the real
+  `evaluate()`.
+- **"Perché questo match?" / "Why this match?"**: an expandable section on every founder result card (`MatchCard`'s
+  `why` prop). It shows the same `MatchBreakdown` table: points out of the maximum for each criterion, with a bar, the
+  rule that applied and the rounded total with its band. For an excluded pair it shows which filter failed, and that
+  part earns no points.
+- **Logic**: `src/lib/explain.ts` provides `SCORING_RULES`, `breakdown()` and `bandList()`. `breakdown()` reads the
+  points from the evaluation and adds only the rule names. Tests in `src/lib/explain.test.ts` check that:
+  - the maxima equal `WEIGHTS` and add up to 100;
+  - the tiers equal the constants;
+  - for every demo startup × investor pair, the parts add up to the score and the named rule matches its points;
+  - the ticket part is full from `LEAD_COVERAGE` upwards;
+  - the results card breakdown is identical to the page's.
+- **E2E**: `e2e/how-it-works.spec.ts` covers IT and EN, desktop and mobile. It checks:
+  - the link from the landing;
+  - the cap, expiry, bands and table values against the constants;
+  - that the example reacts to its controls (66 → 0 excluded → 84);
+  - that every founder card has the expandable section and its total equals the card's score;
+  - axe on the opened breakdown;
+  - the guided demo link.
+
+  The per-route axe test covers the new page automatically.
+- **Screenshots**: `screenshots/{,en-}match-how-it-works-{desktop,mobile}.png`,
+  `{,en-}match-how-it-works-excluded-*`, `{,en-}match-startup-why-*`. `scripts/screenshots.mjs` now accepts
+  `ONLY=<regex>` to capture just some pages or states (and skip the global checks).
+- Layout fix found by the screenshots: `.mi-matches` and the example grid use `minmax(0, 1fr)` columns, so a wide
+  table can no longer stretch a card past a phone's width.

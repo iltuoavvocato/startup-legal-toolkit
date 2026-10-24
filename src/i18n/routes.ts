@@ -17,6 +17,7 @@ export type RouteId =
   | 'matchAgentInvestor'
   | 'matchOptIn'
   | 'matchLegal'
+  | 'matchHowItWorks'
   | 'matchDirectory'
   | 'matchInvestorProfile'
   | 'matchRequests'

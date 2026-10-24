@@ -30,7 +30,7 @@ describe('dictionaries', () => {
   });
 
   it('cover every area of the site, including quiz and matching strings', () => {
-    expect(Object.keys(MESSAGES.it).sort()).toEqual(['common', 'directory', 'equity', 'exportDoc', 'guidedDemo', 'hardening', 'home', 'intake', 'match', 'matchDemo', 'polish', 'privacy', 'quiz', 'variants', 'vesting']);
+    expect(Object.keys(MESSAGES.it).sort()).toEqual(['common', 'directory', 'equity', 'explain', 'exportDoc', 'guidedDemo', 'hardening', 'home', 'intake', 'match', 'matchDemo', 'polish', 'privacy', 'quiz', 'variants', 'vesting']);
     expect(Object.keys(MESSAGES.en.quiz.questions)).toHaveLength(7);
     expect(Object.keys(MESSAGES.en.match.reasons.startup)).toEqual(Object.keys(MESSAGES.it.match.reasons.startup));
   });

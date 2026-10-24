@@ -18,6 +18,7 @@ import { LiveRegion } from '../components/match/LiveRegion';
 import { NoMatches } from '../components/match/NoMatches';
 import { Toast } from '../components/match/Toast';
 import { profileNearMisses } from '../lib/relax';
+import { MatchBreakdown } from '../components/match/MatchBreakdown';
 import { MatchCard } from '../components/match/MatchCard';
 import { MatchSteps } from '../components/match/MatchSteps';
 import { ModeSwitch } from '../components/match/ModeSwitch';
@@ -687,6 +688,7 @@ function Results({ profile, counter, proposed, onPropose, onEdit, onRelax, headi
                 title={item.nome}
                 meta={`${L.tipo[item.tipo]}${item.sede ? u.based(L.regione[item.sede]) : ''}`}
                 evaluation={{ ...evaluation, reasons: annotateReasons(evaluation.reasons, deckInfo.sources, locale) }}
+                why={<MatchBreakdown startup={profile} investor={item} evaluation={evaluation} />}
                 footnote={
                   deckInfo.signals.length > 0 ? <p className="mi-deck-signals">{u.deckSignals(deckInfo.signals.join(' · '))}</p> : undefined
                 }
@@ -726,6 +728,11 @@ function Results({ profile, counter, proposed, onPropose, onEdit, onRelax, headi
         items={excluded.map((x) => ({ id: x.item.id, name: x.item.nome, whyNot: x.evaluation.whyNot }))}
       />
       <ScoreExplainer />
+      <p className="mi-how-link">
+        <Link to={path('matchHowItWorks')}>
+          {t.explain.link} <span aria-hidden="true">→</span>
+        </Link>
+      </p>
       <ConsentExplainer compact />
     </div>
   );
