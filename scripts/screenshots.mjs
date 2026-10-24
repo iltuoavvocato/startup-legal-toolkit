@@ -61,6 +61,17 @@ const PAGES = [
   ['en-match-investor-profile', 'en/investor-match/investors/profile/?id=i01'],
   ['en-match-requests', 'en/investor-match/requests/'],
   ['en-match-investor-nomatch', 'en/investor-match/investor/?settori=proptech&fasi=serie-a&min=900000&max=1000000&aree=sud-isole'],
+  ...[
+    ['1', ''],
+    ['4-teaser', '?step=4'],
+    ['5a-interested', '?step=5'],
+    ['6a-intro', '?step=6'],
+    ['5b-declined', '?step=5&branch=no'],
+    ['6b-expired', '?step=6&branch=no'],
+  ].flatMap(([k, q]) => [
+    [`match-demo-step${k}`, `match-investitori/demo/${q}`],
+    [`en-match-demo-step${k}`, `en/investor-match/demo/${q}`],
+  ]),
   ...VARIANT_PAGES,
 ];
 

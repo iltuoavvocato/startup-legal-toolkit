@@ -34,6 +34,11 @@ export default function GalleryPage() {
       </div>
       <PageHero eyebrow={g.eyebrow} title={<Rich text={g.title} />}>
         <p>{g.lead}</p>
+        <p>
+          <Link to={path('matchGuidedDemo')} className="btn btn-gold">
+            {t.guidedDemo.galleryLink} <span aria-hidden="true">→</span>
+          </Link>
+        </p>
       </PageHero>
 
       <section className="vg-section" aria-label={g.eyebrow}>

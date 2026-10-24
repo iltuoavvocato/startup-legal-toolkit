@@ -21,6 +21,7 @@ export type RouteId =
   | 'matchInvestorProfile'
   | 'matchRequests'
   | 'matchExport'
+  | 'matchGuidedDemo'
   | 'matchVariants'
   | VariantRouteId;
 

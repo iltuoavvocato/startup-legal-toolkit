@@ -60,6 +60,7 @@ const LOADERS: Record<RouteId, Loader> = {
   matchInvestorProfile: () => import('./pages/MatchInvestorProfilePage').then((m) => m.MatchInvestorProfilePage),
   matchRequests: () => import('./pages/MatchRequestsPage').then((m) => m.MatchRequestsPage),
   matchExport: () => import('./pages/MatchExportPage').then((m) => m.MatchExportPage),
+  matchGuidedDemo: () => import('./pages/MatchGuidedDemoPage').then((m) => m.MatchGuidedDemoPage),
   matchVariants: () => import('./variants/GalleryPage').then((m) => m.default),
   ...Object.fromEntries(VARIANT_ROUTE_IDS.map((id) => [id, variantScreen(id)])),
 } as Record<RouteId, Loader>;

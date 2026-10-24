@@ -244,6 +244,22 @@
       }
     },
     {
+      "id": "matchGuidedDemo",
+      "robots": "noindex, follow",
+      "it": {
+        "path": "/match-investitori/demo/",
+        "title": "Demo guidata del doppio consenso (prototipo) | Startup Legal Toolkit",
+        "description": "La storia del doppio consenso vista da startup e investitore affiancati, passo per passo, con dati fittizi. Un no non viene mai rivelato.",
+        "heading": "Demo guidata: startup e investitore"
+      },
+      "en": {
+        "path": "/en/investor-match/demo/",
+        "title": "Guided double opt-in demo (prototype) | Startup Legal Toolkit",
+        "description": "The double opt-in story seen by the startup and the investor side by side, step by step, with fictional data. A no is never revealed.",
+        "heading": "Guided demo: startup and investor"
+      }
+    },
+    {
       "id": "matchVariants",
       "robots": "noindex, nofollow",
       "it": {
