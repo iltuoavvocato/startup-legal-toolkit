@@ -228,14 +228,14 @@ const STATES = {
     await page.getByRole('button', { name: 'Interessato', exact: true }).click();
     await page.getByRole('button', { name: 'Simula la risposta della startup' }).click();
   },
-  // The first sample teaser (Contoverde) declines in the demo: the investor must keep seeing "Interesse inviato".
+  // The first sample teaser (Contafiaba) declines in the demo: the investor must keep seeing "Interesse inviato".
   'variant-v5-investor-declined': async (page, base) => {
     await page.goto(`${base}match-investitori/varianti/v5/investitore/`);
     await page.locator('#page-title').waitFor();
     await page.getByRole('button', { name: 'Interessato', exact: true }).first().click();
     await page.getByRole('button', { name: 'Simula la risposta della startup' }).first().click();
     const text = await page.locator('main').innerText();
-    if (text.includes('Contoverde') || text.includes('Giada')) problems.push('v5 investor: a declining startup was revealed');
+    if (text.includes('Contafiaba') || text.includes('Giada')) problems.push('v5 investor: a declining startup was revealed');
     if (!text.includes('Interesse inviato')) problems.push('v5 investor: declined interest does not read "Interesse inviato"');
   },
   'equity-3-founders': async (page, base) => {

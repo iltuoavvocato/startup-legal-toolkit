@@ -103,7 +103,7 @@ describe('English demo data, opt-in, deck and forms', () => {
     const s = demoStartups('en')[0]!;
     const i = demoInvestors('en')[0]!;
     const email = introEmail(s, i, 'en');
-    expect(email.oggetto).toBe('Intro: Contoverde ↔ Ardesia Ventures (via MatchInvStar)');
+    expect(email.oggetto).toBe('Intro: Contafiaba ↔ Ardesia Ventures (via MatchInvStar)');
     expect(email.corpo[0]).toBe('Hi Giada Rinaldi, hi Elena Varisco,');
     expect(email.corpo.join(' ')).toContain('does not give investment advice');
     expect(teaserOf(s, 'en')).toEqual({

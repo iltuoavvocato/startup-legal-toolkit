@@ -138,7 +138,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
   },
   {
     id: 'i10',
-    nome: 'Acceleratore Fucina',
+    nome: 'Acceleratore Scintillaio',
     tipo: 'acceleratore',
     settori: 'tutti',
     fasi: ['pre-seed'],
@@ -148,7 +148,7 @@ export const DEMO_INVESTORS: readonly Investor[] = [
     sede: 'campania',
     tesi: T.investors.i10,
     referente: 'Federica Esposti',
-    email: 'federica@fucina.example',
+    email: 'federica@scintillaio.example',
   },
   {
     id: 'i11',
@@ -519,14 +519,14 @@ export const DEMO_INVESTORS: readonly Investor[] = [
 export const DEMO_STARTUPS: readonly StartupProfile[] = [
   {
     id: 's01',
-    nome: 'Contoverde',
+    nome: 'Contafiaba',
     settore: 'fintech',
     fase: 'seed',
     regione: 'lombardia',
     round: 500_000,
     oneLiner: T.startups.s01,
     founder: 'Giada Rinaldi',
-    email: 'giada@contoverde.example',
+    email: 'giada@contafiaba.example',
   },
   {
     id: 's02',
@@ -552,25 +552,25 @@ export const DEMO_STARTUPS: readonly StartupProfile[] = [
   },
   {
     id: 's04',
-    nome: 'Aulaviva',
+    nome: 'Lavagnoro',
     settore: 'edtech',
     fase: 'pre-seed',
     regione: 'campania',
     round: 120_000,
     oneLiner: T.startups.s04,
     founder: 'Ciro Annunziata',
-    email: 'ciro@aulaviva.example',
+    email: 'ciro@lavagnoro.example',
   },
   {
     id: 's05',
-    nome: 'Voltaria',
+    nome: 'Ventilume',
     settore: 'cleantech',
     fase: 'serie-a',
     regione: 'piemonte',
     round: 2_500_000,
     oneLiner: T.startups.s05,
     founder: 'Alessio Bramante',
-    email: 'alessio@voltaria.example',
+    email: 'alessio@ventilume.example',
   },
   {
     id: 's06',
@@ -596,14 +596,14 @@ export const DEMO_STARTUPS: readonly StartupProfile[] = [
   },
   {
     id: 's08',
-    nome: 'Lievita',
+    nome: 'Impastoria',
     settore: 'foodtech',
     fase: 'pre-seed',
     regione: 'toscana',
     round: 200_000,
     oneLiner: T.startups.s08,
     founder: 'Niccolò Bartolini',
-    email: 'niccolo@lievita.example',
+    email: 'niccolo@impastoria.example',
   },
 ];
 
@@ -614,7 +614,7 @@ export const EXAMPLE_STARTUP_FORM = {
   regione: 'lombardia',
   round: 500_000,
   descrizione: T.exampleDescription,
-  nome: 'Contoverde',
+  nome: 'Contafiaba',
   founder: 'Giada Rinaldi',
 } as const;
 

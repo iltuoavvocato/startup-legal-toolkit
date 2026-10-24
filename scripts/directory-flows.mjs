@@ -186,7 +186,7 @@ export async function requestsInvestor(page, base, lang, problems) {
   await page.waitForURL(/vista=investitore/);
   await page.getByRole('button', { name: c.yes }).first().click();
   const text = await expectIn(page, `${lang}-requests-investor`, problems, [c.interest]);
-  for (const n of ['Contoverde', 'Radice Lab', 'Giada']) if (text.includes(n)) problems.push(`${lang}-requests-investor: startup name revealed`);
+  for (const n of ['Contafiaba', 'Radice Lab', 'Giada']) if (text.includes(n)) problems.push(`${lang}-requests-investor: startup name revealed`);
 }
 
 /** Two "+7 days": answers arrive and pending requests expire. A "no" must never be readable on the asking side. */
