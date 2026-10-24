@@ -75,6 +75,16 @@ for (const lang of LOCALES) {
     await scan(page, testInfo);
   });
 
+  test(`axe: empty results with near misses, and the propose toast (${lang})`, async ({ page }, testInfo) => {
+    await open(page, `${path('matchInvestor', lang)}?settori=proptech&fasi=serie-a&min=900000&max=1000000&aree=sud-isole`);
+    await expect(page.getByRole('heading', { name: t(lang).polish.noMatches.title })).toBeVisible();
+    await scan(page, testInfo);
+    await openFresh(page, `${path('matchStartup', lang)}?settore=fintech&fase=seed&regione=lombardia&round=500000`);
+    await page.locator('.mi-match').first().getByRole('button', { name: new RegExp(`^${t(lang).match.ui.startup.propose}`) }).click();
+    await expect(page.locator('.mi-toast')).toBeVisible();
+    await scan(page, testInfo);
+  });
+
   test(`axe: export one-pager (${lang})`, async ({ page, baseURL }, testInfo) => {
     await exportStartupTeaser(page, baseURL, lang, []);
     await scan(page, testInfo);

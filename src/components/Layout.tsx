@@ -23,6 +23,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
   const firstRender = useRef(true);
   const { t, path } = useI18n();
   usePageMeta(pathname);
@@ -63,7 +64,12 @@ export function Layout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!menuOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setMenuOpen(false);
+      // Escape from inside the menu: focus goes back to the button that opened it.
+      if (document.getElementById('site-nav')?.contains(document.activeElement)) menuButton.current?.focus();
+    };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [menuOpen]);
@@ -93,6 +99,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <span className="brand-sub">Startup Legal Toolkit</span>
           </Link>
           <button
+            ref={menuButton}
             type="button"
             className="menu-toggle"
             aria-expanded={menuOpen}
