@@ -24,7 +24,9 @@ Draft PR: https://github.com/iltuoavvocato/startup-legal-toolkit/pull/1 (branch 
 
 - 07:25 M12 done: variants gallery extended with agent chat + investor directory screens for V1-V5 (IT+EN, compare, e2e/axe); inbox sample teasers now seeded even if the agent's investor answered first (no duplicates); mobile LCP attempt measured (91-92, LCP ~3.1 s) and reverted - real fix needs D38/prerendered hero text. Brief: M12 decisions renumbered D50/D51 (collided with M11's D46/D47). Gate: lint 0, 519 unit tests, build ok, e2e 534 passed / 2 skipped. Commits dcb5c64, bda4a0d.
 
+- 07:37 M13 done: review pack docs/briefs/investor-matching-review.md (all routes, 10-minute walkthrough, decisions D1-D51 with status/defaults, hard-rule compliance checklist with enforcing tests, consolidated known issues, go-live checklist), linked from brief + README; e2e/journey.spec.ts full founder->investor->intro->export story per language with disclaimer checks and request interception. Gate: lint 0, 519 unit, build ok, e2e 536 passed / 4 skipped (2 intentional mobile skips). Commits d1d5e66, 5e92a97.
+
 ## In progress
-- 07:26 M13 (next): review pack for Vincenzo (routes, 10-minute walkthrough, D1-D51 table, compliance checklist, go-live list) + one full-journey e2e per language
+- 07:38 M14 (next): tests that pin the no-money/no-advice copy rules; English-path parity check; misc polish
 
 ## Next
