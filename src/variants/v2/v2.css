@@ -1288,3 +1288,189 @@
     display: none;
   }
 }
+
+/* ---------- Mock screens: agent console, investor directory ---------- */
+.v2-root .v2-agent-layout {
+  grid-template-columns: minmax(0, 1fr) 280px;
+}
+.v2-root .v2-console {
+  display: grid;
+  gap: 0.6rem;
+}
+.v2-root .v2-log {
+  background: #0f1522;
+  color: #e6e9ee;
+  border-radius: 4px;
+  padding: 0.75rem 0.85rem;
+  font-family: var(--v2-mono);
+  font-size: 0.8rem;
+  max-height: 26rem;
+  overflow-y: auto;
+}
+.v2-root .v2-log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+.v2-root .v2-log-line {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 0.6rem;
+  overflow-wrap: anywhere;
+}
+.v2-root .v2-log-who {
+  color: #9fb4e8;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  padding-top: 0.1rem;
+}
+.v2-root .v2-log-user .v2-log-who {
+  color: #f0c470;
+}
+.v2-root .v2-log-user .v2-log-text {
+  color: #fff;
+  font-weight: 600;
+}
+.v2-root .v2-quick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.v2-root .v2-quick-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--v2-muted);
+  margin-right: 0.25rem;
+}
+.v2-root .v2-quick .v2-btn {
+  white-space: normal;
+}
+.v2-root .v2-table-agent {
+  min-width: 560px;
+}
+.v2-root .v2-agent-reason {
+  display: block;
+  color: var(--v2-muted);
+  font-size: 0.78rem;
+  max-width: 34rem;
+}
+.v2-root .v2-agent-facts {
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.v2-root .v2-agent-facts dt {
+  font-size: 0.75rem;
+  color: var(--v2-muted);
+}
+.v2-root .v2-agent-facts dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--v2-ink);
+}
+.v2-root .v2-dir-filter {
+  margin: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+.v2-root .v2-dir-filter legend {
+  float: left;
+  width: 100%;
+  padding: 0;
+}
+.v2-root .v2-dir-opt {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.v2-root .v2-dir-opt.is-on {
+  background: var(--v2-accent-soft);
+  color: var(--v2-ink);
+  font-weight: 600;
+}
+.v2-root .v2-dir-opt input {
+  margin: 0;
+  accent-color: var(--v2-accent);
+}
+.v2-root .v2-dir-count {
+  color: var(--v2-ink);
+  font-weight: 600;
+}
+.v2-root .v2-table-dir {
+  min-width: 900px;
+}
+.v2-root .v2-table-dir th[scope='row'] {
+  font-weight: 600;
+  color: var(--v2-ink);
+  overflow-wrap: anywhere;
+}
+.v2-root .v2-table-dir .v2-dir-wrap {
+  min-width: 9rem;
+}
+@media (max-width: 1100px) {
+  .v2-root .v2-agent-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .v2-root .v2-log-line {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .v2-root .v2-table-agent {
+    min-width: 0;
+  }
+  .v2-root .v2-table-agent .v2-hide-sm {
+    display: none;
+  }
+  .v2-root .v2-log {
+    max-height: none;
+  }
+  /* Directory rows become stacked cards with inline labels: no sideways scroll on phones. */
+  .v2-root .v2-table-dir {
+    min-width: 0;
+  }
+  .v2-root .v2-table-dir,
+  .v2-root .v2-table-dir tbody,
+  .v2-root .v2-table-dir tr,
+  .v2-root .v2-table-dir td,
+  .v2-root .v2-table-dir th[scope='row'] {
+    display: block;
+    width: auto;
+  }
+  .v2-root .v2-table-dir thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+  .v2-root .v2-table-dir tr {
+    padding: 0.6rem 0.7rem;
+    border-bottom: 1px solid var(--v2-line-soft);
+  }
+  .v2-root .v2-table-dir td,
+  .v2-root .v2-table-dir th[scope='row'] {
+    padding: 0.1rem 0;
+    border: 0;
+  }
+  .v2-root .v2-table-dir td[data-label]::before {
+    content: attr(data-label) ': ';
+    color: var(--v2-muted);
+    font-size: 0.75rem;
+  }
+  .v2-root .v2-table-dir .v2-dir-act {
+    padding-top: 0.35rem;
+  }
+}

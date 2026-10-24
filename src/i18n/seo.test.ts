@@ -70,8 +70,8 @@ describe('prerender meta', () => {
 describe('design variants (internal prototype pages)', () => {
   const variantPages = pages(routesMeta).filter((p) => p.id === 'matchVariants' || /^matchV\d/.test(p.id));
 
-  it('covers the gallery and 5 variants × 3 screens in both languages', () => {
-    expect(variantPages).toHaveLength((1 + 5 * 3) * 2);
+  it('covers the gallery and 5 variants × 5 screens in both languages', () => {
+    expect(variantPages).toHaveLength((1 + 5 * 5) * 2);
   });
 
   it('are noindex, nofollow in the prerendered HTML, in both languages, keeping the canonical', () => {

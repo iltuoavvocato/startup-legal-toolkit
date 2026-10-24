@@ -22,7 +22,13 @@ const it = {
   },
   fictional: 'Dati di esempio fittizi: startup, investitori, persone e importi sono inventati.',
   loading: 'Caricamento della variante…',
-  screens: { landing: 'Landing', results: 'Risultati founder', investor: 'Vista investitore' },
+  screens: {
+    landing: 'Landing',
+    results: 'Risultati founder',
+    investor: 'Vista investitore',
+    agent: 'Chat con l’agente',
+    directory: 'Directory investitori',
+  },
   screenNav: 'Schermate di questa variante',
   variantNav: 'Stessa schermata in un’altra variante',
   // Shared action and status copy used by every variant.
@@ -44,6 +50,33 @@ const it = {
   founderProfile: (settore: string, fase: string, regione: string, round: string) =>
     `Profilo di esempio: startup ${settore}, ${fase}, ${regione}, round da ${round}`,
   investorThesis: (settori: string, fasi: string, ticket: string) => `Tesi di esempio: ${settori} · ${fasi} · ticket ${ticket}`,
+  // Shared copy of the two mock screens (guided agent chat, investor directory): visual explorations, not new flows.
+  agentMock: {
+    agent: 'Agente',
+    you: 'Tu',
+    greeting: 'Ciao, sono l’agente di MatchInvStar. Ti faccio quattro domande sulla startup e ti propongo gli investitori in linea.',
+    questions: {
+      settore: 'In che settore lavora la startup?',
+      fase: 'In che fase siete?',
+      round: 'Quanto volete raccogliere in questo round?',
+      regione: 'Dove ha sede la startup?',
+    },
+    summary: (n: number) => `Ho trovato ${n} investitori in linea. Ecco i primi tre, con il motivo principale:`,
+    quickReplies: 'Risposte rapide',
+    chips: { why: 'Perché il primo?', optin: 'Come funziona il contatto?' },
+    replyWhy: (name: string, reasons: string) => `${name}: ${reasons}.`,
+    replyOptin:
+      'Proponi il profilo e l’investitore vede solo un teaser anonimo. I nomi arrivano solo se dite sì entrambi; un no non viene mai comunicato.',
+    openReal: 'Prova l’agente vero',
+    note: 'Conversazione di esempio già compilata con il profilo fittizio: le risposte rapide mostrano due repliche dell’agente.',
+  },
+  directoryMock: {
+    lead: 'Gli investitori della demo, filtrabili per tipo. Nessun contatto diretto: le intro passano solo dal doppio consenso.',
+    filterLabel: 'Filtra per tipo di investitore',
+    showMore: (n: number) => `Mostra altri ${n}`,
+    openReal: 'Apri la directory completa',
+    note: 'Anteprima visiva: filtro per tipo e schede sintetiche. Ricerca, filtri completi e schede sono nella directory vera.',
+  },
   keyboardHint: 'Tastiera',
   variants: {
     v1: {
@@ -85,7 +118,7 @@ const it = {
   gallery: {
     eyebrow: 'MatchInvStar · uso interno',
     title: 'Varianti di design *a confronto*',
-    lead: 'Cinque direzioni di design applicate alle stesse tre schermate: landing, risultati del founder e vista dell’investitore. Tutte usano il vero motore di matching e gli stessi dati di esempio fittizi.',
+    lead: 'Cinque direzioni di design applicate alle stesse cinque schermate: landing, risultati del founder, vista dell’investitore, chat con l’agente e directory degli investitori. Tutte usano il vero motore di matching e gli stessi dati di esempio fittizi.',
     screensLabel: 'Apri le schermate',
     pros: 'Pro',
     cons: 'Contro',
@@ -122,7 +155,13 @@ const en: VariantsMessages = {
   },
   fictional: 'Fictional sample data: startups, investors, people and amounts are made up.',
   loading: 'Loading the variant…',
-  screens: { landing: 'Landing', results: 'Founder results', investor: 'Investor view' },
+  screens: {
+    landing: 'Landing',
+    results: 'Founder results',
+    investor: 'Investor view',
+    agent: 'Agent chat',
+    directory: 'Investor directory',
+  },
   screenNav: 'Screens of this variant',
   variantNav: 'Same screen in another variant',
   actions: {
@@ -143,6 +182,32 @@ const en: VariantsMessages = {
   founderProfile: (settore: string, fase: string, regione: string, round: string) =>
     `Sample profile: ${settore} startup, ${fase}, ${regione}, raising ${round}`,
   investorThesis: (settori: string, fasi: string, ticket: string) => `Sample thesis: ${settori} · ${fasi} · ticket ${ticket}`,
+  agentMock: {
+    agent: 'Agent',
+    you: 'You',
+    greeting: 'Hi, I’m the MatchInvStar agent. I’ll ask you four questions about your startup and suggest the investors that fit.',
+    questions: {
+      settore: 'Which sector is the startup in?',
+      fase: 'What stage are you at?',
+      round: 'How much are you raising in this round?',
+      regione: 'Where is the startup based?',
+    },
+    summary: (n: number) => `I found ${n} investors that fit. Here are the first three, with the main reason:`,
+    quickReplies: 'Quick replies',
+    chips: { why: 'Why the first one?', optin: 'How does contact work?' },
+    replyWhy: (name: string, reasons: string) => `${name}: ${reasons}.`,
+    replyOptin:
+      'Propose your profile and the investor only sees an anonymous teaser. Names are shared only if you both say yes; a no is never revealed.',
+    openReal: 'Try the real agent',
+    note: 'A sample conversation already filled in with the fictional profile: the quick replies show two of the agent’s answers.',
+  },
+  directoryMock: {
+    lead: 'The demo’s investors, filterable by type. No direct contact: intros only happen through the double opt-in.',
+    filterLabel: 'Filter by investor type',
+    showMore: (n: number) => `Show ${n} more`,
+    openReal: 'Open the full directory',
+    note: 'Visual preview: type filter and short cards. Search, full filters and profiles are in the real directory.',
+  },
   keyboardHint: 'Keyboard',
   variants: {
     v1: {
@@ -184,7 +249,7 @@ const en: VariantsMessages = {
   gallery: {
     eyebrow: 'MatchInvStar · internal',
     title: 'Design variants *side by side*',
-    lead: 'Five design directions applied to the same three screens: landing, founder results and investor view. All of them use the real matching engine and the same fictional sample data.',
+    lead: 'Five design directions applied to the same five screens: landing, founder results, investor view, agent chat and investor directory. All of them use the real matching engine and the same fictional sample data.',
     screensLabel: 'Open the screens',
     pros: 'Pros',
     cons: 'Cons',

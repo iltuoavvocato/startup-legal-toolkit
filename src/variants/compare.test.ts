@@ -13,6 +13,8 @@ describe('compare view', () => {
     expect(compareFromQuery(new URLSearchParams())).toEqual(DEFAULT_COMPARE);
     expect(compareFromQuery(new URLSearchParams('a=v9&b=x&s=checkout&w=tv'))).toEqual(DEFAULT_COMPARE);
     expect(compareFromQuery(new URLSearchParams('a=v3')).left).toBe('v3');
+    expect(compareFromQuery(new URLSearchParams('s=agent')).screen).toBe('agent');
+    expect(compareFromQuery(new URLSearchParams('s=directory')).screen).toBe('directory');
   });
 
   it('builds embed URLs under the base path, in both languages', () => {
@@ -20,6 +22,8 @@ describe('compare view', () => {
     expect(embedSrc('/toolkit/', pathFor(variantRouteId('v4', 'investor'), 'en'))).toBe(
       '/toolkit/en/investor-match/variants/v4/investor/?embed=1',
     );
+    expect(embedSrc('/', pathFor(variantRouteId('v3', 'agent'), 'it'))).toBe('/match-investitori/varianti/v3/agente/?embed=1');
+    expect(embedSrc('/', pathFor(variantRouteId('v5', 'directory'), 'en'))).toBe('/en/investor-match/variants/v5/directory/?embed=1');
     expect(embedSrc('/toolkit', '/x/')).toBe('/toolkit/x/?embed=1');
     expect(isEmbedded('?embed=1')).toBe(true);
     expect(isEmbedded('?embed=0')).toBe(false);

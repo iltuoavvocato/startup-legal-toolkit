@@ -351,9 +351,10 @@ AI Act). Neither is built here; see `/match-investitori/note-legali/`.
 ### Design variants gallery (internal, noindex)
 
 For comparing design directions (Milestone 2). `/match-investitori/varianti/` (EN `/en/investor-match/variants/`) shows one
-card per variant with a preview, description, pros/cons and links to its three screens, plus a **side-by-side compare**
+card per variant with a preview, description, pros/cons and links to its five screens, plus a **side-by-side compare**
 (two iframes; pick left/right variant, screen and desktop/mobile width; the choice is mirrored in `?a=&b=&s=&w=`).
-Each screen lives at `…/varianti/vN/{landing,risultati,investitore}/` (EN `…/variants/vN/{landing,results,investor}/`):
+Each screen lives at `…/varianti/vN/{landing,risultati,investitore,agente,investitori}/` (EN
+`…/variants/vN/{landing,results,investor,agent,directory}/`):
 
 | | Direction | Founder results | Investor view |
 | --- | --- | --- | --- |
@@ -363,6 +364,14 @@ Each screen lives at `…/varianti/vN/{landing,risultati,investitore}/` (EN `…
 | **V4** | Card / swipe: stack of cards, buttons, drag, ← → and undo | Interessato = propose profile | Interessato / Passa, undo only for a pass |
 | **V5** | Dark premium (ilTuoAvvocato black, mono figures, minimal gold) | master/detail split | dark list + terminal-style intro email |
 
+Agent chat / directory (M12): V1 printed interview / two-column index · V2 console + mini table / dense table with filter
+sidebar · V3 chat bubbles / agent-introduced list with chips · V4 question cards + score rings / card grid with chip row ·
+V5 terminal transcript / minimal list with mono tickets.
+
+- The **agent chat** and **investor directory** screens (Milestone 12) are visual explorations, not new flows: a
+  scripted conversation from the sample profile with two quick replies and the real top 3 matches, and the 36 demo
+  investors with a type filter and "show more" (`src/variants/shared/useMockScreens.ts`, pure logic in
+  `src/variants/logic/mock.ts`). They link to the real agent, directory and investor profiles.
 - All variants use the real engine (`matching.ts`) and the fictional demo data through `src/variants/shared/useDemo.ts`;
   state is in memory only. A startup's "no" looks exactly like no answer (`src/variants/logic/board.ts`, tested, and
   checked end to end by the screenshot script).

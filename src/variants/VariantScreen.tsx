@@ -8,10 +8,10 @@ import * as V3 from './v3';
 import * as V4 from './v4';
 import * as V5 from './v5';
 
-type VariantModule = { Landing: ComponentType; Results: ComponentType; Investor: ComponentType };
+type VariantModule = { Landing: ComponentType; Results: ComponentType; Investor: ComponentType; Agent: ComponentType; Directory: ComponentType };
 
 const MODULES: Record<VariantId, VariantModule> = { v1: V1, v2: V2, v3: V3, v4: V4, v5: V5 };
-const SCREEN_KEY = { landing: 'Landing', results: 'Results', investor: 'Investor' } as const;
+const SCREEN_KEY = { landing: 'Landing', results: 'Results', investor: 'Investor', agent: 'Agent', directory: 'Directory' } as const;
 
 export default function VariantScreen({ variant, screen }: { variant: VariantId; screen: Screen }) {
   const Page = MODULES[variant][SCREEN_KEY[screen]];

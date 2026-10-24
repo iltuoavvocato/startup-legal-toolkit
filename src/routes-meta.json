@@ -339,6 +339,38 @@
       }
     },
     {
+      "id": "matchV1Agent",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v1/agente/",
+        "title": "V1 Editoriale · Chat con l’agente (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V1 “Editoriale” di MatchInvStar: conversazione guidata con l’agente che raccoglie il profilo e propone i match. Prototipo con dati fittizi.",
+        "heading": "V1 Editoriale · Chat con l’agente"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v1/agent/",
+        "title": "V1 Editorial · Agent chat (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V1 “Editorial”: guided conversation where the agent collects the profile and suggests matches. Prototype with fictional data.",
+        "heading": "V1 Editorial · Agent chat"
+      }
+    },
+    {
+      "id": "matchV1Directory",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v1/investitori/",
+        "title": "V1 Editoriale · Directory investitori (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V1 “Editoriale” di MatchInvStar: elenco degli investitori di esempio, filtrabile per tipo. Prototipo con dati fittizi.",
+        "heading": "V1 Editoriale · Directory investitori"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v1/directory/",
+        "title": "V1 Editorial · Investor directory (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V1 “Editorial”: list of sample investors, filterable by type. Prototype with fictional data.",
+        "heading": "V1 Editorial · Investor directory"
+      }
+    },
+    {
       "id": "matchV2Landing",
       "robots": "noindex, nofollow",
       "it": {
@@ -384,6 +416,38 @@
         "title": "V2 Dashboard · Investor view (design variant) | Startup Legal Toolkit",
         "description": "MatchInvStar design variant V2 “Dashboard”: anonymous startup teasers and double opt-in for the investor. Prototype with fictional data.",
         "heading": "V2 Dashboard · Investor view"
+      }
+    },
+    {
+      "id": "matchV2Agent",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v2/agente/",
+        "title": "V2 Dashboard · Chat con l’agente (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V2 “Dashboard” di MatchInvStar: conversazione guidata con l’agente che raccoglie il profilo e propone i match. Prototipo con dati fittizi.",
+        "heading": "V2 Dashboard · Chat con l’agente"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v2/agent/",
+        "title": "V2 Dashboard · Agent chat (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V2 “Dashboard”: guided conversation where the agent collects the profile and suggests matches. Prototype with fictional data.",
+        "heading": "V2 Dashboard · Agent chat"
+      }
+    },
+    {
+      "id": "matchV2Directory",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v2/investitori/",
+        "title": "V2 Dashboard · Directory investitori (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V2 “Dashboard” di MatchInvStar: elenco degli investitori di esempio, filtrabile per tipo. Prototipo con dati fittizi.",
+        "heading": "V2 Dashboard · Directory investitori"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v2/directory/",
+        "title": "V2 Dashboard · Investor directory (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V2 “Dashboard”: list of sample investors, filterable by type. Prototype with fictional data.",
+        "heading": "V2 Dashboard · Investor directory"
       }
     },
     {
@@ -435,6 +499,38 @@
       }
     },
     {
+      "id": "matchV3Agent",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v3/agente/",
+        "title": "V3 Agente conversazionale · Chat con l’agente (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V3 “Agente conversazionale” di MatchInvStar: conversazione guidata con l’agente che raccoglie il profilo e propone i match. Prototipo con dati fittizi.",
+        "heading": "V3 Agente conversazionale · Chat con l’agente"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v3/agent/",
+        "title": "V3 Conversational agent · Agent chat (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V3 “Conversational agent”: guided conversation where the agent collects the profile and suggests matches. Prototype with fictional data.",
+        "heading": "V3 Conversational agent · Agent chat"
+      }
+    },
+    {
+      "id": "matchV3Directory",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v3/investitori/",
+        "title": "V3 Agente conversazionale · Directory investitori (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V3 “Agente conversazionale” di MatchInvStar: elenco degli investitori di esempio, filtrabile per tipo. Prototipo con dati fittizi.",
+        "heading": "V3 Agente conversazionale · Directory investitori"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v3/directory/",
+        "title": "V3 Conversational agent · Investor directory (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V3 “Conversational agent”: list of sample investors, filterable by type. Prototype with fictional data.",
+        "heading": "V3 Conversational agent · Investor directory"
+      }
+    },
+    {
       "id": "matchV4Landing",
       "robots": "noindex, nofollow",
       "it": {
@@ -483,6 +579,38 @@
       }
     },
     {
+      "id": "matchV4Agent",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v4/agente/",
+        "title": "V4 Card e swipe · Chat con l’agente (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V4 “Card e swipe” di MatchInvStar: conversazione guidata con l’agente che raccoglie il profilo e propone i match. Prototipo con dati fittizi.",
+        "heading": "V4 Card e swipe · Chat con l’agente"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v4/agent/",
+        "title": "V4 Cards and swipe · Agent chat (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V4 “Cards and swipe”: guided conversation where the agent collects the profile and suggests matches. Prototype with fictional data.",
+        "heading": "V4 Cards and swipe · Agent chat"
+      }
+    },
+    {
+      "id": "matchV4Directory",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v4/investitori/",
+        "title": "V4 Card e swipe · Directory investitori (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V4 “Card e swipe” di MatchInvStar: elenco degli investitori di esempio, filtrabile per tipo. Prototipo con dati fittizi.",
+        "heading": "V4 Card e swipe · Directory investitori"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v4/directory/",
+        "title": "V4 Cards and swipe · Investor directory (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V4 “Cards and swipe”: list of sample investors, filterable by type. Prototype with fictional data.",
+        "heading": "V4 Cards and swipe · Investor directory"
+      }
+    },
+    {
       "id": "matchV5Landing",
       "robots": "noindex, nofollow",
       "it": {
@@ -528,6 +656,38 @@
         "title": "V5 Dark premium · Investor view (design variant) | Startup Legal Toolkit",
         "description": "MatchInvStar design variant V5 “Dark premium”: anonymous startup teasers and double opt-in for the investor. Prototype with fictional data.",
         "heading": "V5 Dark premium · Investor view"
+      }
+    },
+    {
+      "id": "matchV5Agent",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v5/agente/",
+        "title": "V5 Dark premium · Chat con l’agente (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V5 “Dark premium” di MatchInvStar: conversazione guidata con l’agente che raccoglie il profilo e propone i match. Prototipo con dati fittizi.",
+        "heading": "V5 Dark premium · Chat con l’agente"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v5/agent/",
+        "title": "V5 Dark premium · Agent chat (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V5 “Dark premium”: guided conversation where the agent collects the profile and suggests matches. Prototype with fictional data.",
+        "heading": "V5 Dark premium · Agent chat"
+      }
+    },
+    {
+      "id": "matchV5Directory",
+      "robots": "noindex, nofollow",
+      "it": {
+        "path": "/match-investitori/varianti/v5/investitori/",
+        "title": "V5 Dark premium · Directory investitori (variante di design) | Startup Legal Toolkit",
+        "description": "Variante di design V5 “Dark premium” di MatchInvStar: elenco degli investitori di esempio, filtrabile per tipo. Prototipo con dati fittizi.",
+        "heading": "V5 Dark premium · Directory investitori"
+      },
+      "en": {
+        "path": "/en/investor-match/variants/v5/directory/",
+        "title": "V5 Dark premium · Investor directory (design variant) | Startup Legal Toolkit",
+        "description": "MatchInvStar design variant V5 “Dark premium”: list of sample investors, filterable by type. Prototype with fictional data.",
+        "heading": "V5 Dark premium · Investor directory"
       }
     }
   ],

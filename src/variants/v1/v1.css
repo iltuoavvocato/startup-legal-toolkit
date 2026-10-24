@@ -722,3 +722,201 @@
   width: 100%;
   height: 100%;
 }
+
+/* ---------- Agent chat (as an interview) ---------- */
+.v1-interview-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.v1-line {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--v1-line);
+}
+.v1-line:first-child {
+  border-top: 1px solid var(--v1-hair);
+}
+.v1-speaker {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--v1-ink);
+  padding-top: 0.3rem;
+}
+.v1-line-user .v1-speaker {
+  color: var(--v1-gold-ink);
+}
+.v1-line-text {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.1875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.v1-line-user .v1-line-text {
+  font-style: italic;
+  color: var(--v1-soft);
+}
+.v1-agent-top {
+  margin-top: 3rem;
+}
+.v1-root .v1-agent-top-title {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  margin: 0 0 0.5rem;
+}
+.v1-agent-top .v1-entry {
+  grid-template-columns: 4rem minmax(0, 1fr);
+  padding: 1.5rem 0;
+}
+.v1-quick {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--v1-hair);
+}
+.v1-quick .v1-smallcaps {
+  margin: 0 0 0.75rem;
+}
+.v1-quick-list,
+.v1-dir-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.v1-chip,
+.v1-dir-option {
+  font: inherit;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  color: var(--v1-ink);
+  background: #fff;
+  border: 1px solid var(--v1-hair);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.v1-chip:hover,
+.v1-dir-option:hover {
+  background: #f4f1ea;
+}
+.v1-mock-foot {
+  margin-top: 2.5rem;
+}
+
+/* ---------- Investor directory (as an index) ---------- */
+.v1-dir-filter {
+  border: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 0;
+  min-width: 0;
+}
+.v1-dir-filter legend {
+  padding: 0;
+  margin-bottom: 0.75rem;
+}
+.v1-dir-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.v1-dir-option:has(input:focus-visible) {
+  outline: 3px solid var(--v1-gold);
+  outline-offset: 2px;
+}
+.v1-dir-option.is-on {
+  background: var(--v1-ink);
+  color: #fff;
+}
+.v1-dir-count {
+  font-family: var(--v1-mono);
+  font-size: 0.8125rem;
+  opacity: 0.8;
+}
+.v1-root .v1-directory .v1-mock-foot,
+.v1-root .v1-dir-filter,
+.v1-root .v1-dir-countline {
+  max-width: 56rem;
+}
+.v1-root .v1-dir-countline {
+  margin-top: 1.5rem;
+  margin-bottom: 0;
+}
+.v1-dir-list {
+  list-style: none;
+  margin: 1rem auto 0;
+  padding: 0;
+  max-width: 56rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 3rem;
+}
+.v1-dir-entry {
+  padding: 1.75rem 0;
+  border-top: 1px solid var(--v1-hair);
+  min-width: 0;
+}
+.v1-dir-entry .v1-headline {
+  overflow-wrap: anywhere;
+}
+.v1-dir-tesi {
+  font-family: var(--font-serif);
+  color: var(--v1-soft);
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+.v1-dir-facts {
+  margin: 0 0 1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+.v1-dir-facts > div {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--v1-line);
+  padding-bottom: 0.35rem;
+}
+.v1-dir-facts dt {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--v1-soft);
+  padding-top: 0.15rem;
+}
+.v1-dir-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.v1-dir-num {
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) {
+  .v1-line {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+  }
+  .v1-line-text {
+    font-size: 1.0625rem;
+  }
+  .v1-dir-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .v1-dir-facts > div {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+  }
+}

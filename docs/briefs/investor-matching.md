@@ -873,3 +873,57 @@ Decisions:
 
 Known limits:
 - The example uses one fixed demo investor. Changing the investor isn't offered, to keep the page short.
+
+## Milestone 12: variants for more screens, small fixes (2026-10-24)
+
+What exists:
+- **Two more screens per variant** (10 new screens × IT/EN): the guided agent chat at `/match-investitori/varianti/vN/agente/`
+  (EN `/en/investor-match/variants/vN/agent/`) and the investor directory at `…/varianti/vN/investitori/` (EN
+  `…/variants/vN/directory/`). `noindex, nofollow`, out of the sitemap, banner + fictional label + disclaimer from the
+  shared frame; in the gallery cards, the screen switch of every variant and the compare view (`?s=agent|directory`).
+  They are visual explorations, not new flows: a scripted conversation from the sample profile (four questions and
+  answers, then the real engine's top 3 with score and first reason, two quick replies that add the agent's answer),
+  and the 36 demo investors with a type filter (counts), a polite count line, "show more" and links to the real
+  profiles, directory and agent. Shared state in `src/variants/shared/useMockScreens.ts`, pure logic in
+  `src/variants/logic/mock.ts` (unit-tested); no new copy beyond `variants.agentMock` / `variants.directoryMock`
+  (the rest reuses the directory's labels).
+  - V1: the chat as a printed interview (small-caps speakers, answers in italic serif), the top 3 as numbered
+    "articles"; the directory as a two-column index with a radio filter.
+  - V2: a monospace console with a profile side panel and a mini results table; the directory as a dense table with a
+    radio filter sidebar (stacked cards with inline labels on phones).
+  - V3: the existing chat bubbles, matches inside the agent's summary bubble; the directory introduced by the agent,
+    filter as chips.
+  - V4: one card per question with the answer chip and a 1/4 step, score rings for the top 3; the directory as a card
+    grid with a horizontally scrolling chip filter.
+  - V5: terminal-style transcript (gold agent, grey `>` prompt); the directory as a minimal list with gold mono tickets.
+- **M9 known issue fixed**: the inbox's sample teasers are now seeded even when the agent's investor answered first.
+  Seeding looks for its own sample requests (`i-` ids, `isInvestorInboxSeeded`) instead of "any investor request", skips a
+  sample startup that already has the agent's request (no duplicate teaser, the agent's request is kept as is) and is
+  idempotent; the inbox page tries once per visit. Unit test in `inbox.test.ts`, e2e in `agent.spec.ts` (agent answers →
+  inbox investor tab shows the agent's request plus the samples, unique startups, a reload adds nothing).
+- **Mobile LCP → skipped (measured)**. The LCP element on the match landing is the hero lead `<p>` (Inter), and
+  Lighthouse attributes ~2.6–2.7 s of the 3.1–3.2 s to *render delay*: the text exists only once the JS app has run.
+  Fonts are already `font-display: swap` and Playfair is preloaded. Tried: listing the module preloads before the font
+  preloads and dropping a duplicate stylesheet `<link>` in the prerendered HTML → mobile 92 / 3.1 s (IT), 91 / 3.2 s (EN)
+  before, 91 / 3.2 s and 91 / 3.2 s after: no gain, so reverted. The real levers remain D38 (per-language dictionaries,
+  smaller `app` chunk) or prerendering the hero content into the HTML; neither is contained.
+- **Tests**: 519 unit tests (+1 seeding after the agent, +3 mock screens: script, quick replies, type filter; compare
+  and SEO tests extended to the new screens). E2E: the variant sweep and the axe sweep pick up the 20 new routes automatically; new
+  `variant VN: agent chat quick reply and directory filter` × 5 × IT/EN × desktop/mobile (quick reply → answer, filter →
+  count, links to the real pages, axe after the interactions); compare view switches to the new screens.
+  Screenshots: `screenshots/{,en-}variant-v{1..5}-{agent,directory}-{desktop,mobile}.png` and the gallery.
+
+Variants recommendation (D14) after the new screens: unchanged, with one refinement. The agent chat reads best in
+**V3** (bubbles) on desktop and in **V4** question cards on phones (one question per card is easier to tap and to
+follow);
+the directory confirms **V2's table on desktop and V4 cards on phones**, the same split proposed for the investor view.
+V1 stays the visual base; V5 stays an optional dark theme (its terminal transcript is striking but the least readable).
+
+Known limits:
+- The new screens are static/mock-driven: no free-text input in the chat, no search or full filters in the directory.
+- The V2 directory's results region is labelled with the page title (no visible h2), since no fitting string existed.
+
+Open decisions for Vincenzo:
+- **D46**: the agent chat in the final product: V3 bubbles everywhere, or V4 question cards on phones?
+- **D47**: should the variants gallery grow further (e.g. inbox, export), or freeze at five screens now that D14 is
+  converging?

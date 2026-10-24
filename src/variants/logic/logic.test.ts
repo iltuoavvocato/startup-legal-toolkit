@@ -3,7 +3,9 @@ import { demoInvestors, demoStartups, EXAMPLE_INVESTOR_FORM } from '../../data/m
 import { MESSAGES } from '../../i18n/messages';
 import { matchInvestors, matchStartups } from '../../lib/matching';
 import { ownInvestor, ownStartup } from '../../lib/matchQuery';
+import { TIPI_INVESTITORE } from '../../lib/matchTaxonomy';
 import { MONTHLY_PROPOSAL_LIMIT } from '../../lib/optin';
+import { AGENT_QUESTIONS, agentScript, ask, filterByTipo, tipoCounts } from './mock';
 import { apply, bucketCounts, bucketOf, demoReply, investorStatus, simulateReply, stateOf } from './board';
 import {
   createDeck,
@@ -236,5 +238,34 @@ describe('sample data used by the variants', () => {
   it('gives the investor several anonymous startups', () => {
     const r = matchStartups(ownInvestor(DEMO_THESIS), demoStartups());
     expect(r.matches.length).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe('mock screens (agent chat, directory)', () => {
+  const copy = { greeting: 'hi', questions: { settore: 'S?', fase: 'F?', round: 'R?', regione: 'G?' }, summary: (n: number) => `found ${n}` };
+
+  it('scripts greeting, four question/answer pairs and the summary', () => {
+    const s = agentScript(copy, { settore: 'Fintech', fase: 'Seed', round: '€ 500.000', regione: 'Lombardia' }, 7);
+    expect(s.map((l) => l.from)).toEqual(['agent', ...AGENT_QUESTIONS.flatMap(() => ['agent', 'user']), 'agent']);
+    expect(s.filter((l) => l.from === 'user').map((l) => l.text)).toEqual(['Fintech', 'Seed', '€ 500.000', 'Lombardia']);
+    expect(s.at(-1)!.text).toBe('found 7');
+    expect(new Set(s.map((l) => l.key)).size).toBe(s.length);
+  });
+
+  it('asks each quick reply once, in order', () => {
+    expect(ask(ask(ask([], 'optin'), 'why'), 'optin')).toEqual(['optin', 'why']);
+  });
+
+  it('filters the demo investors by type, with counts that add up', () => {
+    const all = demoInvestors('it');
+    expect(filterByTipo(all, 'all')).toHaveLength(all.length);
+    const counts = tipoCounts(all);
+    expect(counts.reduce((n, x) => n + x.count, 0)).toBe(all.length);
+    for (const { tipo, count } of counts) {
+      const list = filterByTipo(all, tipo);
+      expect(list).toHaveLength(count);
+      expect(list.every((i) => i.tipo === tipo)).toBe(true);
+    }
+    expect(counts.map((x) => x.tipo)).toEqual(TIPI_INVESTITORE.filter((t) => counts.some((x) => x.tipo === t)));
   });
 });

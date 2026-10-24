@@ -4,4 +4,6 @@ import './v2.css';
 export { Landing } from './Landing';
 export { Results } from './Results';
 export { Investor } from './Investor';
+export { Agent } from './Agent';
+export { Directory } from './Directory';
 export { Thumb } from './Thumb';

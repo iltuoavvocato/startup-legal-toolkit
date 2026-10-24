@@ -987,3 +987,228 @@
       border-color 0.15s ease;
   }
 }
+
+/* ---------- Mock screens: agent chat (terminal transcript) and investor directory ---------- */
+.v5-agent-head {
+  padding: 3rem 0 2rem;
+  border-bottom: 1px solid var(--v5-line);
+  margin-bottom: 2rem;
+}
+.v5-agent-head h1 {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0 0 1rem;
+  overflow-wrap: anywhere;
+}
+.v5-term {
+  background: var(--v5-raised);
+  border: 1px solid var(--v5-line);
+  padding: 1.25rem;
+  font-family: var(--v5-mono);
+  font-size: 0.875rem;
+  max-width: 52rem;
+}
+.v5-term-lines {
+  display: grid;
+  gap: 0.85rem;
+}
+.v5-root .v5-term-line {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  margin: 0;
+}
+.v5-term-who {
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--v5-muted);
+  padding-top: 0.15rem;
+}
+.v5-term-agent .v5-term-who {
+  color: var(--v5-gold);
+}
+.v5-term-text {
+  color: var(--v5-soft);
+  overflow-wrap: anywhere;
+}
+.v5-term-user .v5-term-text {
+  color: var(--v5-ink);
+}
+.v5-term-user .v5-term-text::before {
+  content: '> ';
+  color: var(--v5-muted);
+}
+.v5-term-pair {
+  display: grid;
+  gap: 0.85rem;
+}
+.v5-term-matches {
+  display: grid;
+  border-top: 1px solid var(--v5-line);
+  min-width: 0;
+}
+.v5-term-match {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--v5-line);
+}
+.v5-term-rank {
+  color: var(--v5-muted);
+}
+.v5-term-match-body {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  font-family: var(--font-sans);
+}
+.v5-term-match-body .v5-name {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.v5-term-reason {
+  color: var(--v5-soft);
+}
+.v5-term-score {
+  font-size: 1.125rem;
+  white-space: nowrap;
+}
+.v5-term-replies {
+  margin-top: 2rem;
+  max-width: 52rem;
+}
+.v5-root .v5-term-replies h2 {
+  font-family: var(--v5-mono);
+  letter-spacing: 0.14em;
+}
+.v5-chip {
+  font-family: var(--v5-mono);
+  font-size: 0.8125rem;
+}
+.v5-root .v5-mock-note {
+  margin-top: 1.25rem;
+  max-width: 44rem;
+}
+.v5-dir-filter {
+  border: 0;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  min-width: 0;
+}
+.v5-dir-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.v5-dir-option {
+  min-height: 44px;
+  padding: 0.45rem 0.85rem;
+  background: transparent;
+  color: var(--v5-soft);
+  border: 1px solid var(--v5-line-strong);
+  border-radius: 2px;
+  font: 500 0.8125rem/1.2 var(--font-sans);
+  cursor: pointer;
+}
+.v5-dir-option:hover {
+  color: var(--v5-ink);
+  border-color: var(--v5-ink);
+}
+.v5-dir-option[aria-pressed='true'] {
+  background: var(--v5-ink);
+  color: #0b0b0b;
+  border-color: var(--v5-ink);
+}
+.v5-dir-count {
+  font-family: var(--v5-mono);
+  margin-left: 0.25rem;
+  opacity: 0.85;
+}
+.v5-dir-list {
+  border-top: 1px solid var(--v5-line);
+}
+.v5-dir-row {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--v5-line);
+}
+.v5-dir-idx {
+  font-family: var(--v5-mono);
+  font-size: 0.75rem;
+  color: var(--v5-muted);
+  padding-top: 0.35rem;
+}
+.v5-dir-who {
+  min-width: 0;
+}
+.v5-root .v5-dir-name {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin: 0 0 0.25rem;
+  overflow-wrap: anywhere;
+}
+.v5-root .v5-dir-who p {
+  margin: 0 0 0.25rem;
+}
+.v5-dir-meta {
+  color: var(--v5-soft);
+  overflow-wrap: anywhere;
+}
+.v5-root .v5-dir-ticket {
+  grid-column: 2;
+  display: grid;
+  margin: 0;
+}
+.v5-root .v5-dir-ticket .v5-micro {
+  margin: 0;
+}
+.v5-dir-fig {
+  font-family: var(--v5-mono);
+  color: var(--v5-gold);
+  font-size: 0.9375rem;
+}
+.v5-dir-open {
+  grid-column: 2;
+  justify-self: start;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.v5-dir-actions {
+  margin-top: 1.5rem;
+}
+@media (min-width: 720px) {
+  .v5-term {
+    padding: 1.75rem 2rem;
+  }
+  .v5-dir-row {
+    grid-template-columns: 2.5rem minmax(0, 1fr) 13rem auto;
+    align-items: center;
+  }
+  .v5-root .v5-dir-ticket,
+  .v5-dir-open {
+    grid-column: auto;
+  }
+  .v5-root .v5-dir-ticket {
+    text-align: right;
+  }
+}
+@media (max-width: 480px) {
+  .v5-root .v5-term-line {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.2rem;
+  }
+  .v5-term {
+    padding: 1rem;
+  }
+}
+.v5-chip-mark {
+  margin-right: 0.5rem;
+}

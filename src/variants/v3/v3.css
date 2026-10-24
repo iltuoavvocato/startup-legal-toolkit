@@ -624,3 +624,75 @@
   width: 100%;
   height: 100%;
 }
+
+/* ---------- Mock screens: agent chat, investor directory ---------- */
+.v3-root .v3-mock-top {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+}
+.v3-root .v3-mock-count {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: var(--v3-soft);
+  color: var(--v3-green);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+.v3-root .v3-chip.is-primary .v3-mock-count {
+  background: #fff;
+}
+.v3-root .v3-mock-dir {
+  list-style: none;
+  margin: 1.25rem 0 1rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 1rem;
+}
+.v3-root .v3-mock-dcard {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.v3-root h2.v3-card-name {
+  font-size: 1.0625rem;
+}
+.v3-root .v3-mock-facts {
+  margin: 0.6rem 0 0.75rem;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.875rem;
+}
+.v3-root .v3-mock-facts div {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 0.5rem;
+}
+.v3-root .v3-mock-facts dt {
+  color: var(--v3-muted);
+}
+.v3-root .v3-mock-facts dd {
+  margin: 0;
+  color: var(--v3-ink);
+}
+.v3-root .v3-mock-open {
+  margin-top: auto;
+  align-self: flex-start;
+  color: var(--v3-green);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+.v3-root .v3-mock-link {
+  gap: 0.35rem;
+}
+.v3-root button.v3-cta {
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
