@@ -924,6 +924,6 @@ Known limits:
 - The V2 directory's results region is labelled with the page title (no visible h2), since no fitting string existed.
 
 Open decisions for Vincenzo:
-- **D46**: the agent chat in the final product: V3 bubbles everywhere, or V4 question cards on phones?
-- **D47**: should the variants gallery grow further (e.g. inbox, export), or freeze at five screens now that D14 is
+- **D50**: the agent chat in the final product: V3 bubbles everywhere, or V4 question cards on phones?
+- **D51**: should the variants gallery grow further (e.g. inbox, export), or freeze at five screens now that D14 is
   converging?
