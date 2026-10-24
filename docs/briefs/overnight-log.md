@@ -10,10 +10,10 @@ Draft PR: https://github.com/iltuoavvocato/startup-legal-toolkit/pull/1 (branch 
 
 - 02:57 M5: investor directory (36 fictional investors, URL filters, mobile sheet, profile page) + requests inbox (expiry 14d, cap 5, time travel, badge) (pushed, 433 tests)
 
+- 03:29 M6: local export (founder one-pager teaser/full, investor thesis, print A4, .md download, copy) + agent proposals in the shared inbox (455 tests)
+
 ## In progress
-- 03:05 M6: local export (founder one-pager / investor thesis print view) + agent proposals into shared inbox
+- 03:35 M7: Playwright e2e IT/EN + axe accessibility + Lighthouse pass
 
 ## Next
-- Local export (founder one-pager / investor thesis print view)
-- Playwright e2e IT/EN + axe + Lighthouse
 - UI polish, empty states, keyboard support
