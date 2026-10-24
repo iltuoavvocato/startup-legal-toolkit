@@ -18,7 +18,6 @@ const COPY = {
     requests: 'match-investitori/richieste/',
     left: /Proposte rimaste a questo mese: (\d) di 5/,
     interested: 'Mi interessa',
-    simulateStartup: 'Simula la risposta della startup',
     excluded: 'Perché alcuni non compaiono?',
     edit: 'Modifica',
     restart: 'Ricomincia',
@@ -47,7 +46,6 @@ const COPY = {
     requests: 'en/investor-match/requests/',
     left: /Proposals left this month: (\d) of 5/,
     interested: 'I’m interested',
-    simulateStartup: 'Simulate the startup’s answer',
     excluded: 'Why are some missing?',
     edit: 'Edit',
     restart: 'Start over',
@@ -212,7 +210,11 @@ export async function investorFlow(page, base, lang, problems) {
   await page.getByText(c.found).waitFor();
   const first = page.locator('.mi-agent-match').first();
   await first.getByRole('button', { name: new RegExp(`^${c.interested}`) }).click();
-  await first.getByRole('button', { name: new RegExp(`^${c.simulateStartup}`) }).click();
+  // The interest is an answer in the shared inbox's investor tab (D35): link to the requests, the inbox's demo clock.
+  await first.getByRole('link', { name: c.requestsLink }).waitFor();
+  const raw = await page.evaluate(() => window.sessionStorage.getItem('matchinvstar-inbox') ?? '');
+  if (!raw.includes('"role":"investor"') || !raw.includes('"state":"attesa-startup"')) problems.push(`${name}: interest not recorded in the inbox`);
+  await first.getByRole('button', { name: c.travel }).click();
 }
 
 export async function restartWorks(page, base, lang, problems) {

@@ -41,7 +41,6 @@ import {
   type StartupProfile,
 } from './matchTaxonomy';
 import type { RequestView } from './inbox';
-import { transition, type OptInEvent, type OptInState } from './optin';
 import { MAX_DECK_PAGES, type DeckReadErrorCode } from './pdfText';
 
 export type IntakeMode = 'startup' | 'investor';
@@ -226,13 +225,9 @@ export interface IntakeState {
   messages: Message[];
   nextId: number;
   /**
-   * Investor: double opt-in state per teaser (local only). The founder's proposals are not kept here: they live in the
-   * shared requests inbox (inbox.ts), with the same monthly counter as the form results and the directory.
+   * Founder: investors set aside without proposing. Proposals and answers (both modes) are not kept here: they live in
+   * the shared requests inbox (inbox.ts, agentInbox.ts), with the same demo clock as the other matching pages.
    */
-  board: Record<string, OptInState>;
-  /** Investor: ids whose startup answer has been simulated. */
-  simulated: string[];
-  /** Founder: investors set aside without proposing. */
   passed: string[];
 }
 
@@ -245,8 +240,6 @@ export type Action =
   | { type: 'DECK_READY'; pages: number; findings: DeckFindings }
   | { type: 'DECK_ERROR'; code: DeckReadErrorCode; pages?: number }
   | { type: 'PASS'; id: string }
-  | { type: 'INTERESTED'; id: string }
-  | { type: 'SIMULATE'; id: string }
   | { type: 'SHOW_EXCLUDED' }
   | { type: 'RESTART' };
 
@@ -271,8 +264,6 @@ export function initIntake(mode: IntakeMode): IntakeState {
     error: null,
     messages: [],
     nextId: 1,
-    board: {},
-    simulated: [],
     passed: [],
   };
   return advance(agent(s, { kind: 'hello' }));
@@ -589,19 +580,6 @@ function resultsMessages(s: IntakeState, ids: ResultIds): IntakeState {
   );
 }
 
-/** Deterministic fictional answer of the other side, so the demo is repeatable: some say yes, some no. */
-export function demoAnswer(id: string): boolean {
-  let sum = 0;
-  for (const ch of id) sum += ch.charCodeAt(0);
-  return sum % 3 !== 2;
-}
-
-const stateOf = (s: IntakeState, id: string): OptInState | undefined => s.board[id];
-
-function move(s: IntakeState, id: string, event: OptInEvent): IntakeState {
-  return { ...s, board: { ...s.board, [id]: transition(s.board[id] ?? 'proposta', event) } };
-}
-
 /**
  * The conversation reducer. `results` gives the ranked match ids for the answers at the moment the founder or investor
  * confirms (the caller runs the matching engine); it is only read by the confirm answer.
@@ -664,23 +642,9 @@ export function reduce(s: IntakeState, action: Action, results?: (s: IntakeState
       return advance(agent(failed, { kind: 'deckError', code: action.code, ...(action.pages ? { pages: action.pages } : {}) }));
     }
     case 'PASS': {
-      if (s.phase !== 'results') return s;
-      if (s.mode === 'startup') {
-        // Proposals live in the inbox: the caller only offers "set aside" for an investor with no open proposal.
-        if (s.passed.includes(action.id)) return s;
-        return { ...s, passed: [...s.passed, action.id] };
-      }
-      return stateOf(s, action.id) ? s : move(s, action.id, 'INVESTOR_NO');
-    }
-    case 'INTERESTED':
-      if (s.mode !== 'investor' || s.phase !== 'results' || stateOf(s, action.id)) return s;
-      return move(s, action.id, 'INVESTOR_YES');
-    case 'SIMULATE': {
-      // Investor only: the founder's simulated answers come from the inbox's demo clock ("Simula +7 giorni").
-      if (s.mode !== 'investor' || s.phase !== 'results' || s.simulated.includes(action.id)) return s;
-      if (stateOf(s, action.id) !== 'attesa-startup') return s;
-      const yes = demoAnswer(action.id);
-      return { ...move(s, action.id, yes ? 'STARTUP_YES' : 'STARTUP_NO'), simulated: [...s.simulated, action.id] };
+      // Founder only: "set aside" for an investor with no open proposal. Investors answer through the inbox.
+      if (s.phase !== 'results' || s.mode !== 'startup' || s.passed.includes(action.id)) return s;
+      return { ...s, passed: [...s.passed, action.id] };
     }
     case 'SHOW_EXCLUDED':
       if (s.phase !== 'results' || s.messages.some((m) => m.body.kind === 'excluded')) return s;
@@ -717,20 +681,24 @@ export function founderStatus(view: Pick<RequestView, 'status'> | null, passed: 
   }
 }
 
-/** What the investor sees for one teaser. The startup's "no" (chiusa-startup) looks like no answer (attesa-startup). */
-export function investorStatus(s: Pick<IntakeState, 'board' | 'simulated'>, id: string): InvestorStatus {
-  const st = s.board[id];
-  if (!st) return 'idle';
-  switch (st) {
-    case 'proposta':
+/**
+ * What the investor sees for one teaser, from the inbox view of the latest request about that startup (null: none).
+ * The inbox already folds the startup's "no" into silence: waiting until the deadline, then expired ("no news"). A
+ * request that expired before the investor answered reads as a new teaser.
+ */
+export function investorStatus(view: Pick<RequestView, 'status'> | null, answered: boolean): InvestorStatus {
+  if (!view) return 'idle';
+  switch (view.status) {
+    case 'your-turn':
       return 'idle';
-    case 'chiusa-investitore':
-      return 'passed';
-    case 'attesa-startup':
-    case 'chiusa-startup':
-      return s.simulated.includes(id) ? 'noNews' : 'waiting';
+    case 'waiting':
+      return 'waiting';
     case 'intro':
       return 'intro';
+    case 'declined-by-you':
+      return 'passed';
+    case 'expired':
+      return answered ? 'noNews' : 'idle';
   }
 }
 
@@ -1020,12 +988,12 @@ export function restore(raw: string | null, mode: IntakeMode): IntakeState | nul
   if (!s || typeof s !== 'object' || s.version !== 1 || s.mode !== mode || !Array.isArray(s.messages) || !s.answers || !s.deck) return null;
   if (typeof s.nextId !== 'number') return null;
   if (!validAnswers(s.answers)) return null;
-  // Older stored conversations also carry a monthly counter and founder proposals: both now live in the inbox.
-  const rest = Object.fromEntries(Object.entries(s).filter(([k]) => k !== 'counter' && k !== 'limitHit')) as Partial<IntakeState>;
+  // Older stored conversations also carry a monthly counter, founder proposals and the investor's local board: all of
+  // them now live in the inbox.
+  const OLD = ['counter', 'limitHit', 'board', 'simulated'];
+  const rest = Object.fromEntries(Object.entries(s).filter(([k]) => !OLD.includes(k))) as Partial<IntakeState>;
   const base: IntakeState = {
     ...(rest as IntakeState),
-    board: s.mode === 'investor' ? (s.board ?? {}) : {},
-    simulated: s.simulated ?? [],
     passed: s.passed ?? [],
     sources: s.sources ?? {},
     deck: { ...EMPTY_DECK, ...s.deck, findings: null },

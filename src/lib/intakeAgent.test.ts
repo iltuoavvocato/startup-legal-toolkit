@@ -5,7 +5,6 @@ import { extractFromDeck } from './deckExtract';
 import {
   answerText,
   DECK_KEYS,
-  demoAnswer,
   EDITABLE,
   explainInvestorMatch,
   explainStartupMatch,
@@ -389,30 +388,24 @@ describe('double opt-in (local state only)', () => {
   it('founder: pass sets an investor aside; founders\' simulations are left to the inbox clock', () => {
     let s = run(founderDone(), ans('go'));
     const [a, b] = ids(s);
-    expect(run(s, { type: 'SIMULATE', id: a! })).toBe(s);
+    expect(a).toBeDefined();
     s = run(s, { type: 'PASS', id: b! });
     expect(s.passed).toEqual([b]);
     expect(run(s, { type: 'PASS', id: b! })).toBe(s);
   });
 
-  it('investor: interest, simulated answer, and a startup\'s no looks like no answer', () => {
-    let s = run(investorDone(), ans('go'));
-    expect(investorStatus({ board: { x: 'chiusa-startup' }, simulated: [] }, 'x')).toBe(investorStatus({ board: { x: 'attesa-startup' }, simulated: [] }, 'x'));
-    expect(investorStatus({ board: { x: 'chiusa-startup' }, simulated: ['x'] }, 'x')).toBe(investorStatus({ board: { x: 'attesa-startup' }, simulated: ['x'] }, 'x'));
-    const list = ids(s);
-    const no = list.find((id) => !demoAnswer(id))!;
-    const yes = list.find((id) => demoAnswer(id))!;
-    s = run(s, { type: 'INTERESTED', id: no }, { type: 'INTERESTED', id: yes });
-    expect(investorStatus(s, no)).toBe('waiting');
-    s = run(s, { type: 'SIMULATE', id: no }, { type: 'SIMULATE', id: yes });
-    expect(investorStatus(s, no)).toBe('noNews');
-    expect(investorStatus(s, yes)).toBe('intro');
-    // Investors' actions don't apply to founders.
-    const f = run(founderDone(), ans('go'));
-    expect(run(f, { type: 'INTERESTED', id: 'i01' })).toBe(f);
-    // Passing.
-    const third = list.find((id) => id !== no && id !== yes)!;
-    expect(investorStatus(run(s, { type: 'PASS', id: third }), third)).toBe('passed');
+  it('investor: statuses come from the inbox view, and a startup\'s no looks like no answer', () => {
+    // The startup's "no" is folded into silence by the inbox (waiting, then expired): the agent maps views only.
+    expect(investorStatus(null, false)).toBe('idle');
+    expect(investorStatus({ status: 'your-turn' }, false)).toBe('idle');
+    expect(investorStatus({ status: 'waiting' }, true)).toBe('waiting');
+    expect(investorStatus({ status: 'expired' }, true)).toBe('noNews');
+    expect(investorStatus({ status: 'expired' }, false)).toBe('idle');
+    expect(investorStatus({ status: 'declined-by-you' }, true)).toBe('passed');
+    expect(investorStatus({ status: 'intro' }, true)).toBe('intro');
+    // Interest and passes no longer live in the conversation: PASS in investor mode changes nothing here.
+    const s = run(investorDone(), ans('go'));
+    expect(run(s, { type: 'PASS', id: ids(s)[0]! })).toBe(s);
   });
 
   it('the investor never sees the startup name before the intro', () => {
@@ -552,17 +545,15 @@ describe('storage', () => {
     const back = restore(serialize(s), 'startup')!;
     expect(back).toEqual(toStorable(s));
     expect(back.passed).toEqual(['i01']);
-    const inv = run(investorDone(), ans('go'), { type: 'INTERESTED', id: R(investorDone()).matches[0] ?? 'x' });
+    const inv = run(investorDone(), ans('go'));
     expect(restore(serialize(inv), 'investor')).toEqual(toStorable(inv));
   });
 
   it('restores older conversations that still carry a monthly counter and founder proposals', () => {
     const s = run(founderDone(), ans('go'));
-    const old = JSON.stringify({ ...JSON.parse(serialize(s)), counter: { month: '2026-10', used: 2 }, limitHit: 'i01', board: { i01: 'proposta' } });
+    const old = JSON.stringify({ ...JSON.parse(serialize(s)), counter: { month: '2026-10', used: 2 }, limitHit: 'i01', board: { i01: 'proposta' }, simulated: [] });
     const back = restore(old, 'startup')!;
-    expect(back).not.toHaveProperty('counter');
-    expect(back).not.toHaveProperty('limitHit');
-    expect(back.board).toEqual({});
+    for (const k of ['counter', 'limitHit', 'board', 'simulated']) expect(back).not.toHaveProperty(k);
     expect(back.phase).toBe('results');
   });
 
@@ -590,7 +581,6 @@ describe('storage', () => {
   it('restart clears the answers (proposals stay in the inbox)', () => {
     const s = run(founderDone(), ans('go'), { type: 'PASS', id: 'i01' }, { type: 'RESTART' });
     expect(s.answers).toEqual({});
-    expect(s.board).toEqual({});
     expect(s.passed).toEqual([]);
     expect(s.current).toBe('deck');
     expect(s.messages).toHaveLength(2);

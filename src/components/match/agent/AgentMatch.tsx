@@ -2,13 +2,12 @@ import { useId, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { demoInvestors, demoStartups } from '../../../data/matchDemo';
 import { useI18n } from '../../../i18n/context';
-import { agentFounderStatus, answerFromAgent, proposeFromAgent } from '../../../lib/agentInbox';
+import { agentFounderStatus, agentInvestorStatus, answerFromAgent, answerTeaserFromAgent, proposeFromAgent } from '../../../lib/agentInbox';
 import { proposalCounter, timeTravel } from '../../../lib/inbox';
 import {
   explainInvestorMatch,
   explainStartupMatch,
   investorProfileOf,
-  investorStatus,
   matchIdsOf,
   startupProfileOf,
   type Action,
@@ -115,20 +114,26 @@ function FounderMatch({ state, id, rank, dispatch }: Props) {
   );
 }
 
-function InvestorMatch({ state, id, rank, dispatch }: Props) {
-  const { locale, t, f } = useI18n();
+/**
+ * Investor side: interest and passes are answers in the shared inbox's investor tab; the startup's simulated answer
+ * arrives on the inbox's demo clock, and its "no" reads like silence.
+ */
+function InvestorMatch({ state, id, rank }: Props) {
+  const { locale, t, f, path } = useI18n();
   const u = t.intake.ui;
   const L = labelsFor(locale);
   const hid = useId();
+  const { store, now } = useInbox();
 
   const inv = investorProfileOf(state, locale);
   const st = demoStartups(locale).find((x) => x.id === id);
   if (!inv || !st) return null;
   const ev = evaluate(st, inv, 'investitore', locale);
-  const status = investorStatus(state, id);
+  const status = agentInvestorStatus(store, id, now);
   const e = explainStartupMatch(st, inv, ev, status, locale);
   const title = status === 'intro' ? st.nome : t.match.ui.investor.startupTitle(L.settore[st.settore], L.regione[st.regione]);
   const sr = <span className="sr-only">{u.actionSr(title)}</span>;
+  const reply = (yes: boolean) => updateInbox((s, at) => answerTeaserFromAgent(s, id, yes ? 'yes' : 'no', matchIdsOf(state), at));
   return (
     <Card
       hid={hid}
@@ -140,21 +145,25 @@ function InvestorMatch({ state, id, rank, dispatch }: Props) {
     >
       {status === 'idle' && (
         <>
-          <button type="button" className="btn btn-navy btn-sm" onClick={() => dispatch({ type: 'INTERESTED', id })}>
+          <button type="button" className="btn btn-navy btn-sm" onClick={() => reply(true)}>
             {u.actions.interested}
             {sr}
           </button>
-          <button type="button" className="btn btn-text btn-sm" onClick={() => dispatch({ type: 'PASS', id })}>
+          <button type="button" className="btn btn-text btn-sm" onClick={() => reply(false)}>
             {u.actions.passInvestor}
             {sr}
           </button>
         </>
       )}
       {status === 'waiting' && (
-        <button type="button" className="btn btn-outline btn-sm" onClick={() => dispatch({ type: 'SIMULATE', id })}>
-          {u.actions.simulateStartup}
-          {sr}
-        </button>
+        <>
+          <Link to={`${path('matchRequests')}?vista=investitore`} className="btn btn-outline btn-sm">
+            {t.directory.dir.requestsLink}
+          </Link>
+          <button type="button" className="btn btn-text btn-sm" onClick={() => updateInbox((s) => timeTravel(s, TIME_TRAVEL_DAYS))}>
+            {t.directory.inbox.travel(TIME_TRAVEL_DAYS)}
+          </button>
+        </>
       )}
       {status === 'intro' && <Email email={introEmail(st, inv, locale)} />}
     </Card>
