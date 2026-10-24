@@ -42,6 +42,16 @@ Branch `feature/investor-matching` after the variants round 3 merge: lint 0 warn
 ## Next (remaining backlog)
 - D52 agent deck-review restore; D53 rolling inbox cap
 - Rerun screenshots + full Lighthouse (and full e2e) on a quiet machine
-- Variants round 3 screens (requests/export for V1-V5): apply the WIP patch, finish V2 Export, gate, screenshots, comparison table
+- Variants round 3 screens: built on branch `feature/investor-matching-b` (0cb87ef, 62f5352, 864bdd2, pushed, not merged). The e2e run gave 5 failures to fix before merging: the V5 requests row lets a founder tell a declined proposal apart from an unanswered one, and V2 tabs are indistinguishable in forced colours. Screenshots and comparison table still to do
 - Hero prerender for mobile LCP (needs SSR/hydration instead of createRoot; D38)
 - `exactOptionalPropertyTypes` (37 errors at M16)
+
+## Final e2e (10:39)
+Full suite with 2 workers on the merged branch: 631 passed, 1 failed, 4 skipped. The failure ("axe: matchRequests (en)") took 278 ms, a load glitch. Re-run alone at 10:41, all 4 a11y matchRequests tests passed.
+
+## CC sessions / resume (before the ~11:00 usage reset)
+Full detail and exact resume prompts: `/workspace/cc-overnight/STATE.md` (on the build box, not in the repo).
+- Main worktree (`~/.claude/projects/-workspace-startup-legal-toolkit-matching/`): cae95123-41d9-465b-80b2-289e72882456 (wrap round), dad2243c-b3f7-4d2f-9cee-8c8eb100fc9c (M17), 710b34a2-8fe1-40f8-b349-c03854517c3d (M16), c35bea5b-8349-4e16-a3f8-efe77f19305b (M15). All finished.
+- B worktree (`-workspace-startup-legal-toolkit-matching-b`): 7fb03c6a-53f1-42fe-8b5c-2457b97a5fa6 (B1, inbox mock), 0cb0a560-c712-41af-a928-40e21223c130 (B2, round 3 screens). Finished. 5 e2e failures are open (see above).
+- Next prompt 1 (in -b, `claude -p --resume 0cb0a560-c712-41af-a928-40e21223c130`): "Merge feature/investor-matching, fix the 5 failures listed at the end of docs/briefs/variants-round3.md, run the full gate incl. `E2E_PORT=4289 npm run e2e` and `PREVIEW_PORT=4279 npm run screenshots`, then write the V1-V5 comparison table and recommendation. Commit; do not push."
+- Next prompt 2 (main worktree, after that merges): "Quiet-box verification: npm run e2e, npm run screenshots, npm run lighthouse; record real numbers as Milestone 18 in docs/briefs/investor-matching.md and the review pack known issues. Commit; do not push."
