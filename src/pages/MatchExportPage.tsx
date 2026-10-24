@@ -2,6 +2,7 @@ import { useId, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CtaPanel } from '../components/CtaPanel';
 import { Disclaimer } from '../components/Disclaimer';
+import { EmptyArt } from '../components/match/EmptyArt';
 import { PageHero } from '../components/PageHero';
 import { LiveRegion } from '../components/match/LiveRegion';
 import { PrototypeBanner } from '../components/match/PrototypeBanner';
@@ -168,22 +169,25 @@ export function MatchExportPage() {
               </div>
             </div>
           ) : (
-            <div className="card mi-empty mi-export-empty">
-              <h2 className="card-title">{demoId ? P.notFound : P.emptyTitle[kind]}</h2>
-              {!demoId && <p>{P.emptyText[kind]}</p>}
-              <div className="actions">
-                <Link className="btn btn-navy" to={path(kind === 'startup' ? 'matchAgentStartup' : 'matchAgentInvestor')}>
-                  {P.emptyAgent}
-                </Link>
-                <Link className="btn btn-outline" to={path(kind === 'startup' ? 'matchStartup' : 'matchInvestor')}>
-                  {P.emptyForm}
-                </Link>
+            <div className="card mi-empty mi-empty-state mi-export-empty">
+              <EmptyArt kind="doc" />
+              <div>
+                <h2 className="card-title">{demoId ? P.notFound : P.emptyTitle[kind]}</h2>
+                {!demoId && <p>{P.emptyText[kind]}</p>}
+                <div className="actions">
+                  <Link className="btn btn-navy" to={path(kind === 'startup' ? 'matchAgentStartup' : 'matchAgentInvestor')}>
+                    {P.emptyAgent}
+                  </Link>
+                  <Link className="btn btn-outline" to={path(kind === 'startup' ? 'matchStartup' : 'matchInvestor')}>
+                    {P.emptyForm}
+                  </Link>
+                </div>
+                <p className="mi-export-links">
+                  <Link to={{ pathname: path('matchExport'), search: exportQuery(other, locale) }}>
+                    {P.otherKind[kind]}
+                  </Link>
+                </p>
               </div>
-              <p className="mi-export-links">
-                <Link to={{ pathname: path('matchExport'), search: exportQuery(other, locale) }}>
-                  {P.otherKind[kind]}
-                </Link>
-              </p>
             </div>
           )}
           <Disclaimer className="no-print" />

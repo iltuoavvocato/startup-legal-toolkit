@@ -1,9 +1,10 @@
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { CtaPanel } from '../components/CtaPanel';
 import { Disclaimer } from '../components/Disclaimer';
 import { PageHero } from '../components/PageHero';
 import { EuroField } from '../components/match/EuroField';
+import { EmptyArt } from '../components/match/EmptyArt';
 import { FictionalNotice } from '../components/match/FictionalNotice';
 import { LegalLimits } from '../components/match/LegalLimits';
 import { PrototypeBanner } from '../components/match/PrototypeBanner';
@@ -82,12 +83,18 @@ export function MatchDirectoryPage() {
                 <Link to={path('matchRequests')}>{d.requestsLink}</Link>
               </p>
             ) : (
-              <p>
-                {d.profileOff}{' '}
-                <Link to={path('matchAgentStartup')}>{d.profileAgent}</Link>
-                {' · '}
-                <Link to={path('matchStartup')}>{d.profileForm}</Link>
-              </p>
+              <div className="mi-empty-state mi-dir-noprofile">
+                <EmptyArt kind="search" />
+                <div>
+                  <h2 className="mi-dir-noprofile-title">{t.polish.directoryNoProfile.title}</h2>
+                  <p>{t.polish.directoryNoProfile.text}</p>
+                  <p>
+                    <Link to={path('matchAgentStartup')}>{d.profileAgent}</Link>
+                    {' · '}
+                    <Link to={path('matchStartup')}>{d.profileForm}</Link>
+                  </p>
+                </div>
+              </div>
             )}
           </div>
 
@@ -228,6 +235,8 @@ function SearchBox({ id, value, onChange }: { id: string; value: string; onChang
   // Local draft so typing stays smooth; it follows the URL when that changes (back button, chips, "Azzera filtri").
   const [draft, setDraft] = useState(value);
   const last = useRef(value);
+  const input = useRef<HTMLInputElement>(null);
+  const desktop = useSlashShortcut(input);
   useEffect(() => {
     if (value !== last.current.trim()) setDraft(value);
     last.current = value;
@@ -238,8 +247,11 @@ function SearchBox({ id, value, onChange }: { id: string; value: string; onChang
       <div className="mi-dir-search-box">
         <SearchIcon />
         <input
+          ref={input}
           id={id}
           type="search"
+          aria-keyshortcuts={desktop ? '/' : undefined}
+          aria-describedby={desktop ? `${id}-kbd` : undefined}
           value={draft}
           maxLength={80}
           placeholder={d.searchPlaceholder}
@@ -265,8 +277,43 @@ function SearchBox({ id, value, onChange }: { id: string; value: string; onChang
           </button>
         )}
       </div>
+      {desktop && (
+        <p className="mi-kbd-hint" id={`${id}-kbd`}>
+          <span aria-hidden="true">
+            {t.polish.slashHint.split('/')[0]}
+            <kbd>/</kbd>
+            {t.polish.slashHint.split('/')[1]}
+          </span>
+          <span className="sr-only">{t.polish.slashHintSr}</span>
+        </p>
+      )}
     </div>
   );
+}
+
+const SLASH_MEDIA = '(hover: hover) and (pointer: fine) and (min-width: 900px)';
+
+/**
+ * "/" focuses the directory search on desktop (fine pointer, wide screen), unless the user is typing somewhere or a
+ * dialog is open. Returns whether the shortcut is active, so the input can announce it.
+ */
+function useSlashShortcut(input: RefObject<HTMLInputElement>): boolean {
+  const desktop = useMediaQuery(SLASH_MEDIA);
+  useEffect(() => {
+    if (!desktop) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+      const el = e.target as HTMLElement | null;
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+      if (document.querySelector('dialog[open]')) return;
+      e.preventDefault();
+      input.current?.focus();
+      input.current?.select();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [desktop, input]);
+  return desktop;
 }
 
 interface PanelProps {

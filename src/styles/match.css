@@ -4513,3 +4513,35 @@ div.mi-error p {
     transform: none;
   }
 }
+
+.mi-dir-noprofile {
+  padding: 1rem 1.25rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--white);
+}
+
+.mi-dir-noprofile .mi-empty-art {
+  width: 72px;
+  height: 54px;
+}
+
+.mi-dir-noprofile-title {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.mi-dir-noprofile p {
+  margin: 0 0 0.35rem;
+}
+
+.mi-agent-restored {
+  margin: 0 0 1rem;
+}
+
+.mi-export-empty .mi-empty-art,
+.mi-findings-empty .mi-empty-art {
+  margin-top: 0.25rem;
+}

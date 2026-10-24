@@ -19,7 +19,8 @@ function MatchAgentPage({ mode }: { mode: IntakeMode }) {
   const u = t.intake.ui;
   const side = mode === 'startup' ? u.startup : u.investor;
   const formPage = mode === 'startup' ? t.match.ui.startup : t.match.ui.investor;
-  const { state, dispatch } = useIntake(mode);
+  const { state, dispatch, restored } = useIntake(mode);
+  const [showRestored, setShowRestored] = useState(restored);
   const reader = useDeckReader();
   const [message, setMessage] = useState('');
   const [summaryFocus, setSummaryFocus] = useState(0);
@@ -42,6 +43,7 @@ function MatchAgentPage({ mode }: { mode: IntakeMode }) {
   const restart = () => {
     reader.reset();
     dispatch({ type: 'RESTART' });
+    setShowRestored(false);
     setMessage(u.restartDone);
   };
 
@@ -56,6 +58,11 @@ function MatchAgentPage({ mode }: { mode: IntakeMode }) {
         <div className="container">
           <LiveRegion message={message} />
           <ModeSwitch side={mode} current="agent" />
+          {showRestored && (
+            <p className="notice mi-agent-restored" role="status">
+              <span aria-hidden="true">↺</span> {t.polish.agentRestored}
+            </p>
+          )}
           <div className="mi-agent">
             <AgentConversation
               state={state}

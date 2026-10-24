@@ -36,7 +36,12 @@ const results = (s: IntakeState) => resultIdsFor(s, demoInvestors(), demoStartup
  */
 export function useIntake(mode: IntakeMode) {
   const key = STORAGE_KEYS[mode];
-  const [state, setState] = useState<IntakeState>(() => restore(storage()?.getItem(key) ?? null, mode) ?? initIntake(mode));
+  // `restored`: this visit picked up a conversation already under way in this tab (shown as a short notice).
+  const [initial] = useState(() => {
+    const saved = restore(storage()?.getItem(key) ?? null, mode);
+    return { state: saved ?? initIntake(mode), restored: Boolean(saved && saved.messages.length > initIntake(mode).messages.length) };
+  });
+  const [state, setState] = useState<IntakeState>(initial.state);
 
   useEffect(() => {
     try {
@@ -85,5 +90,5 @@ export function useIntake(mode: IntakeMode) {
     setState((s) => reduce(s, action, results));
   }, [key]);
 
-  return { state, dispatch };
+  return { state, dispatch, restored: initial.restored };
 }

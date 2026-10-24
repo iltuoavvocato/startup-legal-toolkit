@@ -17,6 +17,7 @@ import {
 } from '../../lib/deckSignals';
 import { FASI, labelsFor, ONE_LINER_MAX, optionsOf, REGIONI, SETTORI } from '../../lib/matchTaxonomy';
 import { EuroField } from './EuroField';
+import { EmptyArt } from './EmptyArt';
 import { LiveRegion } from './LiveRegion';
 import { SelectField } from './SelectField';
 import { LockIcon } from './TeaserCard';
@@ -57,7 +58,14 @@ export function DeckFindingsReview({ findings, form, decisions, onDecisions, onB
       <LiveRegion message={message} />
 
       {rows.length === 0 ? (
-        <p className="notice">{m.none}</p>
+        <div className="card mi-empty mi-empty-state mi-findings-empty">
+          <EmptyArt kind="deck" />
+          <div>
+            <h3>{t.polish.deckNoFindings.title}</h3>
+            <p>{t.polish.deckNoFindings.text}</p>
+            <p className="field-hint">{m.none}</p>
+          </div>
+        </div>
       ) : (
         <>
           <div className="mi-findings-bar">
