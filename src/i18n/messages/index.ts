@@ -2,6 +2,7 @@ import type { Locale } from '../locales';
 import common from './common';
 import equity from './equity';
 import home from './home';
+import intake from './intake';
 import match from './match';
 import matchDemo from './matchDemo';
 import privacy from './privacy';
@@ -9,7 +10,7 @@ import quiz from './quiz';
 import variants from './variants';
 import vesting from './vesting';
 
-const modules = { common, home, equity, vesting, quiz, privacy, match, matchDemo, variants };
+const modules = { common, home, equity, vesting, quiz, privacy, match, matchDemo, intake, variants };
 
 type Modules = typeof modules;
 export type Messages = { [K in keyof Modules]: Modules[K]['it'] };
