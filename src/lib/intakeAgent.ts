@@ -876,6 +876,8 @@ export function list(items: readonly string[], locale: Locale = 'it'): string {
   return `${items.slice(0, -1).join(', ')} ${MESSAGES[locale].intake.and} ${items[items.length - 1]}`;
 }
 
+const capitalise = (x: string) => x.charAt(0).toUpperCase() + x.slice(1);
+
 export interface Explanation {
   /** Who it is (or, for investors, what the anonymous startup does). */
   lead: string;
@@ -953,7 +955,7 @@ export function explainInvestorMatch(
   const { fits, gaps } = clauses(p, i, ev, 'founder', locale);
   return {
     lead: i.sede ? T.founder.lead(c) : T.founder.leadNoSede(c),
-    fits: T.fitsSentence(list(fits, locale)),
+    fits: T.fitsSentence(capitalise(list(fits, locale))),
     gaps: gaps.length ? gaps : [T.noGaps],
     next: T.founder.next[status](c),
   };
@@ -972,7 +974,7 @@ export function explainStartupMatch(
   const { fits, gaps } = clauses(p, i, ev, 'investor', locale);
   return {
     lead: T.investor.lead(c),
-    fits: T.fitsSentence(list(fits, locale)),
+    fits: T.fitsSentence(capitalise(list(fits, locale))),
     gaps: gaps.length ? gaps : [T.noGaps],
     next: T.investor.next[status](c),
   };

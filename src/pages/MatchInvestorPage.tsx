@@ -10,6 +10,7 @@ import { ExcludedList } from '../components/match/ExcludedList';
 import { LiveRegion } from '../components/match/LiveRegion';
 import { MatchCard } from '../components/match/MatchCard';
 import { MatchSteps } from '../components/match/MatchSteps';
+import { ModeSwitch } from '../components/match/ModeSwitch';
 import { PrototypeBanner } from '../components/match/PrototypeBanner';
 import { ScoreExplainer } from '../components/match/ScoreExplainer';
 import { SelectField } from '../components/match/SelectField';
@@ -144,6 +145,7 @@ export function MatchInvestorPage() {
       <section className="section section-cream tool-section">
         <div className="container">
           <LiveRegion message={message} />
+          {!thesis && <ModeSwitch side="investor" current="form" />}
           <MatchSteps steps={u.steps} current={step} label={t.match.ui.startup.stepsLabel} />
 
           {!thesis ? (

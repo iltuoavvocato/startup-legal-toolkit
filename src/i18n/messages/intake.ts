@@ -58,7 +58,7 @@ const founderIt: SideTemplates & {
   },
   next: {
     idle: (c) =>
-      `Prossimo passo: se proponi il profilo, ${c.nome} vede solo il teaser anonimo. Se gli interessa ti chiedo se vuoi l’intro; se non gli interessa non ricevi alcun rifiuto.`,
+      `Se proponi il profilo, ${c.nome} vede solo il teaser anonimo. Se gli interessa ti chiedo se vuoi l’intro; se non gli interessa non ricevi alcun rifiuto.`,
     passed: (c) => `Ok, lascio da parte ${c.nome}: non riceve nulla e non saprà di questa scelta.`,
     waiting: (c) => `Proposta inviata: ${c.nome} vede solo il teaser anonimo. Ti scrivo solo se c’è un interesse reciproco.`,
     noNews: (c) =>
@@ -90,7 +90,7 @@ const investorIt: SideTemplates & { lead: E; next: Record<'idle' | 'passed' | 'w
   },
   next: {
     idle: () =>
-      'Prossimo passo: se ti interessa, la startup riceve la tua richiesta e decide se accettare l’intro. Il suo nome lo vedi solo se accetta; se passi, non saprà nulla.',
+      'Se ti interessa, la startup riceve la tua richiesta e decide se accettare l’intro. Il suo nome lo vedi solo se accetta; se passi, non saprà nulla.',
     passed: () => 'Ok, non te la ripropongo. La startup non riceverà alcuna notifica del tuo no.',
     waiting: () => 'Interesse inviato. Ti presento solo se anche la startup accetta: fino ad allora il nome resta riservato.',
     noNews: () =>
@@ -121,7 +121,7 @@ const founderEn: typeof founderIt = {
   },
   next: {
     idle: (c) =>
-      `Next step: if you propose your profile, ${c.nome} only sees the anonymous teaser. If they’re interested I’ll ask whether you want the intro; if not, you won’t get any rejection.`,
+      `If you propose your profile, ${c.nome} only sees the anonymous teaser. If they’re interested I’ll ask whether you want the intro; if not, you won’t get any rejection.`,
     passed: (c) => `OK, I’ll set ${c.nome} aside: they receive nothing and won’t know about this choice.`,
     waiting: (c) => `Proposal sent: ${c.nome} only sees the anonymous teaser. I’ll only get back to you if the interest is mutual.`,
     noNews: (c) => `No answer from ${c.nome} for now. If they’re not interested we won’t tell you: the intro simply doesn’t happen.`,
@@ -152,7 +152,7 @@ const investorEn: typeof investorIt = {
   },
   next: {
     idle: () =>
-      'Next step: if you’re interested, the startup gets your request and decides whether to accept the intro. You only see its name if it accepts; if you pass, it won’t know.',
+      'If you’re interested, the startup gets your request and decides whether to accept the intro. You only see its name if it accepts; if you pass, it won’t know.',
     passed: () => 'OK, I won’t suggest it again. The startup won’t be notified of your no.',
     waiting: () => 'Interest sent. I’ll introduce you only if the startup accepts too: until then its name stays confidential.',
     noNews: () => 'No answer from the startup for now. If it’s not interested we won’t tell you: the intro simply doesn’t happen.',
@@ -278,14 +278,14 @@ const it = {
     regione: 'In quale regione ha sede la startup?',
     oneLiner:
       'Ultima cosa: descrivi la startup in una frase, senza il nome. È ciò che legge l’investitore nel teaser anonimo. Puoi anche saltare.',
-    confirm: 'Ho tutto quello che mi serve. Controlla il profilo qui accanto e, se va bene, cerco gli investitori.',
+    confirm: 'Ho tutto quello che mi serve. Controlla il riquadro del profilo e, se va bene, cerco gli investitori.',
     settori: 'Quali settori segui? Puoi sceglierne più di uno: il primo conta come principale.',
     fasi: 'In quali fasi investi?',
     ticket: (fasi: string) =>
       fasi ? `Qual è il tuo ticket, dal minimo al massimo? Per ${fasi} questi intervalli sono comuni:` : 'Qual è il tuo ticket, dal minimo al massimo?',
     aree: 'In quali aree d’Italia investi?',
     sede: 'In che regione hai sede? Le startup vicine ottengono qualche punto in più. Puoi saltare.',
-    confirmInvestor: 'Ho tutto quello che mi serve. Controlla la tesi qui accanto e, se va bene, cerco le startup.',
+    confirmInvestor: 'Ho tutto quello che mi serve. Controlla il riquadro della tesi e, se va bene, cerco le startup.',
     edit: (label: string) => `Va bene, cambiamo: ${label.toLowerCase()}.`,
     deckFinding: {
       settore: (value: string, page: number) => `Nel deck (p. ${page}) leggo che il settore è ${value}. Confermi?`,
@@ -338,7 +338,7 @@ const it = {
     restored: 'Riprendiamo da dove eravamo rimasti.',
   },
   explain: {
-    fitsSentence: (list: string) => `È in linea perché ${list}.`,
+    fitsSentence: (list: string) => `${list}.`,
     noGaps: 'Sui criteri del prototipo non vedo punti deboli evidenti.',
     founder: founderIt,
     investor: investorIt,
@@ -465,14 +465,14 @@ const en: typeof it = {
     roundCheck: (round: string, fase: string) => `${round} is an unusual amount for a ${fase} round. Is that right?`,
     regione: 'Which region is the startup based in?',
     oneLiner: 'Last thing: describe the startup in one sentence, without its name. It’s what investors read in the anonymous teaser. You can skip this.',
-    confirm: 'I have everything I need. Check the profile alongside and, if it looks right, I’ll look for investors.',
+    confirm: 'I have everything I need. Check the profile panel and, if it looks right, I’ll look for investors.',
     settori: 'Which sectors do you follow? You can pick more than one: the first counts as your main sector.',
     fasi: 'Which stages do you invest in?',
     ticket: (fasi: string) =>
       fasi ? `What’s your ticket, from minimum to maximum? For ${fasi} these ranges are common:` : 'What’s your ticket, from minimum to maximum?',
     aree: 'Which parts of Italy do you invest in?',
     sede: 'Which region are you based in? Nearby startups get a few extra points. You can skip this.',
-    confirmInvestor: 'I have everything I need. Check the thesis alongside and, if it looks right, I’ll look for startups.',
+    confirmInvestor: 'I have everything I need. Check the thesis panel and, if it looks right, I’ll look for startups.',
     edit: (label: string) => `Sure, let’s change it: ${label.toLowerCase()}.`,
     deckFinding: {
       settore: (value: string, page: number) => `In the deck (p. ${page}) I read that the sector is ${value}. Is that right?`,
@@ -525,7 +525,7 @@ const en: typeof it = {
     restored: 'Let’s pick up where we left off.',
   },
   explain: {
-    fitsSentence: (list: string) => `It fits because ${list}.`,
+    fitsSentence: (list: string) => `${list}.`,
     noGaps: 'On the prototype’s criteria I see no obvious weak points.',
     founder: founderEn,
     investor: investorEn,

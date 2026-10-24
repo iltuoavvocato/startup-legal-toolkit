@@ -13,6 +13,7 @@ import { ExcludedList } from '../components/match/ExcludedList';
 import { LiveRegion } from '../components/match/LiveRegion';
 import { MatchCard } from '../components/match/MatchCard';
 import { MatchSteps } from '../components/match/MatchSteps';
+import { ModeSwitch } from '../components/match/ModeSwitch';
 import { PrototypeBanner } from '../components/match/PrototypeBanner';
 import { ProposalCounter } from '../components/match/ProposalCounter';
 import { ScoreExplainer } from '../components/match/ScoreExplainer';
@@ -313,6 +314,7 @@ export function MatchStartupPage() {
       <section className="section section-cream tool-section">
         <div className="container">
           <LiveRegion message={message} />
+          {step === 'dati' && <ModeSwitch side="startup" current="form" />}
           <MatchSteps steps={stepLabels} current={stepIndex} label={u.stepsLabel} />
 
           {step === 'dati' && (

@@ -1,0 +1,182 @@
+import { useId, type ReactNode } from 'react';
+import { demoInvestors, demoStartups } from '../../../data/matchDemo';
+import { useI18n } from '../../../i18n/context';
+import {
+  explainInvestorMatch,
+  explainStartupMatch,
+  founderStatus,
+  investorProfileOf,
+  investorStatus,
+  startupProfileOf,
+  type Action,
+  type Explanation,
+  type IntakeState,
+} from '../../../lib/intakeAgent';
+import { evaluate } from '../../../lib/matching';
+import { labelsFor } from '../../../lib/matchTaxonomy';
+import { canPropose, introEmail, MONTHLY_PROPOSAL_LIMIT, teaserOf } from '../../../lib/optin';
+import { IntroEmailPreview } from '../IntroEmailPreview';
+import { ScoreMeter } from '../ScoreMeter';
+import { TeaserCard } from '../TeaserCard';
+
+interface Props {
+  state: IntakeState;
+  id: string;
+  rank: number;
+  dispatch: (a: Action) => void;
+}
+
+/** One match, as the agent presents it: who or what, why it fits, what doesn't, next step and the opt-in actions. */
+export function AgentMatch({ state, id, rank, dispatch }: Props) {
+  const { locale, t, f } = useI18n();
+  const u = t.intake.ui;
+  const L = labelsFor(locale);
+  const hid = useId();
+
+  if (state.mode === 'startup') {
+    const p = startupProfileOf(state, locale);
+    const inv = demoInvestors(locale).find((x) => x.id === id);
+    if (!p || !inv) return null;
+    const ev = evaluate(p, inv, 'startup', locale);
+    const status = founderStatus(state, id);
+    const e = explainInvestorMatch(p, inv, ev, status, locale);
+    const sr = <span className="sr-only">{u.actionSr(inv.nome)}</span>;
+    return (
+      <Card hid={hid} title={`${rank}. ${inv.nome}`} meta={L.tipo[inv.tipo]} score={ev.score} e={e}>
+        {status === 'idle' && (
+          <>
+            <button
+              type="button"
+              className="btn btn-navy btn-sm"
+              disabled={!canPropose(state.counter)}
+              onClick={() => dispatch({ type: 'PROPOSE', id })}
+            >
+              {u.actions.propose}
+              {sr}
+            </button>
+            <button type="button" className="btn btn-text btn-sm" onClick={() => dispatch({ type: 'PASS', id })}>
+              {u.actions.pass}
+              {sr}
+            </button>
+          </>
+        )}
+        {status === 'waiting' && (
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => dispatch({ type: 'SIMULATE', id })}>
+            {u.actions.simulateInvestor}
+            {sr}
+          </button>
+        )}
+        {status === 'request' && (
+          <>
+            <button type="button" className="btn btn-navy btn-sm" onClick={() => dispatch({ type: 'INTRO_YES', id })}>
+              {u.actions.introYes}
+              {sr}
+            </button>
+            <button type="button" className="btn btn-text btn-sm" onClick={() => dispatch({ type: 'INTRO_NO', id })}>
+              {u.actions.introNo}
+              {sr}
+            </button>
+          </>
+        )}
+        {state.limitHit === id && (
+          <p className="mi-error mi-agent-limit" role="alert">
+            {u.limitReached(MONTHLY_PROPOSAL_LIMIT)}
+          </p>
+        )}
+        {status === 'intro' && <Email email={introEmail(p, inv, locale)} />}
+      </Card>
+    );
+  }
+
+  const inv = investorProfileOf(state, locale);
+  const st = demoStartups(locale).find((x) => x.id === id);
+  if (!inv || !st) return null;
+  const ev = evaluate(st, inv, 'investitore', locale);
+  const status = investorStatus(state, id);
+  const e = explainStartupMatch(st, inv, ev, status, locale);
+  const title = status === 'intro' ? st.nome : t.match.ui.investor.startupTitle(L.settore[st.settore], L.regione[st.regione]);
+  const sr = <span className="sr-only">{u.actionSr(title)}</span>;
+  return (
+    <Card
+      hid={hid}
+      title={`${rank}. ${title}`}
+      meta={t.match.ui.investor.startupMeta(L.fase[st.fase], f.euro(st.round))}
+      score={ev.score}
+      e={e}
+      teaser={status === 'intro' ? undefined : <TeaserCard teaser={teaserOf(st, locale)} />}
+    >
+      {status === 'idle' && (
+        <>
+          <button type="button" className="btn btn-navy btn-sm" onClick={() => dispatch({ type: 'INTERESTED', id })}>
+            {u.actions.interested}
+            {sr}
+          </button>
+          <button type="button" className="btn btn-text btn-sm" onClick={() => dispatch({ type: 'PASS', id })}>
+            {u.actions.passInvestor}
+            {sr}
+          </button>
+        </>
+      )}
+      {status === 'waiting' && (
+        <button type="button" className="btn btn-outline btn-sm" onClick={() => dispatch({ type: 'SIMULATE', id })}>
+          {u.actions.simulateStartup}
+          {sr}
+        </button>
+      )}
+      {status === 'intro' && <Email email={introEmail(st, inv, locale)} />}
+    </Card>
+  );
+}
+
+interface CardProps {
+  hid: string;
+  title: string;
+  meta: string;
+  score: number;
+  e: Explanation;
+  teaser?: ReactNode;
+  children: ReactNode;
+}
+
+function Card({ hid, title, meta, score, e, teaser, children }: CardProps) {
+  const { t } = useI18n();
+  const u = t.intake.ui;
+  return (
+    <article className="mi-agent-match" aria-labelledby={`${hid}-h`}>
+      <header className="mi-agent-match-head">
+        <div>
+          <h3 id={`${hid}-h`}>{title}</h3>
+          <p className="mi-agent-match-meta">{meta}</p>
+        </div>
+        <ScoreMeter score={score} />
+      </header>
+      <p className="mi-agent-match-lead">{e.lead}</p>
+      {teaser}
+      <p>
+        <strong>{u.whyTitle}.</strong> {e.fits}
+      </p>
+      <div className="mi-agent-gaps">
+        <strong>{u.gapsTitle}.</strong>
+        <ul>
+          {e.gaps.map((g) => (
+            <li key={g}>{g}</li>
+          ))}
+        </ul>
+      </div>
+      <p className="mi-agent-next" aria-live="polite">
+        <strong>{u.nextTitle}.</strong> {e.next}
+      </p>
+      <div className="mi-agent-match-actions">{children}</div>
+    </article>
+  );
+}
+
+function Email({ email }: { email: ReturnType<typeof introEmail> }) {
+  const { t } = useI18n();
+  return (
+    <details className="details mi-agent-email">
+      <summary>{t.intake.ui.emailToggle}</summary>
+      <IntroEmailPreview email={email} />
+    </details>
+  );
+}

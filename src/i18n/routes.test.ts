@@ -13,6 +13,10 @@ describe('route mapping', () => {
     expect(pathFor('match', 'it')).toBe('/match-investitori/');
     expect(pathFor('match', 'en')).toBe('/en/investor-match/');
     expect(pathFor('matchOptIn', 'en')).toBe('/en/investor-match/double-opt-in/');
+    expect(pathFor('matchAgentStartup', 'it')).toBe('/match-investitori/agente/startup/');
+    expect(pathFor('matchAgentInvestor', 'en')).toBe('/en/investor-match/agent/investor/');
+    expect(switchLocalePath('/match-investitori/agente/investitore', 'en')).toBe('/en/investor-match/agent/investor/');
+    expect(switchLocalePath('/en/investor-match/agent/startup/', 'it')).toBe('/match-investitori/agente/startup/');
     for (const r of ROUTES) {
       expect(r.en.path.startsWith('/en/')).toBe(true);
       expect(r.it.path.startsWith('/en')).toBe(false);

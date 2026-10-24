@@ -13,6 +13,8 @@ export type RouteId =
   | 'match'
   | 'matchStartup'
   | 'matchInvestor'
+  | 'matchAgentStartup'
+  | 'matchAgentInvestor'
   | 'matchOptIn'
   | 'matchLegal'
   | 'matchVariants'

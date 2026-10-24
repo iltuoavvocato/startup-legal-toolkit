@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { launchBrowser } from './browser.mjs';
 import { startPreview } from './serve-dist.mjs';
+import { founderNoDeck, founderWithDeck, investorFlow, restartWorks } from './agent-flows.mjs';
 
 const OUT = 'screenshots';
 if (!existsSync('dist/index.html')) {
@@ -42,10 +43,14 @@ const PAGES = [
   ['match-investor', 'match-investitori/investitore/'],
   ['match-optin', 'match-investitori/doppio-consenso/'],
   ['match-legal', 'match-investitori/note-legali/'],
+  ['match-agent-startup', 'match-investitori/agente/startup/'],
+  ['match-agent-investor', 'match-investitori/agente/investitore/'],
   ['en-home', 'en/'],
   ['en-equity', 'en/equity/'],
   ['en-404', 'en/page-that-does-not-exist/'],
   ['en-match', 'en/investor-match/'],
+  ['en-match-agent-startup', 'en/investor-match/agent/startup/'],
+  ['en-match-agent-investor', 'en/investor-match/agent/investor/'],
   ...VARIANT_PAGES,
 ];
 
@@ -125,6 +130,21 @@ async function openDeckReview(page, base, lang) {
 }
 
 const STATES = {
+  // Guided intake: scripted conversations (deck read on the device, chips, amounts, edit, results, double opt-in).
+  'match-agent-startup-deck': (page, base) => founderWithDeck(page, base, 'it', problems, 'deck'),
+  'match-agent-startup-confirm': (page, base) => founderWithDeck(page, base, 'it', problems, 'confirm'),
+  'match-agent-startup-results': (page, base) => founderWithDeck(page, base, 'it', problems),
+  'en-match-agent-startup-results': (page, base) => founderNoDeck(page, base, 'en', problems),
+  'en-match-agent-startup-deck': (page, base) => founderWithDeck(page, base, 'en', problems, 'deck'),
+  'match-agent-startup-nodeck': (page, base) => founderNoDeck(page, base, 'it', problems),
+  'match-agent-investor-results': (page, base) => investorFlow(page, base, 'it', problems),
+  'en-match-agent-investor-results': async (page, base) => {
+    await investorFlow(page, base, 'en', problems);
+  },
+  'en-match-agent-restart': async (page, base) => {
+    await investorFlow(page, base, 'en', problems);
+    await restartWorks(page, base, 'en', problems);
+  },
   // Design variants: the interactions work on the real engine, and a startup's "no" is never revealed.
   'variant-v4-investor-swiped': async (page, base) => {
     await page.goto(`${base}match-investitori/varianti/v4/investitore/`);
@@ -349,6 +369,12 @@ try {
       if (storage.cookie) problems.push(`[${vpName}] ${name}: cookie set (${storage.cookie})`);
       const extra = storage.keys.filter((k) => k !== 'lang');
       if (extra.length) problems.push(`[${vpName}] ${name}: unexpected localStorage keys ${extra.join(', ')}`);
+      // sessionStorage: only the guided intake's conversation, never the deck's text.
+      const session = await page.evaluate(() => Object.entries(window.sessionStorage));
+      for (const [k, v] of session) {
+        if (!/^matchinvstar-agent-(startup|investor)$/.test(k)) problems.push(`[${vpName}] ${name}: unexpected sessionStorage key ${k}`);
+        else if (v.includes('"snippet"') || /"findings":\{/.test(v)) problems.push(`[${vpName}] ${name}: deck text in sessionStorage`);
+      }
       const lang = await page.evaluate(() => document.documentElement.lang);
       const expected = name.startsWith('en-') ? 'en' : 'it';
       if (lang !== expected) problems.push(`[${vpName}] ${name}: <html lang="${lang}">, expected "${expected}"`);

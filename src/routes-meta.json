@@ -121,6 +121,36 @@
       }
     },
     {
+      "id": "matchAgentStartup",
+      "it": {
+        "path": "/match-investitori/agente/startup/",
+        "title": "Parla con l’agente: trova investitori (prototipo) | Startup Legal Toolkit",
+        "description": "Rispondi a poche domande, una alla volta, e aggiungi il deck se vuoi: l’agente prepara il profilo e ti spiega gli investitori in linea.",
+        "heading": "Racconta il tuo round all’agente"
+      },
+      "en": {
+        "path": "/en/investor-match/agent/startup/",
+        "title": "Talk to the agent: find investors (prototype) | Startup Legal Toolkit",
+        "description": "Answer a few questions, one at a time, and add your deck if you like: the agent drafts your profile and explains the investors that fit.",
+        "heading": "Tell the agent about your round"
+      }
+    },
+    {
+      "id": "matchAgentInvestor",
+      "it": {
+        "path": "/match-investitori/agente/investitore/",
+        "title": "Parla con l’agente: startup per la tua tesi (prototipo) | Startup Legal Toolkit",
+        "description": "Cinque domande sulla tua tesi, una alla volta: l’agente ti propone teaser anonimi di startup in linea e ti spiega il perché.",
+        "heading": "Racconta la tua tesi all’agente"
+      },
+      "en": {
+        "path": "/en/investor-match/agent/investor/",
+        "title": "Talk to the agent: startups for your thesis (prototype) | Startup Legal Toolkit",
+        "description": "Five questions about your thesis, one at a time: the agent suggests anonymous teasers of startups that fit and explains why.",
+        "heading": "Tell the agent about your thesis"
+      }
+    },
+    {
       "id": "matchOptIn",
       "it": {
         "path": "/match-investitori/doppio-consenso/",

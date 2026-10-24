@@ -5,6 +5,7 @@ import { I18nContext, makeI18n, useI18n } from './i18n/context';
 import { localeFromPath, routePatterns, type RouteId } from './i18n/routes';
 import { EquityPage } from './pages/EquityPage';
 import { HomePage } from './pages/HomePage';
+import { MatchAgentInvestorPage, MatchAgentStartupPage } from './pages/MatchAgentPage';
 import { MatchInvestorPage } from './pages/MatchInvestorPage';
 import { MatchLandingPage } from './pages/MatchLandingPage';
 import { MatchLegalPage } from './pages/MatchLegalPage';
@@ -47,6 +48,8 @@ const PAGES: Record<RouteId, ComponentType> = {
   match: MatchLandingPage,
   matchStartup: MatchStartupPage,
   matchInvestor: MatchInvestorPage,
+  matchAgentStartup: MatchAgentStartupPage,
+  matchAgentInvestor: MatchAgentInvestorPage,
   matchOptIn: MatchOptInPage,
   matchLegal: MatchLegalPage,
   matchVariants: lazyPage(() => <GalleryPage />),

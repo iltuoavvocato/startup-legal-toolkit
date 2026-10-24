@@ -62,9 +62,14 @@ export function MatchLandingPage() {
                 ))}
                 <li>{l.startupDoor.limit(MONTHLY_PROPOSAL_LIMIT)}</li>
               </ul>
-              <Link to={path('matchStartup')} className="btn btn-navy">
-                {l.startupDoor.cta} <span aria-hidden="true">→</span>
-              </Link>
+              <div className="mi-door-actions">
+                <Link to={path('matchStartup')} className="btn btn-navy">
+                  {l.startupDoor.cta} <span aria-hidden="true">→</span>
+                </Link>
+                <Link to={path('matchAgentStartup')} className="btn btn-outline">
+                  {t.intake.ui.talk}
+                </Link>
+              </div>
             </article>
             <article className="card mi-door door-investor">
               <h3>{l.investorDoor.title}</h3>
@@ -74,9 +79,14 @@ export function MatchLandingPage() {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-              <Link to={path('matchInvestor')} className="btn btn-outline">
-                {l.investorDoor.cta} <span aria-hidden="true">→</span>
-              </Link>
+              <div className="mi-door-actions">
+                <Link to={path('matchInvestor')} className="btn btn-outline">
+                  {l.investorDoor.cta} <span aria-hidden="true">→</span>
+                </Link>
+                <Link to={path('matchAgentInvestor')} className="btn btn-text">
+                  {t.intake.ui.talk}
+                </Link>
+              </div>
             </article>
           </div>
           <p className="center mi-board-note">
