@@ -44,7 +44,7 @@ npm run preview      # serve dist/
 npm test             # vitest run (unit tests only, fast)
 npm run lint         # eslint, zero warnings allowed
 npm run e2e          # build, check:dist, then Playwright e2e + axe accessibility scans on the production build (desktop + mobile)
-npm run check:dist   # build first; fails on external origins / trackers in dist/, wrong robots, missing disclaimer, sitemap leaks
+npm run check:dist   # build first; fails on external origins / trackers in dist/, wrong robots, missing disclaimer, sitemap leaks, size budget
 npm run e2e:only     # the same without rebuilding (dist/ must be current); add `-- e2e/a11y.spec.ts` etc. to filter
 npm run lighthouse   # build first; Lighthouse mobile + desktop on 5 pages → screenshots/lighthouse/ (`-- --lang=en`)
 npm run screenshots  # build first; full-page PNGs at 1440×900 and 390×844@2x into screenshots/ (git-ignored)
@@ -223,6 +223,10 @@ success fee" stay); it also requires every email literal in `src/` to end with `
 own domains, no analytics/tracker signatures, the intended robots meta on every page (variants and export
 `noindex, nofollow`; guided demo, inbox and investor profile `noindex, follow`; the rest indexed), the disclaimer in
 every prerendered HTML file, and the sitemap listing exactly the indexed pages.
+**Size budget** (Milestone 16, `scripts/size-budget.mjs`, part of `check:dist`): what a first visit downloads (entry
+script, module preloads, stylesheets; gzip) stays within ~12% of the M16 sizes: app shell 153 kB JS / 22 kB CSS,
+landing 204, startup flow 208, agent 211, directory 207 kB JS; the lazy pdf.js chunk 121 kB, and no page may preload
+it. Raise a budget on purpose (and note it in the brief) when a feature needs it.
 
 - **Startup flow** (`/match-investitori/startup/`): settore, fase, regione, round, descrizione and an optional PDF deck
   (drag and drop, file picker, or **"Prova con un deck di esempio" / "Try a sample deck"**, which loads a fictional

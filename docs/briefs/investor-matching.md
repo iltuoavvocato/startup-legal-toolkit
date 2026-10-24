@@ -1032,3 +1032,50 @@ Known limits:
 
 No new open decisions.
 
+
+## Milestone 16: code health, no behaviour changes (2026-10-24)
+
+What exists:
+- **Dead code** (found with a TypeScript-compiler script over `src/`, since `knip` isn't installed and the box is
+  offline; then checked by hand, including `e2e/` and `scripts/`): removed the unused Italian-default exports
+  `SETTORE_LABEL`, `FASE_LABEL`, `AREA_LABEL`, `REGIONE_LABEL`, `TIPO_LABEL` (matchTaxonomy), `STATE_STEPS` (optin),
+  `DEMO_LABEL` (matchDemo), `AGENT_STEPS`, `FONTE_LABEL` (deck); five dictionary keys no code read, in IT and EN
+  (`intake.ui.formLink`, `intake.ui.talkLink`, `exportDoc.page.kindLabel`, `exportDoc.doc.startupNoName`,
+  `variants.v5.investor.emailBody`); the unused `.mi-source` / `.src-deck` CSS. Every other CSS class flagged was
+  built at run time (`band-${…}`, `status-${…}`). No unused files. Exported types used only in their own file stayed.
+- **Duplication**: `useInbox`, `useExportStore` and `useIntake` each had their own try/catch wrapper around
+  sessionStorage. They now use `safeGet` and a new `safeSet(key, value | null)` (null removes the key) in
+  `src/lib/matchStorage.ts`. `src/lib/dates.ts` (`pad2`, `monthKey`, `isoDate`) replaces three hand-written
+  `YYYY-MM(-DD)` formatters (optin `monthKey`, exportDoc `isoDay`, vesting `toISODate`, which keep their names) and the
+  two-digit numbering duplicated in the V1/V5 variants. Score strings stay in the dictionaries (copy, not helpers).
+- **Dictionary tests**: IT/EN key parity was already tested (`messages.test.ts`, keys, array lengths, function
+  arity). New: every dictionary key's name must appear in a non-test source file outside the dictionaries. It's a
+  cheap check: a key with a common name (`title`) can still go unused unnoticed.
+- **Size budget** in `npm run check:dist` (`scripts/size-budget.mjs`, unit tests in `src/i18n/sizeBudget.test.ts`):
+  the gzip size of what a first visit loads (module script, modulepreloads, stylesheets of the IT page) against a
+  budget about 12% above what was measured now. The check also fails if any prerendered page preloads or loads the
+  pdf.js chunk.
+
+  | Measured (kB gzip, JS / CSS) | M16 size | Budget |
+  |---|---|---|
+  | App shell (entry + its CSS) | 136.3 / 19.3 | 153 / 22 |
+  | Match landing (first visit, shell included) | 181.6 / 19.3 | 204 / 22 |
+  | Startup flow | 185.7 / 19.3 | 208 / 22 |
+  | Agent (founder) | 188.2 / 19.3 | 211 / 22 |
+  | Directory | 184.3 / 19.3 | 207 / 22 |
+  | pdf.js chunk (lazy, not preloaded anywhere) | 107.4 | 121 |
+
+  Before/after the cleanup (Vite's raw sizes): `app` JS 434.39 → 433.99 kB, `match` 82.25 → 81.94 kB, CSS
+  101.68 → 101.39 kB; gzip within 0.1 kB. Every match page also preloads the shared `deck` chunk (11.2 kB gzip), which
+  holds the deck extractor (not pdf.js). It's measured, not changed.
+- **Types**: `noUncheckedIndexedAccess` was already on. Now also on in all three tsconfigs: `noImplicitOverride`
+  (three `override` modifiers in `MatchErrorBoundary`), `noImplicitReturns`, `allowUnreachableCode: false`,
+  `allowUnusedLabels: false`. No `any` in `src/` (`@typescript-eslint/no-explicit-any` was already an error).
+  Skipped: `exactOptionalPropertyTypes` (37 errors in 15 files: optional props passed `T | undefined`; fixable, but it's
+  not a small change) and `noPropertyAccessFromIndexSignature` (140 errors, style only).
+
+Known limits:
+- The unused-key test only matches key names; dynamically built key paths aren't checked.
+- Budgets measure the Italian pages. The EN pages load the same chunks.
+
+No new open decisions.
