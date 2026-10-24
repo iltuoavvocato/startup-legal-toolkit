@@ -18,7 +18,9 @@ Draft PR: https://github.com/iltuoavvocato/startup-legal-toolkit/pull/1 (branch 
 
 - 05:40 M9 done: guided split-screen demo /match-investitori/demo + /en/investor-match/demo (both double opt-in branches, "il no non viene mai rivelato" callout, in-memory inbox, deep links, keyboard, autoplay off under reduced motion); agent investor mode through the shared inbox (D35); profileOff removed; per-language dictionary split skipped (not contained, reason in brief). Gate: lint 0, 492 unit tests, build ok, e2e 378 passed + 4 a11y timeouts under box load avg 47 -> a11y spec re-run 160/160 green. Commits a728a8e, 5e9af57, 40359ab.
 
+- 06:20 M10 done: colliding fictional names renamed (Contoverde->Contafiaba, Aulaviva->Lavagnoro, Voltaria->Ventilume, Lievita->Impastoria, Acceleratore Fucina->Acceleratore Scintillaio; D45: full trademark clearance is Vincenzo's call); stored-state hardening (deep validation, never-throwing reads, bilingual error boundary with 'Ricomincia'); pdf.js feature detection with graceful fallback; privacy page section + 'Cancella i dati della demo' button. Gate: lint 0, 503 unit tests, build ok, e2e 406 passed (new hardening.spec.ts). Commits e940ca6..ddda520.
+
 ## In progress
-- 05:41 M10 (next): rename colliding fictional names, storage hardening + error boundary, pdf.js feature detect, privacy section
+- 06:21 M11 (next): 'Come funziona il matching' explainability page + per-result 'Perché questo match?', EN/IT copy review
 
 ## Next
