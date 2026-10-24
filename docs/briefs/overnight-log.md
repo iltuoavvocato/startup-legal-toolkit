@@ -32,7 +32,16 @@ Draft PR: https://github.com/iltuoavvocato/startup-legal-toolkit/pull/1 (branch 
 
 - 09:12 M16 done (no behaviour changes): removed 9 unused exports, 5 unused dictionary keys, 2 CSS classes; shared safeGet/safeSet and src/lib/dates.ts replace duplicated helpers; unused-key test; gzip size budgets in check:dist (shell 136+19 kB, match pages ~182-188+19 kB, pdf.js 107 kB lazy and never preloaded); TS noImplicitOverride/noImplicitReturns etc. on (exactOptionalPropertyTypes skipped: 37 errors). Gate: lint 0, 565 unit, build ok, check:dist ok, e2e 628 passed / 4 skipped. Commits 15ea429, 9010e90, 4b8a577, 8d8f807.
 
-## In progress
-- 09:13 M17 (last round, hard limit 40 min): small known-issue fixes (robots meta on client-side navigation, toast Escape scope, agent deck-review restore), final screenshots + Lighthouse
+- 09:46 M17 done: robots meta follows the route on every client-side navigation (site-wide NOINDEX marked and left alone); toast Escape only dismisses when focus is in the toast or no other layer is open; agent deck-review restore and the rolling inbox cap left as D52/D53. Gate: e2e 631 passed + 1 timeout under load (that spec alone 86/86); screenshots and full Lighthouse not completed under load; home Lighthouse mobile 91/100/100/100, desktop 100/100/100/100. Commits f260ed8, 6d2b5d6, 646854c, 0f67d42.
 
-## Next
+- 10:17 Variants round 3 (partial, from feature/investor-matching-b, merged 10:32 as 7a8e603): inbox mock on the real double opt-in rules (a declined proposal produces the same row as an unanswered one; teasers stay anonymous until the intro) + unit tests; `PREVIEW_PORT` override in scripts/serve-dist.mjs. The requests/export screens were not delivered (WIP patch outside the repo, see docs/briefs/variants-round3.md).
+
+## Status at 10:50
+Branch `feature/investor-matching` after the variants round 3 merge: lint 0 warnings, 570 unit tests (37 files) passed, build ok (prerender incl. sitemap/robots), check:dist ok (89 HTML pages, 30 JS/CSS assets, no external origins/trackers, sizes within budget: shell 136.3+19.3 kB, match pages 181.7-188.3+19.3 kB, pdf.js 107.4 kB not preloaded). Full e2e, screenshots and Lighthouse were not rerun (box load avg ~185). The merge and this log are local, not pushed.
+
+## Next (remaining backlog)
+- D52 agent deck-review restore; D53 rolling inbox cap
+- Rerun screenshots + full Lighthouse (and full e2e) on a quiet machine
+- Variants round 3 screens (requests/export for V1-V5): apply the WIP patch, finish V2 Export, gate, screenshots, comparison table
+- Hero prerender for mobile LCP (needs SSR/hydration instead of createRoot; D38)
+- `exactOptionalPropertyTypes` (37 errors at M16)
