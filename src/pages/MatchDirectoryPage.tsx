@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { CtaPanel } from '../components/CtaPanel';
 import { Disclaimer } from '../components/Disclaimer';
@@ -154,13 +154,19 @@ export function MatchDirectoryPage() {
               )}
 
               {entries.length > 0 ? (
-                <ul className="mi-dir-grid" aria-label={d.listLabel}>
-                  {entries.map((e) => (
-                    <li key={e.investor.id}>
-                      <InvestorCard entry={e} sent={Boolean(activeProposal(store, e.investor.id, now))} />
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  {/* The cards' <h3> need an <h2> above them: on phones the filters' heading is inside the closed sheet. */}
+                  <h2 className="sr-only" id={`${id}-list`}>
+                    {d.listLabel}
+                  </h2>
+                  <ul className="mi-dir-grid" aria-labelledby={`${id}-list`}>
+                    {entries.map((e) => (
+                      <li key={e.investor.id}>
+                        <InvestorCard entry={e} sent={Boolean(activeProposal(store, e.investor.id, now))} />
+                      </li>
+                    ))}
+                  </ul>
+                </>
               ) : (
                 <div className="card mi-dir-empty">
                   <h2 className="card-title">{d.emptyTitle}</h2>
@@ -344,7 +350,7 @@ function FilterDrawer({
     if (!open && dialog.open) dialog.close();
   }, [open]);
   return (
-    <dialog ref={ref} className="mi-dir-drawer" aria-labelledby={titleId} onClose={onClose} onCancel={onClose}>
+    <dialog ref={ref} className="mi-dir-drawer" aria-labelledby={titleId} onClose={onClose} onCancel={onClose} onKeyDown={trapTab}>
       <div className="mi-dir-drawer-head">
         <h2 id={titleId}>{d.filtersTitle}</h2>
         <button type="button" className="mi-dir-drawer-x" onClick={onClose}>
@@ -360,6 +366,24 @@ function FilterDrawer({
       </div>
     </dialog>
   );
+}
+
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Keeps Tab / Shift+Tab inside the open sheet: a modal <dialog> alone lets focus move on to the browser chrome. */
+function trapTab(e: ReactKeyboardEvent<HTMLDialogElement>) {
+  if (e.key !== 'Tab') return;
+  const items = [...e.currentTarget.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => el.offsetParent !== null);
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (!first || !last) return;
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
 }
 
 function InvestorCard({ entry, sent }: { entry: DirectoryEntry; sent: boolean }) {

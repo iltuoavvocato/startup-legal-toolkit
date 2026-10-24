@@ -61,10 +61,13 @@ export function AgentSummary({ state, dispatch, focusSignal }: Props) {
                 {r.value && <span className="mi-agent-source">{r.page ? u.fromDeck(r.page) : u.fromYou}</span>}
               </dd>
               {r.edit && (
-                <button type="button" className="btn btn-text btn-sm mi-agent-edit" onClick={() => dispatch({ type: 'EDIT', q: r.edit! })}>
-                  {u.edit}
-                  <span className="sr-only">{u.editSr(u.labels[r.key])}</span>
-                </button>
+                // In its own <dd>: a <dl> group may only hold <dt>/<dd> children.
+                <dd className="mi-agent-fact-edit">
+                  <button type="button" className="btn btn-text btn-sm mi-agent-edit" onClick={() => dispatch({ type: 'EDIT', q: r.edit! })}>
+                    {u.edit}
+                    <span className="sr-only">{u.editSr(u.labels[r.key])}</span>
+                  </button>
+                </dd>
               )}
             </div>
           ))}

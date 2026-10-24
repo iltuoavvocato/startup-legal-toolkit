@@ -7,6 +7,8 @@
   --v1-hair: #111;
   --v1-gold: #c9a24a;
   --v1-gold-ink: #7a5b18;
+  /* Large gold numerals on white: darker than --v1-gold to reach 3:1 (WCAG AA for large text). */
+  --v1-gold-numeral: #9c7a33;
   --v1-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   background: #fff;
   color: var(--v1-ink);
@@ -258,7 +260,7 @@
   font-family: var(--font-serif);
   font-size: 3rem;
   line-height: 1;
-  color: var(--v1-gold);
+  color: var(--v1-gold-numeral);
   margin-bottom: 0.75rem;
 }
 .v1-root .v1-section h2 {
@@ -532,7 +534,7 @@
   font-family: var(--font-serif);
   font-size: 5rem;
   line-height: 0.9;
-  color: var(--v1-gold);
+  color: var(--v1-gold-numeral);
   font-variant-numeric: lining-nums;
   font-weight: 400;
 }

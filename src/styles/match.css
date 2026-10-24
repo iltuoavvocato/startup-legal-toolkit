@@ -2689,9 +2689,10 @@ div.mi-error p {
   overflow-wrap: anywhere;
 }
 
-.mi-agent-facts .mi-agent-edit {
+.mi-agent-facts dd.mi-agent-fact-edit {
   grid-column: 2;
   grid-row: 1 / span 2;
+  display: block;
 }
 
 .mi-agent-fact-value {

@@ -9,6 +9,8 @@
   --gold: #c9a45c;
   --gold-light: #e2c88e;
   --gold-dark: #7a5b22;
+  /* Gold for large headings on white/cream: --gold is 2.3:1 there, this is ≥3.3:1 (WCAG AA for large text). */
+  --gold-heading: #9c7a33;
   --cream: #f7f3ea;
   --cream-2: #efe8d8;
   --white: #ffffff;
@@ -71,6 +73,11 @@ h2 em {
   font-style: italic;
   font-weight: 500;
   color: var(--gold);
+}
+
+.section-white h2 em,
+.section-cream h2 em {
+  color: var(--gold-heading);
 }
 
 p {

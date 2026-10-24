@@ -74,26 +74,28 @@ export function Conversation({ state, onChip, renderAgent, chipLabel, status }: 
         </div>
         <p className="v3-chat-status">{status}</p>
       </header>
-      <ol className="v3-log" role="log" aria-live="polite" aria-relevant="additions" aria-label={c.logLabel}>
-        {state.messages.map((m, k) => {
-          const isNew = m.id > firstMax;
-          const id = `v3-m-${m.id}`;
-          if (m.from === 'user') {
+      <div className="v3-log-wrap" role="log" aria-live="polite" aria-relevant="additions" aria-label={c.logLabel}>
+        <ol className="v3-log">
+          {state.messages.map((m, k) => {
+            const isNew = m.id > firstMax;
+            const id = `v3-m-${m.id}`;
+            if (m.from === 'user') {
+              return (
+                <UserBubble key={m.id} id={id} isNew={isNew}>
+                  {chipLabel(m.chip)}
+                </UserBubble>
+              );
+            }
+            const prev = state.messages[k - 1];
+            const r = renderAgent(m.body);
             return (
-              <UserBubble key={m.id} id={id} isNew={isNew}>
-                {chipLabel(m.chip)}
-              </UserBubble>
+              <AgentBubble key={m.id} id={id} isNew={isNew} continued={prev?.from === 'agent'} wide={r.wide}>
+                {r.content}
+              </AgentBubble>
             );
-          }
-          const prev = state.messages[k - 1];
-          const r = renderAgent(m.body);
-          return (
-            <AgentBubble key={m.id} id={id} isNew={isNew} continued={prev?.from === 'agent'} wide={r.wide}>
-              {r.content}
-            </AgentBubble>
-          );
-        })}
-      </ol>
+          })}
+        </ol>
+      </div>
       <div className="v3-chips" ref={chipsRef} role="group" aria-label={c.chipsLabel}>
         {chips.map((chip) => (
           <button

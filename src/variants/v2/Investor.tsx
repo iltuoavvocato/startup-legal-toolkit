@@ -264,7 +264,7 @@ export function Investor() {
             </span>
           </div>
 
-          <div className="v2-scroll">
+          <div className="v2-scroll" tabIndex={0}>
             <table className="v2-table v2-table-investor">
               <caption className="sr-only">{v.caption}</caption>
               <thead>

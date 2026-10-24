@@ -316,7 +316,7 @@ export function EquityPage() {
               <h2 id="formula-title" className="card-title">
                 {e.formulaTitle}
               </h2>
-              <p className="formula" aria-label={e.formulaAria}>
+              <p className="formula" aria-label={e.formulaAria} tabIndex={0}>
                 {e.formulaWords.share}
                 <sub>i</sub> = Σ<sub>f</sub> {e.formulaWords.weight}
                 <sub>f</sub> × ({e.formulaWords.score}

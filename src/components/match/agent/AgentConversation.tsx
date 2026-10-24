@@ -159,40 +159,42 @@ export function AgentConversation({ state, dispatch, read, onDeckFile, onRestart
         </div>
       </header>
 
-      <ol className="mi-agent-log" role="log" aria-live="polite" aria-relevant="additions" aria-label={u.logLabel}>
-        {reveal.visible.map((m, k) => {
-          const prev = reveal.visible[k - 1];
-          const elId = `mi-m-${m.id}`;
-          if (m.from === 'user') {
-            const q = m.body.kind === 'answer' ? m.body.q : null;
+      <div className="mi-agent-log-wrap" role="log" aria-live="polite" aria-relevant="additions" aria-label={u.logLabel}>
+        <ol className="mi-agent-log">
+          {reveal.visible.map((m, k) => {
+            const prev = reveal.visible[k - 1];
+            const elId = `mi-m-${m.id}`;
+            if (m.from === 'user') {
+              const q = m.body.kind === 'answer' ? m.body.q : null;
+              return (
+                <li key={m.id} id={elId} className="mi-msg is-user">
+                  <div className="mi-bubble">
+                    <span className="sr-only">{u.you}: </span>
+                    {textOf(m)}
+                  </div>
+                  {q && editable(q, m.id) && (
+                    <button type="button" className="btn btn-text btn-sm mi-agent-edit" onClick={() => act({ type: 'EDIT', q })}>
+                      {u.edit}
+                      <span className="sr-only">{u.editSr(u.labels[q as keyof typeof u.labels] ?? textOf(m))}</span>
+                    </button>
+                  )}
+                </li>
+              );
+            }
+            const continued = prev?.from === 'agent';
             return (
-              <li key={m.id} id={elId} className="mi-msg is-user">
-                <div className="mi-bubble">
-                  <span className="sr-only">{u.you}: </span>
-                  {textOf(m)}
-                </div>
-                {q && editable(q, m.id) && (
-                  <button type="button" className="btn btn-text btn-sm mi-agent-edit" onClick={() => act({ type: 'EDIT', q })}>
-                    {u.edit}
-                    <span className="sr-only">{u.editSr(u.labels[q as keyof typeof u.labels] ?? textOf(m))}</span>
-                  </button>
+              <li key={m.id} className={`mi-msg is-agent${continued ? ' is-continued' : ''}${m.body.kind === 'match' ? ' is-wide' : ''}`}>
+                {!continued && (
+                  <span className="mi-agent-avatar is-small" aria-hidden="true">
+                    M
+                  </span>
                 )}
+                <AgentContent m={m} body={m.body} elId={elId} state={state} dispatch={act} />
               </li>
             );
-          }
-          const continued = prev?.from === 'agent';
-          return (
-            <li key={m.id} className={`mi-msg is-agent${continued ? ' is-continued' : ''}${m.body.kind === 'match' ? ' is-wide' : ''}`}>
-              {!continued && (
-                <span className="mi-agent-avatar is-small" aria-hidden="true">
-                  M
-                </span>
-              )}
-              <AgentContent m={m} body={m.body} elId={elId} state={state} dispatch={act} />
-            </li>
-          );
-        })}
-      </ol>
+          })}
+        </ol>
+      </div>
 
       {reveal.typing && (
         <div className="mi-agent-typing">

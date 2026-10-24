@@ -74,7 +74,7 @@ export function Landing() {
           </Link>
         </div>
         <PartsLegend />
-        <div className="v2-scroll">
+        <div className="v2-scroll" tabIndex={0}>
           <table className="v2-table v2-table-preview">
             <thead>
               <tr>
@@ -121,7 +121,7 @@ export function Landing() {
           <h2 id="v2-how-h" className="v2-h2">
             {ML.howTitle}
           </h2>
-          <div className="v2-scroll">
+          <div className="v2-scroll" tabIndex={0}>
             <table className="v2-table v2-table-text">
               <thead>
                 <tr>
@@ -156,7 +156,7 @@ export function Landing() {
           <h2 id="v2-lim-h" className="v2-h2">
             {t.match.ui.limits.title}
           </h2>
-          <div className="v2-scroll">
+          <div className="v2-scroll" tabIndex={0}>
             <table className="v2-table v2-table-text">
               <thead>
                 <tr>

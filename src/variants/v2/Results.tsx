@@ -320,7 +320,7 @@ export function Results() {
             <span className="v2-muted v2-num">{c.shown(rows.length, matches.length)}</span>
           </div>
 
-          <div className="v2-scroll">
+          <div className="v2-scroll" tabIndex={0}>
             <table className="v2-table v2-table-founder">
               <caption className="sr-only">{r.caption}</caption>
               <thead>
@@ -441,7 +441,7 @@ export function Results() {
             <h2 id="v2-exc-h" className="v2-h2">
               {t.match.ui.excluded.investors(excluded.length)}
             </h2>
-            <div className="v2-scroll">
+            <div className="v2-scroll" tabIndex={0}>
               <table className="v2-table v2-table-excluded">
                 <caption className="sr-only">{r.excludedCaption}</caption>
                 <thead>
