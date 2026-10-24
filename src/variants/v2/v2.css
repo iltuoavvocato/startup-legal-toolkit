@@ -949,6 +949,21 @@
 .v2-root .v2-tab[aria-pressed='true'] .v2-tab-label {
   color: var(--v2-accent);
 }
+/* Forced colours drop the inset shadow: mark the pressed tab with a thick system-colour bottom border and underline. */
+@media (forced-colors: active) {
+  .v2-root .v2-tab {
+    border: 1px solid CanvasText;
+  }
+  .v2-root .v2-tab[aria-pressed='true'] {
+    border-bottom: 4px solid Highlight;
+    outline: 2px solid CanvasText;
+    outline-offset: 1px;
+  }
+  .v2-root .v2-tab[aria-pressed='true'] .v2-tab-label {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
 .v2-root .v2-tab-count {
   font-family: var(--v2-mono);
   font-size: 1.35rem;
