@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { CtaPanel } from '../components/CtaPanel';
 import { Disclaimer } from '../components/Disclaimer';
 import { PageHero } from '../components/PageHero';
+import { ConsentExplainer } from '../components/match/ConsentExplainer';
 import { LegalLimits } from '../components/match/LegalLimits';
 import { PrototypeBanner } from '../components/match/PrototypeBanner';
 import { useI18n } from '../i18n/context';
@@ -43,6 +44,7 @@ export function MatchLandingPage() {
               </li>
             ))}
           </ol>
+          <ConsentExplainer />
         </div>
       </section>
 

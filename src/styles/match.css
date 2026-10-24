@@ -4086,3 +4086,430 @@ div.mi-error p {
     font-size: 22pt;
   }
 }
+
+/* ---------------------------------------------------------------------------------------------------------------
+   Milestone 8: empty states, double opt-in explainer, toast, micro-interactions, consistent focus rings.
+   --------------------------------------------------------------------------------------------------------------- */
+
+/* One focus ring everywhere on matching pages: 3px gold, 2px offset, following the element's own radius. */
+.mi-chip:has(input:focus-visible),
+.mi-drop:has(input:focus-visible),
+.mi-bubble:focus-visible,
+.mi-agent-chip:focus-visible,
+.mi-dir-chip:focus-visible,
+.mi-inbox-tabs button:focus-visible,
+.mi-toast-close:focus-visible,
+.mi-nomatch .btn:focus-visible,
+.mi-consent a:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* Long names, amounts and e-mail-like strings never push a card wider than the screen. */
+.mi-match h3,
+.mi-match-meta,
+.mi-filter,
+.mi-nomatch-list strong,
+.mi-inbox-panel h3,
+.mi-dir-card h3 {
+  overflow-wrap: anywhere;
+}
+
+.mi-filter {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Empty states */
+.mi-empty-art {
+  display: block;
+  flex: none;
+  width: 96px;
+  height: 72px;
+}
+
+.mi-art-shadow {
+  fill: var(--cream-2);
+}
+
+.mi-art-card {
+  fill: var(--white);
+  stroke: var(--navy-800);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.mi-art-line {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mi-art-lens {
+  fill: var(--cream);
+  stroke: var(--gold-dark);
+  stroke-width: 2.5;
+}
+
+.mi-art-handle {
+  fill: none;
+  stroke: var(--gold-dark);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.mi-art-dot {
+  fill: var(--gold-light);
+  stroke: var(--gold-dark);
+  stroke-width: 2;
+}
+
+.mi-empty-state {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.mi-empty-state > div {
+  min-width: 0;
+}
+
+.mi-empty-state h2,
+.mi-empty-state h3 {
+  margin: 0 0 0.4rem;
+}
+
+.mi-empty-state p {
+  margin: 0 0 0.75rem;
+  color: var(--text-muted);
+}
+
+.mi-empty-state p:last-child {
+  margin-bottom: 0;
+}
+
+.mi-nomatch {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding: 1.5rem;
+}
+
+.mi-nomatch-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.mi-nomatch-title {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+}
+
+.mi-nomatch-body > p {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+}
+
+.mi-nomatch-sub {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.mi-nomatch-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mi-nomatch-list > li {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--cream);
+}
+
+.mi-nomatch-list ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.mi-nomatch-actions {
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .mi-nomatch,
+  .mi-empty-state {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mi-nomatch-actions .btn {
+    width: 100%;
+  }
+}
+
+/* "Come funziona il doppio consenso" */
+.mi-consent {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.mi-consent-head {
+  margin-bottom: 1.25rem;
+}
+
+.mi-consent-title {
+  margin: 0 0 0.3rem;
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+}
+
+.mi-consent-lead {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.mi-consent-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.mi-consent-steps > li {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.mi-consent-steps h3 {
+  margin: 0.2rem 0 0.25rem;
+  font-family: var(--font-sans);
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.mi-consent-steps p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.mi-consent-num {
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-dark);
+}
+
+.mi-consent-art {
+  flex: none;
+}
+
+.mi-consent-ring {
+  fill: var(--cream);
+  stroke: var(--line);
+}
+
+.mi-consent-shape {
+  fill: var(--white);
+  stroke: var(--navy-800);
+  stroke-width: 2;
+}
+
+.mi-consent-line {
+  fill: none;
+  stroke: var(--navy-800);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mi-consent-accent {
+  fill: var(--gold);
+  stroke: var(--gold-dark);
+  stroke-width: 1.5;
+}
+
+.mi-consent-link {
+  margin: 1.1rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.mi-consent.is-compact {
+  margin: 1.5rem 0 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+@media (max-width: 760px) {
+  .mi-consent-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Toast (aria-live): bottom centre, above sticky bars, never covers content permanently. */
+.mi-toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  transform: translateX(-50%);
+  width: min(560px, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.mi-toast {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.7rem 0.6rem 0.7rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--navy-900);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.92rem;
+  pointer-events: auto;
+}
+
+.mi-toast > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.mi-toast-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--navy-950);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.mi-toast-close {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mi-toast-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* "/" shortcut hint next to the directory search (desktop pointers only). */
+.mi-kbd-hint {
+  display: none;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.mi-kbd-hint kbd {
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--white);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 900px) {
+  .mi-kbd-hint {
+    display: block;
+  }
+}
+
+/* Micro-interactions, only when motion is welcome. */
+@media (prefers-reduced-motion: no-preference) {
+  .mi-chip,
+  .mi-agent-chip,
+  .mi-dir-chip {
+    transition:
+      border-color 0.2s var(--ease),
+      background-color 0.2s var(--ease),
+      transform 0.15s var(--ease);
+  }
+
+  .mi-chip:active,
+  .mi-agent-chip:active,
+  .mi-dir-chip:active {
+    transform: scale(0.97);
+  }
+
+  .mi-chip.is-checked .mi-chip-box {
+    animation: mi-pop 0.22s var(--ease);
+  }
+
+  .mi-sent {
+    animation: mi-fade-up 0.3s var(--ease);
+  }
+
+  .mi-toast {
+    animation: mi-fade-up 0.25s var(--ease);
+  }
+
+  .mi-consent-steps > li {
+    animation: mi-fade-up 0.4s var(--ease) both;
+  }
+
+  .mi-consent-steps > li:nth-child(2) {
+    animation-delay: 0.08s;
+  }
+
+  .mi-consent-steps > li:nth-child(3) {
+    animation-delay: 0.16s;
+  }
+}
+
+@keyframes mi-pop {
+  0% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes mi-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

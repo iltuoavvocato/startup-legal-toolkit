@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type FormEvent, type RefObject } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { Link } from 'react-router-dom';
 import { CtaPanel } from '../components/CtaPanel';
 import { Disclaimer } from '../components/Disclaimer';
@@ -13,7 +13,11 @@ import { updateInbox, useInbox } from '../components/match/useInbox';
 import { DemoBadge } from '../components/match/DemoBadge';
 import { EuroField } from '../components/match/EuroField';
 import { ExcludedList } from '../components/match/ExcludedList';
+import { ConsentExplainer } from '../components/match/ConsentExplainer';
 import { LiveRegion } from '../components/match/LiveRegion';
+import { NoMatches } from '../components/match/NoMatches';
+import { Toast } from '../components/match/Toast';
+import { profileNearMisses } from '../lib/relax';
 import { MatchCard } from '../components/match/MatchCard';
 import { MatchSteps } from '../components/match/MatchSteps';
 import { ModeSwitch } from '../components/match/ModeSwitch';
@@ -140,6 +144,8 @@ export function MatchStartupPage() {
   const counter = proposalCounter(store, now);
   const proposed = store.requests.filter((r) => r.role === 'founder' && activeProposal(store, r.counterpartId, now)).map((r) => r.counterpartId);
   const [message, setMessage] = useState('');
+  const [toast, setToast] = useState('');
+  const clearToast = useCallback(() => setToast(''), []);
   const [errors, setErrors] = useState<{ round?: string; review?: string }>({});
   const headingRef = useRef<HTMLHeadingElement>(null);
   const moved = useRef(false);
@@ -285,7 +291,16 @@ export function MatchStartupPage() {
       if (r?.reason === 'limit') setMessage(t.match.optin.limitReached(MONTHLY_PROPOSAL_LIMIT));
       return;
     }
-    setMessage(u.proposalSent(investorName, MONTHLY_PROPOSAL_LIMIT - counter.used - 1));
+    // The visible toast is the live announcement; the count left is read from the counter card.
+    setMessage('');
+    setToast(`${t.polish.toast.proposed}: ${t.polish.toast.sentTo(investorName, MONTHLY_PROPOSAL_LIMIT - counter.used - 1)}`);
+  };
+
+  const relax = (next: StartupProfile, gained: number) => {
+    setProfile(next);
+    setDraft((d) => (d ? { ...d, round: next.round } : d));
+    setMessage(t.polish.noMatches.relaxed(gained));
+    window.requestAnimationFrame(() => headingRef.current?.focus());
   };
 
   const sourceHint = (k: keyof Extraction): string | undefined => {
@@ -340,6 +355,7 @@ export function MatchStartupPage() {
       <section className="section section-cream tool-section">
         <div className="container">
           <LiveRegion message={message} />
+          <Toast message={toast} onDone={clearToast} />
           {step === 'dati' && <ModeSwitch side="startup" current="form" />}
           <MatchSteps steps={stepLabels} current={stepIndex} label={u.stepsLabel} />
 
@@ -577,6 +593,7 @@ export function MatchStartupPage() {
               proposed={proposed}
               onPropose={propose}
               onEdit={editProfile}
+              onRelax={relax}
               headingRef={headingRef}
               deckInfo={deckInfo}
             />
@@ -597,11 +614,12 @@ interface ResultsProps {
   proposed: string[];
   onPropose: (id: string, name: string) => void;
   onEdit: () => void;
+  onRelax: (next: StartupProfile, gained: number) => void;
   headingRef: RefObject<HTMLHeadingElement>;
   deckInfo: DeckInfo;
 }
 
-function Results({ profile, counter, proposed, onPropose, onEdit, headingRef, deckInfo }: ResultsProps) {
+function Results({ profile, counter, proposed, onPropose, onEdit, onRelax, headingRef, deckInfo }: ResultsProps) {
   const { locale, t, f, path } = useI18n();
   const u = t.match.ui.startup;
   const L = labelsFor(locale);
@@ -657,9 +675,7 @@ function Results({ profile, counter, proposed, onPropose, onEdit, headingRef, de
       )}
 
       {matches.length === 0 ? (
-        <div className="card mi-empty">
-          <p>{u.empty}</p>
-        </div>
+        <StartupNoMatches profile={profile} onEdit={onEdit} onRelax={onRelax} />
       ) : (
         <ol className="mi-matches">
           {matches.map(({ item, evaluation }, i) => {
@@ -710,6 +726,25 @@ function Results({ profile, counter, proposed, onPropose, onEdit, headingRef, de
         items={excluded.map((x) => ({ id: x.item.id, name: x.item.nome, whyNot: x.evaluation.whyNot }))}
       />
       <ScoreExplainer />
+      <ConsentExplainer compact />
     </div>
+  );
+}
+
+function StartupNoMatches({ profile, onEdit, onRelax }: Pick<ResultsProps, 'profile' | 'onEdit' | 'onRelax'>) {
+  const { locale, t, f } = useI18n();
+  const x = t.polish.noMatches;
+  const near = profileNearMisses(profile, demoInvestors(locale), locale);
+  const s = near.suggestion;
+  return (
+    <NoMatches
+      near={near}
+      lead={x.leadProfile}
+      nameOf={(item) => item.nome}
+      relaxText={s ? x.relaxProfile(f.euro(s.patched.round), s.unlocks) : null}
+      relaxLabel={s ? x.relaxButtonProfile(f.euro(s.patched.round)) : x.relaxButton}
+      onRelax={(next) => onRelax(next, s?.unlocks ?? 0)}
+      onEdit={onEdit}
+    />
   );
 }

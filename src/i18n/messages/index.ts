@@ -7,12 +7,13 @@ import home from './home';
 import intake from './intake';
 import match from './match';
 import matchDemo from './matchDemo';
+import polish from './polish';
 import privacy from './privacy';
 import quiz from './quiz';
 import variants from './variants';
 import vesting from './vesting';
 
-const modules = { common, home, equity, vesting, quiz, privacy, match, matchDemo, intake, directory, exportDoc, variants };
+const modules = { common, home, equity, vesting, quiz, privacy, match, matchDemo, intake, directory, exportDoc, polish, variants };
 
 type Modules = typeof modules;
 export type Messages = { [K in keyof Modules]: Modules[K]['it'] };

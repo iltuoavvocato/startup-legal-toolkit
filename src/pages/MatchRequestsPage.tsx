@@ -11,6 +11,8 @@ import { PrototypeBanner } from '../components/match/PrototypeBanner';
 import { TeaserCard } from '../components/match/TeaserCard';
 import { resetInbox, updateInbox, useInbox } from '../components/match/useInbox';
 import { resetExportStore } from '../components/match/useExportStore';
+import { ConsentExplainer } from '../components/match/ConsentExplainer';
+import { EmptyArt } from '../components/match/EmptyArt';
 import { ExportLink } from '../components/match/ExportLink';
 import { DEMO_STARTUPS, demoInvestors, demoStartups, EXAMPLE_STARTUP_FORM } from '../data/matchDemo';
 import { useI18n } from '../i18n/context';
@@ -88,6 +90,7 @@ export function MatchRequestsPage() {
 
   const groups = groupRequests(store, role, now);
   const founderEmpty = role === 'founder' && !store.requests.some((r) => r.role === 'founder');
+  const investorEmpty = role === 'investor' && !store.requests.some((r) => r.role === 'investor');
   const counter = proposalCounter(store, now);
 
   const travel = () => {
@@ -147,9 +150,11 @@ export function MatchRequestsPage() {
                 {x.investor.intro} <DemoBadge />
               </p>
             )}
-            <p className="mi-inbox-export">
-              <ExportLink kind={role === 'founder' ? 'startup' : 'investor'} className="btn btn-text btn-sm" />
-            </p>
+            {!founderEmpty && (
+              <p className="mi-inbox-export">
+                <ExportLink kind={role === 'founder' ? 'startup' : 'investor'} className="btn btn-text btn-sm" />
+              </p>
+            )}
 
             {founderEmpty ? (
               <FounderEmpty
@@ -158,6 +163,14 @@ export function MatchRequestsPage() {
                   setMessage(x.exampleLoaded);
                 }}
               />
+            ) : investorEmpty ? (
+              <div className="card mi-inbox-empty-card mi-empty-state">
+                <EmptyArt kind="inbox" />
+                <div>
+                  <h2 className="card-title">{t.polish.inboxEmpty.investorTitle}</h2>
+                  <p>{t.polish.inboxEmpty.investorText}</p>
+                </div>
+              </div>
             ) : (
               GROUPS.map((g) => (
                 <section key={g} className="mi-inbox-group" aria-labelledby={`${id}-${g}`}>
@@ -174,7 +187,13 @@ export function MatchRequestsPage() {
                       ))}
                     </ul>
                   ) : (
-                    <p className="mi-inbox-empty">{x.emptyGroup[g]}</p>
+                    <p className="mi-inbox-empty">
+                      {role === 'founder'
+                        ? g === 'expired'
+                          ? t.polish.inboxEmpty.expired(REQUEST_EXPIRY_DAYS)
+                          : t.polish.inboxEmpty[g]
+                        : x.emptyGroup[g]}
+                    </p>
                   )}
                 </section>
               ))
@@ -182,6 +201,7 @@ export function MatchRequestsPage() {
 
             <p className="notice mi-inbox-rule">{x.noReveal}</p>
             <p className="field-hint">{x.storageNote}</p>
+            <ConsentExplainer compact />
           </div>
           <LiveRegion message={message} />
 
@@ -220,7 +240,7 @@ function DemoControls({ now, offset, onTravel, onReset }: { now: number; offset:
         {x.today(f.longDate(new Date(now)))} {offset > 0 && <span className="mi-muted">{x.offset(offset)}</span>}
       </p>
       <div className="mi-inbox-demo-actions">
-        <button type="button" className="btn btn-navy btn-sm" onClick={onTravel}>
+        <button type="button" className="btn btn-outline btn-sm" onClick={onTravel}>
           {x.travel(TIME_TRAVEL_DAYS)}
         </button>
         <button type="button" className="btn btn-text btn-sm" onClick={onReset}>
@@ -260,22 +280,25 @@ function FounderEmpty({ onExample }: { onExample: () => void }) {
   const { t, path } = useI18n();
   const x = t.directory.inbox.founder;
   return (
-    <div className="card mi-inbox-empty-card">
-      <h2 className="card-title">{x.emptyTitle}</h2>
-      <p>{x.emptyText}</p>
-      <div className="mi-profile-actions">
-        <Link to={path('matchDirectory')} className="btn btn-navy">
-          {x.emptyDirectory}
-        </Link>
-        <Link to={path('matchStartup')} className="btn btn-outline">
-          {x.emptyMatches}
-        </Link>
-      </div>
-      <div className="mi-inbox-example">
-        <button type="button" className="btn btn-text" onClick={onExample}>
-          {x.example}
-        </button>
-        <p className="field-hint">{x.exampleHint}</p>
+    <div className="card mi-inbox-empty-card mi-empty-state">
+      <EmptyArt kind="inbox" />
+      <div>
+        <h2 className="card-title">{x.emptyTitle}</h2>
+        <p>{x.emptyText}</p>
+        <div className="mi-profile-actions">
+          <Link to={path('matchDirectory')} className="btn btn-navy">
+            {x.emptyDirectory}
+          </Link>
+          <Link to={path('matchStartup')} className="btn btn-outline">
+            {x.emptyMatches}
+          </Link>
+        </div>
+        <div className="mi-inbox-example">
+          <button type="button" className="btn btn-text" onClick={onExample}>
+            {x.example}
+          </button>
+          <p className="field-hint">{x.exampleHint}</p>
+        </div>
       </div>
     </div>
   );

@@ -19,6 +19,9 @@ import { TeaserCard } from '../components/match/TeaserCard';
 import { saveInvestorSheet } from '../components/match/useExportStore';
 import { demoStartups, EXAMPLE_INVESTOR_FORM } from '../data/matchDemo';
 import { readQuery, useSyncQuery } from '../hooks/useQueryState';
+import { ConsentExplainer } from '../components/match/ConsentExplainer';
+import { NoMatches } from '../components/match/NoMatches';
+import { thesisNearMisses } from '../lib/relax';
 import { useI18n } from '../i18n/context';
 import { Rich } from '../i18n/Rich';
 import { matchStartups } from '../lib/matching';
@@ -115,6 +118,14 @@ export function MatchInvestorPage() {
     moved.current = true;
     setThesis(null);
     setMessage(u.stepAnnounce(1, u.steps.length, u.steps[0]!.toLowerCase()));
+  };
+
+  const relax = (next: Thesis, gained: number) => {
+    setForm((f) => ({ ...formFromThesis(next), nome: f.nome }));
+    setThesis(next);
+    setMessage(t.polish.noMatches.relaxed(gained));
+    // The button that was clicked disappears with the empty state: keep focus on the results heading.
+    window.requestAnimationFrame(() => headingRef.current?.focus());
   };
 
   const useExample = () => {
@@ -237,7 +248,7 @@ export function MatchInvestorPage() {
               </div>
             </form>
           ) : (
-            <InvestorResults thesis={thesis} nome={form.nome} onEdit={edit} headingRef={headingRef} />
+            <InvestorResults thesis={thesis} nome={form.nome} onEdit={edit} onRelax={relax} headingRef={headingRef} />
           )}
 
           <Disclaimer />
@@ -252,10 +263,11 @@ interface ResultsProps {
   thesis: Thesis;
   nome: string;
   onEdit: () => void;
+  onRelax: (next: Thesis, gained: number) => void;
   headingRef: RefObject<HTMLHeadingElement>;
 }
 
-function InvestorResults({ thesis, nome, onEdit, headingRef }: ResultsProps) {
+function InvestorResults({ thesis, nome, onEdit, onRelax, headingRef }: ResultsProps) {
   const { locale, t, f, path } = useI18n();
   const u = t.match.ui.investor;
   const L = labelsFor(locale);
@@ -306,9 +318,7 @@ function InvestorResults({ thesis, nome, onEdit, headingRef }: ResultsProps) {
       <p className="mi-aside-text">{u.anonymousNote}</p>
 
       {matches.length === 0 ? (
-        <div className="card mi-empty">
-          <p>{u.empty}</p>
-        </div>
+        <InvestorNoMatches thesis={thesis} onEdit={onEdit} onRelax={onRelax} />
       ) : (
         <ol className="mi-matches">
           {matches.map(({ item, evaluation }, i) => (
@@ -345,6 +355,26 @@ function InvestorResults({ thesis, nome, onEdit, headingRef }: ResultsProps) {
         }))}
       />
       <ScoreExplainer />
+      <ConsentExplainer compact />
     </div>
+  );
+}
+
+function InvestorNoMatches({ thesis, onEdit, onRelax }: Pick<ResultsProps, 'thesis' | 'onEdit' | 'onRelax'>) {
+  const { locale, t } = useI18n();
+  const x = t.polish.noMatches;
+  const L = labelsFor(locale);
+  const near = thesisNearMisses(thesis, demoStartups(locale), locale);
+  const s = near.suggestion;
+  return (
+    <NoMatches
+      near={near}
+      lead={x.leadThesis}
+      nameOf={(item) => t.match.ui.investor.startupTitle(L.settore[item.settore], L.regione[item.regione])}
+      relaxText={s ? x.relaxThesis(s.filters.map((f) => x.filter[f]).join(' + '), s.unlocks) : null}
+      relaxLabel={x.relaxButton}
+      onRelax={(next) => onRelax(next, s?.unlocks ?? 0)}
+      onEdit={onEdit}
+    />
   );
 }
