@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../i18n/context';
 import { PRODUCT_NAME } from '../../lib/optin';
+import { RequestsBadge } from './RequestsBadge';
 
 export function PrototypeBanner() {
   const { t, path } = useI18n();
@@ -13,6 +14,10 @@ export function PrototypeBanner() {
           {PRODUCT_NAME} <span className="mi-muted">{t.match.provisional}</span>
           {b.text} <Link to={path('matchLegal')}>{b.link}</Link>
         </p>
+        <Link to={path('matchRequests')} className="mi-banner-requests">
+          {t.directory.nav.requests}
+          <RequestsBadge />
+        </Link>
       </div>
     </div>
   );

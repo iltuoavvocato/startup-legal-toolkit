@@ -89,7 +89,9 @@ export function MatchLandingPage() {
               </div>
             </article>
           </div>
-          <p className="center mi-board-note">
+          <p className="center mi-board-note mi-landing-links">
+            <Link to={path('matchDirectory')}>{t.directory.dir.landingDirectory}</Link>
+            <Link to={path('matchRequests')}>{t.directory.dir.requestsLink}</Link>
             <Link to={path('matchOptIn')}>{l.simulatorLink}</Link>
           </p>
         </div>

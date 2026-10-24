@@ -7,6 +7,7 @@ import { AgentProcessing } from '../components/match/AgentProcessing';
 import { DeckDropzone } from '../components/match/DeckDropzone';
 import { DeckFindingsReview } from '../components/match/DeckFindingsReview';
 import { useDeckReader } from '../components/match/useDeckReader';
+import { updateInbox, useInbox } from '../components/match/useInbox';
 import { DemoBadge } from '../components/match/DemoBadge';
 import { EuroField } from '../components/match/EuroField';
 import { ExcludedList } from '../components/match/ExcludedList';
@@ -59,7 +60,8 @@ import {
   SETTORI,
   type StartupProfile,
 } from '../lib/matchTaxonomy';
-import { canPropose, consume, counterFor, monthKey, MONTHLY_PROPOSAL_LIMIT, teaserOf } from '../lib/optin';
+import { activeProposal, proposalCounter, propose as proposeTo, withProfile } from '../lib/inbox';
+import { canPropose, MONTHLY_PROPOSAL_LIMIT, teaserOf, type ProposalCounter as Counter } from '../lib/optin';
 
 type Step = 'dati' | 'analisi' | 'trovato' | 'profilo' | 'match';
 const STEPS_DECK: Step[] = ['dati', 'analisi', 'trovato', 'profilo', 'match'];
@@ -131,8 +133,10 @@ export function MatchStartupPage() {
   const [profile, setProfile] = useState<StartupProfile | null>(() =>
     initial ? ownStartup(initial, undefined, locale) : null,
   );
-  const [counter, setCounter] = useState(() => counterFor(monthKey(new Date())));
-  const [proposed, setProposed] = useState<string[]>([]);
+  // Proposals live in the requests inbox (sessionStorage), so the monthly counter is the same on every page.
+  const { store, now } = useInbox();
+  const counter = proposalCounter(store, now);
+  const proposed = store.requests.filter((r) => r.role === 'founder' && activeProposal(store, r.counterpartId, now)).map((r) => r.counterpartId);
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState<{ round?: string; review?: string }>({});
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -230,7 +234,7 @@ export function MatchStartupPage() {
     setProfile(ownStartup(core, { nome: draft.nome, founder: draft.founder, oneLiner: draft.oneLiner }, locale));
     const deckUsed = hasDeck ? accepted : null;
     setDeckInfo({ sources: deckSources(core, deckUsed), signals: deckSignals(deckUsed, locale) });
-    setProposed([]);
+    updateInbox((s) => withProfile(s, core));
     go('match');
   };
 
@@ -252,14 +256,18 @@ export function MatchStartupPage() {
   };
 
   const propose = (investorId: string, investorName: string) => {
-    const r = consume(counter, MONTHLY_PROPOSAL_LIMIT, locale);
-    if (!r.ok) {
-      setMessage(r.reason);
+    if (!profile) return;
+    let result: ReturnType<typeof proposeTo> | null = null;
+    updateInbox((s, at) => {
+      result = proposeTo(withProfile(s, profile), investorId, at);
+      return result.ok ? result.store : s;
+    });
+    const r = result as ReturnType<typeof proposeTo> | null;
+    if (!r?.ok) {
+      if (r?.reason === 'limit') setMessage(t.match.optin.limitReached(MONTHLY_PROPOSAL_LIMIT));
       return;
     }
-    setCounter(r.counter);
-    setProposed((p) => [...p, investorId]);
-    setMessage(u.proposalSent(investorName, MONTHLY_PROPOSAL_LIMIT - r.counter.used));
+    setMessage(u.proposalSent(investorName, MONTHLY_PROPOSAL_LIMIT - counter.used - 1));
   };
 
   const sourceHint = (k: keyof Extraction): string | undefined => {
@@ -567,7 +575,7 @@ export function MatchStartupPage() {
 
 interface ResultsProps {
   profile: StartupProfile;
-  counter: ReturnType<typeof counterFor>;
+  counter: Counter;
   proposed: string[];
   onPropose: (id: string, name: string) => void;
   onEdit: () => void;
@@ -651,6 +659,9 @@ function Results({ profile, counter, proposed, onPropose, onEdit, headingRef, de
                   sent ? (
                     <>
                       <span className="mi-sent">{u.sent}</span>
+                      <Link to={path('matchRequests')} className="btn btn-text btn-sm">
+                        {t.directory.dir.requestsLink}
+                      </Link>
                       <Link to={optInLink(item.id)} state={optInState} className="btn btn-outline btn-sm">
                         {u.simulate} <span aria-hidden="true">→</span>
                       </Link>

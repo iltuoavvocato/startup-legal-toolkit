@@ -181,6 +181,53 @@
       }
     },
     {
+      "id": "matchDirectory",
+      "it": {
+        "path": "/match-investitori/investitori/",
+        "title": "Directory investitori (prototipo, dati fittizi) | Startup Legal Toolkit",
+        "description": "Sfoglia gli investitori della demo per fase, ticket, settore, regione e tipo, con dati di esempio fittizi. Le intro passano solo dal doppio consenso.",
+        "heading": "Directory investitori"
+      },
+      "en": {
+        "path": "/en/investor-match/investors/",
+        "title": "Investor directory (prototype, fictional data) | Startup Legal Toolkit",
+        "description": "Browse the demo investors by stage, ticket, sector, region and type, with fictional sample data. Intros only happen through the double opt-in.",
+        "heading": "Investor directory"
+      }
+    },
+    {
+      "id": "matchInvestorProfile",
+      "robots": "noindex, follow",
+      "it": {
+        "path": "/match-investitori/investitori/scheda/",
+        "title": "Scheda investitore (prototipo, dati fittizi) | Startup Legal Toolkit",
+        "description": "Tesi e criteri di un investitore della demo, con l’affinità con il tuo profilo e la proposta tramite doppio consenso.",
+        "heading": "Scheda investitore"
+      },
+      "en": {
+        "path": "/en/investor-match/investors/profile/",
+        "title": "Investor profile (prototype, fictional data) | Startup Legal Toolkit",
+        "description": "Thesis and criteria of a demo investor, with your profile’s fit and the proposal through the double opt-in.",
+        "heading": "Investor profile"
+      }
+    },
+    {
+      "id": "matchRequests",
+      "robots": "noindex, follow",
+      "it": {
+        "path": "/match-investitori/richieste/",
+        "title": "Richieste e intro (prototipo) | Startup Legal Toolkit",
+        "description": "Le proposte in attesa, accettate e scadute del doppio consenso, per startup e investitori. Un no non viene mai comunicato.",
+        "heading": "Le tue richieste"
+      },
+      "en": {
+        "path": "/en/investor-match/requests/",
+        "title": "Requests and intros (prototype) | Startup Legal Toolkit",
+        "description": "Pending, accepted and expired double opt-in proposals, for startups and investors. A no is never passed on.",
+        "heading": "Your requests"
+      }
+    },
+    {
       "id": "matchVariants",
       "robots": "noindex, nofollow",
       "it": {

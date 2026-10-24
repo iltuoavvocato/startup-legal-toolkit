@@ -8,6 +8,7 @@ import { lawyerUrl, type ToolCampaign } from '../site';
 import { isEmbedded, parseVariantRouteId } from '../variants/registry';
 import { ExternalLink } from './ExternalLink';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { RequestsBadge } from './match/RequestsBadge';
 import { Logo } from './Logo';
 
 const NAV = ['equity', 'vesting', 'quiz', 'match'] as const;
@@ -25,7 +26,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const firstRender = useRef(true);
   const { t, path } = useI18n();
   usePageMeta(pathname);
-  const nav = NAV.map((id) => ({ to: path(id), label: t.common.nav[id] }));
+  const nav = NAV.map((id) => ({ id, to: path(id), label: t.common.nav[id] }));
 
   // Only on the first load of the Italian home: honour a language chosen earlier with the switcher.
   const checkedStoredLocale = useRef(false);
@@ -94,6 +95,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 <li key={item.to}>
                   <NavLink to={item.to} className={({ isActive }) => (isActive ? 'active' : undefined)}>
                     {item.label}
+                    {item.id === 'match' && <RequestsBadge />}
                   </NavLink>
                 </li>
               ))}

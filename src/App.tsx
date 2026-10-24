@@ -6,10 +6,13 @@ import { localeFromPath, routePatterns, type RouteId } from './i18n/routes';
 import { EquityPage } from './pages/EquityPage';
 import { HomePage } from './pages/HomePage';
 import { MatchAgentInvestorPage, MatchAgentStartupPage } from './pages/MatchAgentPage';
+import { MatchDirectoryPage } from './pages/MatchDirectoryPage';
 import { MatchInvestorPage } from './pages/MatchInvestorPage';
+import { MatchInvestorProfilePage } from './pages/MatchInvestorProfilePage';
 import { MatchLandingPage } from './pages/MatchLandingPage';
 import { MatchLegalPage } from './pages/MatchLegalPage';
 import { MatchOptInPage } from './pages/MatchOptInPage';
+import { MatchRequestsPage } from './pages/MatchRequestsPage';
 import { MatchStartupPage } from './pages/MatchStartupPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PrivacyPage } from './pages/PrivacyPage';
@@ -52,6 +55,9 @@ const PAGES: Record<RouteId, ComponentType> = {
   matchAgentInvestor: MatchAgentInvestorPage,
   matchOptIn: MatchOptInPage,
   matchLegal: MatchLegalPage,
+  matchDirectory: MatchDirectoryPage,
+  matchInvestorProfile: MatchInvestorProfilePage,
+  matchRequests: MatchRequestsPage,
   matchVariants: lazyPage(() => <GalleryPage />),
   ...VARIANT_PAGES,
 };

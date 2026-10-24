@@ -6,12 +6,16 @@ import {
   restore,
   resultIdsFor,
   serialize,
+  startupCoreOf,
   STORAGE_KEYS,
   type Action,
   type IntakeMode,
   type IntakeState,
 } from '../../../lib/intakeAgent';
+import { withProfile } from '../../../lib/inbox';
+import type { StartupCore } from '../../../lib/matchQuery';
 import { monthKey } from '../../../lib/optin';
+import { updateInbox } from '../useInbox';
 
 function storage(): Storage | null {
   try {
@@ -41,6 +45,13 @@ export function useIntake(mode: IntakeMode) {
       // Storage full or disabled: the conversation simply isn't kept across reloads.
     }
   }, [key, state]);
+
+  // Once the founder's profile is complete, the directory and the requests inbox can use it (enumerated fields only).
+  const core = mode === 'startup' && state.phase === 'results' ? startupCoreOf(state.answers) : null;
+  const coreKey = core ? JSON.stringify(core) : '';
+  useEffect(() => {
+    if (coreKey) updateInbox((s) => withProfile(s, JSON.parse(coreKey) as StartupCore));
+  }, [coreKey]);
 
   const dispatch = useCallback((action: Action) => {
     if (action.type === 'RESTART') {

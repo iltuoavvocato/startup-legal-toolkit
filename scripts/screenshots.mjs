@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { launchBrowser } from './browser.mjs';
 import { startPreview } from './serve-dist.mjs';
 import { founderNoDeck, founderWithDeck, investorFlow, restartWorks } from './agent-flows.mjs';
+import * as dir from './directory-flows.mjs';
 
 const OUT = 'screenshots';
 if (!existsSync('dist/index.html')) {
@@ -45,12 +46,18 @@ const PAGES = [
   ['match-legal', 'match-investitori/note-legali/'],
   ['match-agent-startup', 'match-investitori/agente/startup/'],
   ['match-agent-investor', 'match-investitori/agente/investitore/'],
+  ['match-directory', 'match-investitori/investitori/'],
+  ['match-investor-profile', 'match-investitori/investitori/scheda/?id=i01'],
+  ['match-requests', 'match-investitori/richieste/'],
   ['en-home', 'en/'],
   ['en-equity', 'en/equity/'],
   ['en-404', 'en/page-that-does-not-exist/'],
   ['en-match', 'en/investor-match/'],
   ['en-match-agent-startup', 'en/investor-match/agent/startup/'],
   ['en-match-agent-investor', 'en/investor-match/agent/investor/'],
+  ['en-match-directory', 'en/investor-match/investors/'],
+  ['en-match-investor-profile', 'en/investor-match/investors/profile/?id=i01'],
+  ['en-match-requests', 'en/investor-match/requests/'],
   ...VARIANT_PAGES,
 ];
 
@@ -130,6 +137,23 @@ async function openDeckReview(page, base, lang) {
 }
 
 const STATES = {
+  // Investor directory, investor profile and requests inbox (double opt-in with expiry; a "no" is never revealed).
+  ...Object.fromEntries(
+    ['it', 'en'].flatMap((lang) => {
+      const p = lang === 'en' ? 'en-' : '';
+      return [
+        [`${p}match-directory-filtered`, (page, base) => dir.directoryFiltered(page, base, lang, problems)],
+        [`${p}match-directory-empty`, (page, base) => dir.directoryEmpty(page, base, lang, problems)],
+        [`${p}match-investor-profile-noprofile`, (page, base) => dir.profileNoProfile(page, base, lang, problems)],
+        [`${p}match-requests-founder`, (page, base) => dir.requestsFounder(page, base, lang, problems)],
+        [`${p}match-investor-profile-fit`, (page, base) => dir.profileWithFit(page, base, lang, problems)],
+        [`${p}match-directory-fit`, (page, base) => dir.directoryWithFit(page, base, lang, problems)],
+        [`${p}match-requests-investor`, (page, base) => dir.requestsInvestor(page, base, lang, problems)],
+        [`${p}match-requests-travel`, (page, base) => dir.requestsTravel(page, base, lang, problems, 'founder')],
+        [`${p}match-requests-investor-travel`, (page, base) => dir.requestsTravel(page, base, lang, problems, 'investor')],
+      ];
+    }),
+  ),
   // Guided intake: scripted conversations (deck read on the device, chips, amounts, edit, results, double opt-in).
   'match-agent-startup-deck': (page, base) => founderWithDeck(page, base, 'it', problems, 'deck'),
   'match-agent-startup-confirm': (page, base) => founderWithDeck(page, base, 'it', problems, 'confirm'),
@@ -369,9 +393,13 @@ try {
       if (storage.cookie) problems.push(`[${vpName}] ${name}: cookie set (${storage.cookie})`);
       const extra = storage.keys.filter((k) => k !== 'lang');
       if (extra.length) problems.push(`[${vpName}] ${name}: unexpected localStorage keys ${extra.join(', ')}`);
-      // sessionStorage: only the guided intake's conversation, never the deck's text.
+      // sessionStorage: only the guided intake's conversation and the requests inbox, never the deck's text or names.
       const session = await page.evaluate(() => Object.entries(window.sessionStorage));
       for (const [k, v] of session) {
+        if (k === 'matchinvstar-inbox') {
+          if (/"(nome|founder|oneLiner|email)":/.test(v)) problems.push(`[${vpName}] ${name}: names in the inbox storage`);
+          continue;
+        }
         if (!/^matchinvstar-agent-(startup|investor)$/.test(k)) problems.push(`[${vpName}] ${name}: unexpected sessionStorage key ${k}`);
         else if (v.includes('"snippet"') || /"findings":\{/.test(v)) problems.push(`[${vpName}] ${name}: deck text in sessionStorage`);
       }
@@ -411,6 +439,14 @@ try {
       const sticky = join(OUT, 'equity-sticky-summary-mobile.png');
       await page.screenshot({ path: sticky });
       files.push(sticky);
+      // Directory filters as a bottom sheet on phones (viewport capture: the sheet is fixed).
+      for (const lang of ['it', 'en']) {
+        await dir.directoryDrawer(page, base, lang);
+        const drawer = join(OUT, `${lang === 'en' ? 'en-' : ''}match-directory-drawer-mobile.png`);
+        await page.screenshot({ path: drawer });
+        files.push(drawer);
+        await page.keyboard.press('Escape');
+      }
     }
     await context.close();
   }
