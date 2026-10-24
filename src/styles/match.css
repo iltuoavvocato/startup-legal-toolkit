@@ -5083,3 +5083,64 @@ div.mi-error p {
     min-width: 0;
   }
 }
+
+/* ---------- Forced colours (Windows high contrast) ----------
+   Selected chips and tabs, the current step and the score bars use system colours (brand backgrounds are dropped);
+   fields that draw their focus ring with a box-shadow get a real outline. */
+@media (forced-colors: active) {
+  .mi-field select:focus-visible,
+  .mi-textarea:focus-visible {
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  .mi-chip.is-checked,
+  .mi-agent-chip.is-on,
+  .mi-inbox-tabs button.is-active,
+  .mi-steps li.is-current .mi-steps-num {
+    forced-color-adjust: none;
+    background: SelectedItem;
+    color: SelectedItemText;
+    border-color: SelectedItem;
+  }
+
+  /* The ticked box becomes a filled square (the tick image is drawn in a brand colour). */
+  .mi-chip.is-checked .mi-chip-box,
+  .mi-agent-chip.is-on .mi-agent-check {
+    background: SelectedItemText;
+    border-color: SelectedItemText;
+  }
+
+  .mi-agent-chip.is-current,
+  .mi-agent-chip.is-suggested,
+  .mi-steps li.is-done .mi-steps-num,
+  .mi-agent-steps li.is-done .mi-agent-dot {
+    border-width: 2px;
+  }
+
+  .mi-steps-num,
+  .mi-agent-dot {
+    border-style: dashed;
+  }
+
+  .mi-steps li.is-done .mi-steps-num,
+  .mi-steps li.is-current .mi-steps-num,
+  .mi-agent-steps li.is-done .mi-agent-dot,
+  .mi-agent-steps li.is-active .mi-agent-dot {
+    border-style: solid;
+  }
+
+  .mi-score-bar,
+  .mi-breakdown-bar {
+    forced-color-adjust: none;
+    height: 6px;
+    background: Canvas;
+    border: 1px solid CanvasText;
+  }
+
+  .mi-score-bar span,
+  .mi-breakdown-bar span,
+  .band-molto-affine .mi-score-bar span {
+    background: CanvasText;
+  }
+}

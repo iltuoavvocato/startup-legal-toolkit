@@ -2617,3 +2617,40 @@ h3,
   color: var(--navy-950);
   font-variant-numeric: tabular-nums;
 }
+
+/* ---------- Forced colours (Windows high contrast) ----------
+   Backgrounds and box-shadows are replaced or dropped there, so states and focus that rely on them get a border,
+   an outline or system colours instead. */
+@media (forced-colors: active) {
+  .field input:focus-visible,
+  .founder-name:focus-visible,
+  input[type='range']:focus-visible {
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  .segmented label.is-checked,
+  .option.is-checked {
+    forced-color-adjust: none;
+    background: SelectedItem;
+    color: SelectedItemText;
+    border-color: SelectedItem;
+  }
+
+  .progress {
+    forced-color-adjust: none;
+    background: Canvas;
+    border: 1px solid CanvasText;
+  }
+
+  .progress span {
+    background: CanvasText;
+  }
+
+  /* The light wordmark sits on the navy header/footer, which forced colours repaint: keep a navy plate behind it. */
+  img[src*='logo-light'] {
+    forced-color-adjust: none;
+    background: var(--navy-950);
+    outline: 5px solid var(--navy-950);
+  }
+}
