@@ -307,6 +307,15 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
   pause (none under `prefers-reduced-motion`), in-screen buttons (the investor's yes/no picks the branch), deep links
   `?step=1…6&branch=no`. Each step is rebuilt by replaying the script with the real `matching` and `inbox` reducers on
   an **in-memory store** (`src/lib/guidedDemo.ts`, 19 unit tests): the user's own inbox is never read or written.
+- **Hardening** (Milestone 10): every stored-state loader (inbox, export profile, agent conversation, language)
+  turns corrupt JSON, wrong shapes, missing keys and disabled or throwing storage (Safari private mode, quota errors)
+  into a clean state (`src/lib/storageHardening.test.ts`). Matching pages render inside `MatchErrorBoundary`: a render
+  error shows a bilingual fallback with the disclaimer and **Ricomincia / Start over**, which clears only the demo's
+  keys (`src/lib/matchStorage.ts`, `MATCH_STORAGE_KEYS`) and reloads. `missingPdfFeatures()` in `src/lib/pdfText.ts`
+  checks what pdf.js 4.x needs (`Promise.withResolvers`, `structuredClone`, `Worker`, `ReadableStream`,
+  `Array.prototype.at`, `Blob.arrayBuffer`); without them the deck picker is replaced by a bilingual note and the form /
+  agent continue without a deck. The privacy page has a section on the demo's browser-only storage with a
+  **Cancella i dati della demo** button (same key list). E2E: `e2e/hardening.spec.ts`.
 - **Matching** (`src/lib/matching.ts`): hard filters (fase, settore, area, ticket minimo ≤ round). Then score =
   settore (30) + ticket coverage (30, full from 40% of the round) + fase (20) + area (20), rounded to an integer.
   Ordering is deterministic: score, then ticket part, then sector part, then name, then id. Italian reasons and why-not strings.
@@ -367,8 +376,12 @@ Each screen lives at `…/varianti/vN/{landing,risultati,investitore}/` (EN `…
 - On mobile, a compact fixed bar on the equity page shows the live split and links to the result card. It hides once the card is in view.
 - **Match investitori**: the default decisions (D1–D11) are recorded in `docs/briefs/investor-matching.md` and still need
   Vincenzo's confirmation. The header gets an "Investitori" item (see [Languages](#languages) for how the nav fits).
-  Match styles live in `src/styles/match.css` (all classes `mi-`), loaded after `global.css`. The privacy page was
-  later updated only to describe the stored language preference.
+  Match styles live in `src/styles/match.css` (all classes `mi-`), loaded after `global.css`. The privacy page
+  describes the stored language preference and (Milestone 10) the matching demo's sessionStorage, with a button that
+  clears it.
+- **Fictional demo names**: names that collided with real companies or products were replaced in Milestone 10
+  (Contafiaba, Lavagnoro, Ventilume, Impastoria, Acceleratore Scintillaio). The names were web-checked only for obvious
+  collisions; a full trademark / legal clearance of the demo names is a decision for Vincenzo before going live.
 
 ## TODO
 
@@ -377,6 +390,7 @@ Each screen lives at `…/varianti/vN/{landing,risultati,investitore}/` (EN `…
 - [ ] Have a lawyer at ilTuoAvvocato review the legal copy (quiz explanations, good/bad leaver text).
 - [ ] Optionally link the CTAs to specific service pages on iltuoavvocato.com instead of the home page.
 - [ ] Match investitori: confirm the default decisions with Vincenzo (`docs/briefs/investor-matching.md`, "Decisioni").
+- [ ] Match investitori: trademark / legal clearance of the fictional demo names before going live (only checked for obvious collisions).
 - [ ] Match investitori: have a lawyer review the legal notes and the "Da verificare con un avvocato" list before any real version.
 - [ ] Match investitori: a real version needs a backend and a privacy/regulatory review; the product name, the score weights, the monthly limit and fees are provisional.
 - [ ] Optionally add a real SSR/hydration step if richer pre-rendered content is wanted for SEO.

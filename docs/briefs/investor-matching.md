@@ -742,3 +742,45 @@ Open decisions for Vincenzo:
   home page?
 - **D44**: add a third branch "the founder declines after the investor's yes" (shows the investor's side of the same
   invariant)?
+
+## Milestone 10: fictional names safety and hardening (2026-10-24)
+
+What exists:
+- **Fictional names**: five demo names that collided with real companies or products were renamed everywhere (data,
+  tests, screenshot scripts, docs). The new names: **Contafiaba** (fintech), **Lavagnoro** (edtech), **Ventilume**
+  (cleantech), **Impastoria** (foodtech) and **"Acceleratore Scintillaio"**, with e-mails on `contafiaba.example`,
+  `lavagnoro.example`, `ventilume.example`, `impastoria.example`, `scintillaio.example`. A case-insensitive grep for the
+  old names (outside `node_modules`, `dist`, `screenshots/`) returns nothing; the old names are in git history only
+  (commit "Rename fictional demo names…"). The sample decks (Vignalume, Kelpwise) were not affected.
+- **Stored state never blanks a page**: the inbox, export and language loaders already fell back on bad JSON; the agent
+  conversation's `restore` now also checks every message, the deck state, phase, current/editing question, `passed` and
+  `sources`, and any throw while restoring gives a fresh conversation. Reads go through `safeGet` (storage that throws on
+  access or on `getItem`). `src/lib/storageHardening.test.ts` feeds every loader junk (`{`, `null`, arrays, wrong
+  types, NUL bytes) and throwing storages.
+- **Error boundary** (`src/components/match/MatchErrorBoundary.tsx`) around every matching route (route ids starting
+  with `match`): a render error, or a page chunk that can't download, shows "Qualcosa non ha funzionato" / "Something
+  went wrong" with the disclaimer, **Ricomincia / Start over** (clears only `MATCH_STORAGE_KEYS` from session and local
+  storage, keeps `lang`, reloads) and a link back to the prototype landing.
+- **pdf.js feature detection**: `missingPdfFeatures()` (`Promise.withResolvers`, `structuredClone`, `Worker`,
+  `ReadableStream`, `Array.prototype.at`, `Blob.arrayBuffer`). If any is missing, the form's dropzone and the agent's
+  deck question show a bilingual note instead of the picker ("Salta" stays), and `readDeckFile` refuses early.
+- **Privacy page**: new section "Demo MatchInvStar: dati solo su questo dispositivo" / "MatchInvStar demo: data on this
+  device only" (sessionStorage keys `matchinvstar-*`, nothing sent, the deck read in the browser, how to clear) with a
+  **Cancella i dati della demo** button. The existing title "L'unica cosa salvata: la lingua" became "Nel localStorage
+  solo la lingua" (EN "In localStorage, only your language") so the page doesn't contradict itself. This answers
+  D17 / D21 / D28's privacy-page question with a short addition; the storage choices themselves are unchanged.
+- **Tests**: unit tests for every loader with corrupt inputs, the key list, clearing, and the feature check; e2e
+  `e2e/hardening.spec.ts` (corrupt JSON and wrong shapes seeded on 12 pages, storage throwing, forced render error +
+  Ricomincia, no pdf.js support, privacy clear button; IT + EN, desktop + mobile). Screenshots:
+  `screenshots/{,en-}match-error-fallback-*`, `{,en-}match-startup-nopdf-*`, `{,en-}match-agent-nopdf-*`,
+  `{,en-}privacy-demo-data-cleared-*`.
+
+Decision:
+- **D45**: the replacement names were web-checked for obvious collisions only. A full trademark / legal clearance of the
+  demo names (investors, startups, sample decks) is a decision for Vincenzo before going live.
+
+Known limits:
+- "Ricomincia" reloads the page: if the error isn't caused by stored data (e.g. a chunk still can't download), the
+  fallback shows again.
+- The feature check covers what pdf.js 4.x uses unconditionally; a browser that passes it but fails inside pdf.js still
+  gets the existing "can't read this PDF" message and the form.

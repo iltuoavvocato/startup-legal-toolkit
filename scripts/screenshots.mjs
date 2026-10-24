@@ -493,6 +493,64 @@ try {
     await context.close();
   }
 
+  // Milestone 10 hardening: the error fallback (a page chunk that can't load), the form when pdf.js can't run, and the
+  // privacy page's demo-data section after "Cancella i dati della demo". Own contexts: the fallback logs console errors.
+  for (const [vpName, opts] of Object.entries(VIEWPORTS)) {
+    for (const lang of ['it', 'en']) {
+      const p = lang === 'en' ? 'en-' : '';
+      const it = lang === 'it';
+      const context = await browser.newContext({ ...opts, reducedMotion: 'reduce' });
+      const page = await context.newPage();
+      page.setDefaultTimeout(10000);
+      const snap = async (name) => {
+        const overflow = await page.evaluate((w) => Math.max(document.documentElement.scrollWidth, window.innerWidth) - w, opts.viewport.width);
+        if (overflow > 0) problems.push(`[${vpName}] ${name}: horizontal overflow of ${overflow}px`);
+        const text = await page.locator('body').innerText();
+        const disclaimer = it ? 'Strumento indicativo: non sostituisce una consulenza legale.' : 'Indicative tool: not a substitute for legal advice.';
+        if (!text.includes(disclaimer)) problems.push(`[${vpName}] ${name}: disclaimer missing`);
+        const file = join(OUT, `${name}-${vpName}.png`);
+        await page.screenshot({ path: file, fullPage: true });
+        files.push(file);
+      };
+      const chunk = /\/assets\/MatchRequestsPage-[^/]+\.js$/;
+      await page.route(chunk, (route) => route.abort());
+      await page.goto(`${base}${it ? 'match-investitori/richieste/' : 'en/investor-match/requests/'}`);
+      await page.getByRole('button', { name: it ? 'Ricomincia' : 'Start over' }).waitFor();
+      await snap(`${p}match-error-fallback`);
+      await page.unroute(chunk);
+
+      const ok = await context.newPage();
+      await page.close();
+      await ok.addInitScript(() => {
+        delete Promise.withResolvers;
+      });
+      ok.on('pageerror', (err) => problems.push(`[${vpName}] ${p}match-startup-nopdf: ${err.message}`));
+      await ok.goto(`${base}${it ? 'match-investitori/startup/' : 'en/investor-match/startup/'}`);
+      await ok.locator('.mi-deck-unsupported').waitFor();
+      const page2 = ok;
+      const snap2 = async (name) => {
+        const file = join(OUT, `${name}-${vpName}.png`);
+        const overflow = await page2.evaluate((w) => Math.max(document.documentElement.scrollWidth, window.innerWidth) - w, opts.viewport.width);
+        if (overflow > 0) problems.push(`[${vpName}] ${name}: horizontal overflow of ${overflow}px`);
+        await page2.screenshot({ path: file, fullPage: true });
+        files.push(file);
+      };
+      await snap2(`${p}match-startup-nopdf`);
+      await ok.goto(`${base}${it ? 'match-investitori/agente/startup/' : 'en/investor-match/agent/startup/'}`);
+      await ok.locator('.mi-deck-unsupported').waitFor();
+      await snap2(`${p}match-agent-nopdf`);
+      await ok.goto(`${base}${it ? 'privacy/' : 'en/privacy/'}`);
+      await ok.evaluate(() => window.sessionStorage.setItem('matchinvstar-inbox', '{}'));
+      await ok.getByRole('button', { name: it ? 'Cancella i dati della demo' : 'Delete the demo data' }).click();
+      if ((await ok.evaluate(() => window.sessionStorage.length)) !== 0) problems.push(`[${vpName}] ${p}privacy: demo data not cleared`);
+      await ok.getByRole('heading', { name: it ? 'Demo MatchInvStar: dati solo su questo dispositivo' : 'MatchInvStar demo: data on this device only' }).scrollIntoViewIfNeeded();
+      const file = join(OUT, `${p}privacy-demo-data-cleared-${vpName}.png`);
+      await ok.screenshot({ path: file });
+      files.push(file);
+      await context.close();
+    }
+  }
+
   // Print: the export page as Chrome prints it (print media emulated, A4 PDF via Chrome's print-to-PDF).
   {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
