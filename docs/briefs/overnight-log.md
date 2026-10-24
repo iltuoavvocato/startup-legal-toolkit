@@ -30,7 +30,9 @@ Draft PR: https://github.com/iltuoavvocato/startup-legal-toolkit/pull/1 (branch 
 
 - 08:44 M15 done: responsive spec at 320/768/1366 on all 13 match routes + findings/results (overflow, clipped buttons, focus vs sticky header, 24px targets) with fixes (scroll-padding, directory sort select, inbox tabs, gallery buttons, V2 sort targets); forced-colours support + e2e on 3 screens; flakiness: 3 sequential full runs, one axe timing flake fixed with a settle() helper, no waitForTimeout left in e2e. Gate: lint 0, 557 unit, build ok, check:dist ok, e2e 628 passed / 4 skipped. Commits f1a463e, 460995e, 53f9018, 5cbd9c1.
 
+- 09:12 M16 done (no behaviour changes): removed 9 unused exports, 5 unused dictionary keys, 2 CSS classes; shared safeGet/safeSet and src/lib/dates.ts replace duplicated helpers; unused-key test; gzip size budgets in check:dist (shell 136+19 kB, match pages ~182-188+19 kB, pdf.js 107 kB lazy and never preloaded); TS noImplicitOverride/noImplicitReturns etc. on (exactOptionalPropertyTypes skipped: 37 errors). Gate: lint 0, 565 unit, build ok, check:dist ok, e2e 628 passed / 4 skipped. Commits 15ea429, 9010e90, 4b8a577, 8d8f807.
+
 ## In progress
-- 08:45 M16 (next): code health - dead code/dupes, bundle budgets in check:dist, stricter TS if small; no behaviour changes
+- 09:13 M17 (last round, hard limit 40 min): small known-issue fixes (robots meta on client-side navigation, toast Escape scope, agent deck-review restore), final screenshots + Lighthouse
 
 ## Next
