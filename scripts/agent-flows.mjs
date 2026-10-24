@@ -73,7 +73,9 @@ async function pick(page, name) {
 }
 
 async function fresh(page, base, path) {
-  await page.goto(`${base}${path}`);
+  // Clear from a page that doesn't use the conversation: on the agent page itself, a restored conversation could be
+  // saved again after the clear.
+  await page.goto(`${base}privacy/`);
   await page.evaluate(() => window.sessionStorage.clear());
   await page.goto(`${base}${path}`);
   await page.locator('#page-title').waitFor();
@@ -90,7 +92,10 @@ async function expectInChat(page, problems, name, needles) {
 
 /** Focus must sit on a control of the open question after an answer. */
 async function expectFocusInAnswer(page, problems, name) {
-  const inside = await page.evaluate(() => Boolean(document.activeElement?.closest('.mi-agent-answer')));
+  // Focus moves once the new question has rendered: poll briefly instead of reading it once.
+  const inside = await page
+    .waitForFunction(() => Boolean(document.activeElement?.closest('.mi-agent-answer')), null, { timeout: 2000 })
+    .then(() => true, () => false);
   if (!inside) problems.push(`${name}: focus did not move to the new question`);
 }
 
@@ -121,6 +126,7 @@ export async function founderWithDeck(page, base, lang, problems, upTo = 'result
   if (upTo === 'confirm') return;
   await chip(page, c.find).click();
   await page.getByText(c.found).waitFor();
+  await page.locator('.mi-agent-match').first().waitFor();
   await expectInChat(page, problems, name, [c.next, c.gaps, c.fromDeck]);
   await proposeFirst(page, c, problems, name);
   // The investor's simulated answer arrives on the inbox's demo clock, as on the requests page.

@@ -84,9 +84,9 @@ async function checkSheet(page, lang, problems, name, { title, forbidden = [] } 
   // What crawlers get: the prerendered HTML of the export route (client-side navigation keeps the previous page's tag).
   const html = await (await page.request.get(page.url().split('?')[0])).text();
   if (!html.includes('<meta name="robots" content="noindex, nofollow" />')) problems.push(`${name}: export page HTML is not noindex, nofollow`);
-  if ((await page.locator('h1').count()) !== 1) problems.push(`${name}: expected exactly one <h1>`);
   const sheet = page.locator('.mi-sheet');
   await sheet.waitFor();
+  if ((await page.locator('h1').count()) !== 1) problems.push(`${name}: expected exactly one <h1>`);
   const text = await sheet.innerText();
   for (const needle of [c.footer, c.disclaimer, ...(title ? [title] : [])]) if (!text.includes(needle)) problems.push(`${name}: sheet lacks "${needle}"`);
   if (!text.toLowerCase().includes(c.optin.toLowerCase())) problems.push(`${name}: sheet lacks the double opt-in explanation`);

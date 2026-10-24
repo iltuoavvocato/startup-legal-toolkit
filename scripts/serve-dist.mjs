@@ -20,3 +20,10 @@ export async function startPreview(port = 4179) {
   child.kill();
   throw new Error(`vite preview did not start on ${url}`);
 }
+
+// CLI: `node scripts/serve-dist.mjs [port]` keeps the preview running (Playwright's webServer, Lighthouse).
+if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
+  const { url, stop } = await startPreview(Number(process.argv[2] ?? 4179));
+  console.log(`serving dist/ on ${url}`);
+  for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => (stop(), process.exit(0)));
+}

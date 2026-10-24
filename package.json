@@ -11,7 +11,10 @@
     "test": "vitest run",
     "lint": "eslint . --max-warnings 0",
     "screenshots": "node scripts/screenshots.mjs",
-    "og": "node scripts/og-image.mjs"
+    "og": "node scripts/og-image.mjs",
+    "e2e": "npm run build && playwright test",
+    "e2e:only": "playwright test",
+    "lighthouse": "node scripts/lighthouse.mjs"
   },
   "dependencies": {
     "pdfjs-dist": "^4.10.38",
@@ -20,7 +23,9 @@
     "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.64.1",
     "@types/node": "^20.19.43",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
