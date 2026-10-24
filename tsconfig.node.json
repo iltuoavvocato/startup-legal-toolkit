@@ -11,6 +11,10 @@
     "moduleDetection": "force",
     "noEmit": true,
     "strict": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
     "types": ["node"]
   },
   "include": ["vite.config.ts"]

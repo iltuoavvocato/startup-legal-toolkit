@@ -46,17 +46,17 @@ interface State {
  * can't draw) and shows a bilingual fallback instead of a blank page. "Ricomincia" clears only the demo's keys.
  */
 export class MatchErrorBoundary extends Component<{ children: ReactNode }, State> {
-  state: State = { failed: false };
+  override state: State = { failed: false };
 
   static getDerivedStateFromError(): State {
     return { failed: true };
   }
 
-  componentDidCatch(error: unknown, info: ErrorInfo) {
+  override componentDidCatch(error: unknown, info: ErrorInfo) {
     console.warn('MatchInvStar page error', error, info.componentStack);
   }
 
-  render() {
+  override render() {
     return this.state.failed ? <Fallback /> : this.props.children;
   }
 }
