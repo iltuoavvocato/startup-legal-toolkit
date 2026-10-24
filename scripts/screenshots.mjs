@@ -362,6 +362,9 @@ try {
       await page.goto(`${base}${path}`);
       await page.locator('#page-title').waitFor();
       if (name.includes('variant')) await checkVariantPage(page, name);
+      // Phones/touch: no keyboard-shortcut legend (V2 dashboard, V4 cards).
+      if (vpName === 'mobile' && (await page.locator('.v2-keys, .v4-keys').filter({ visible: true }).count()))
+        problems.push(`[mobile] ${name}: keyboard legend visible on a touch phone`);
       if (name.endsWith('variants-gallery')) await waitForCompareFrames(page);
       await shoot(name);
     }

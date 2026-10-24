@@ -1250,7 +1250,8 @@
     flex: 1 1 100%;
   }
 }
-@media (hover: none) {
+/* Touch screens and phone widths: no physical keyboard to speak of, so the shortcut legend goes (as in V2). */
+@media (max-width: 640px), (hover: none) {
   .v4-root .v4-keys {
     display: none;
   }
