@@ -43,9 +43,22 @@ export function Layout({ children }: { children: ReactNode }) {
       firstRender.current = false;
       return;
     }
-    // On client-side navigation, start from the top and move focus to the new page heading.
+    // On client-side navigation, start from the top and move focus to the new page heading. A page whose chunk is
+    // still downloading renders its heading a moment later: wait for it.
     window.scrollTo(0, 0);
-    document.getElementById('page-title')?.focus({ preventScroll: true });
+    const focusTitle = () => {
+      const title = document.getElementById('page-title');
+      title?.focus({ preventScroll: true });
+      return Boolean(title);
+    };
+    if (focusTitle()) return;
+    const observer = new MutationObserver(() => focusTitle() && observer.disconnect());
+    observer.observe(document.body, { childList: true, subtree: true });
+    const timer = window.setTimeout(() => observer.disconnect(), 5000);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timer);
+    };
   }, [pathname]);
 
   useEffect(() => {
