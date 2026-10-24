@@ -14,8 +14,9 @@ Draft PR: https://github.com/iltuoavvocato/startup-legal-toolkit/pull/1 (branch 
 
 - 04:27 M7: Playwright e2e (330 passed, IT/EN, desktop+mobile, no external requests/cookies), axe on all routes (0 serious/critical), Lighthouse mobile 91-95 perf, 100 a11y/BP/SEO; per-page chunks (458 unit tests)
 
+- 04:54 M8: polish – no-match near misses + one-click "Allarga criteri", double opt-in explainer, illustrated empty states, toast, "/" search, consistent focus rings (467 unit, 358 e2e)
+
 ## In progress
-- 04:35 M8: UI polish, empty states, keyboard support, cross-page consistency
+- 05:05 M9 (next)
 
 ## Next
-- UI polish, empty states, keyboard support
