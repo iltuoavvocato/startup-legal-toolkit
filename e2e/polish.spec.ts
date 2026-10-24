@@ -75,6 +75,17 @@ for (const lang of LOCALES) {
     await expect(region).toHaveAttribute('aria-live', 'polite');
     await expect(region).toContainText(p.toast.proposed);
     await expect(first).toContainText(t(lang).match.ui.startup.sent);
+    // Another open layer (a modal dialog) owns Escape: it closes, the toast stays.
+    await page.evaluate(() => {
+      const d = document.body.appendChild(document.createElement('dialog'));
+      d.id = 'other-layer';
+      d.innerHTML = '<button type="button">ok</button>';
+      d.showModal();
+    });
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#other-layer')).not.toHaveAttribute('open');
+    await expect(page.locator('.mi-toast')).toBeVisible();
+    // With nothing else open, Escape dismisses the toast.
     await page.keyboard.press('Escape');
     await expect(page.locator('.mi-toast')).toHaveCount(0);
   });
