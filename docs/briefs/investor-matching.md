@@ -433,3 +433,55 @@ Open decisions for Vincenzo:
   is only used in the founder's match explanations.
 - **D19**: limits of 20 MB / 40 pages and "fewer than 60 characters = image-only": OK as placeholders?
 - **D20**: keep "Usa tutti i suggerimenti" (one click) or force a choice per finding?
+
+## Milestone 4: guided intake, "Parla con l'agente" (2026-10-24)
+
+Fix first: the V4 card/swipe variant now hides its keyboard legend on phones and touch devices (≤640px or
+`hover: none`), like V2. The screenshot script fails if a shortcut legend is visible on the mobile captures.
+
+What exists:
+- **Routes** `/match-investitori/agente/startup/`, `/match-investitori/agente/investitore/` (EN
+  `/en/investor-match/agent/startup/`, `/en/investor-match/agent/investor/`), in the it↔en mapping, prerendered and in
+  the sitemap (the main matching pages are indexed, so these are too). A switch "Parla con l'agente / Compila il
+  modulo" sits above the first step of both forms and on the agent pages; the landing doors link to both.
+- **Conversation**: one question at a time in chat bubbles. Founder: deck (optional) → settore → fase → round
+  (suggested amounts per stage; follow-up check when the amount is unusual for the stage) → regione → one-line pitch
+  (optional) → confirm. Investor: settori (first picked = main) → fasi → ticket (suggested ranges per stage) → aree
+  ("Tutta Italia" excludes the single areas) → sede (optional) → confirm. Each answer can be changed ("Modifica" on the
+  bubble or in the profile panel, "Indietro"); after an edit the agent resumes at the first unanswered question.
+- **Deck in the chat**: dropped at any point before the search (or the sample deck). Read with the M3 local reader;
+  each finding is asked as "Ho trovato nel deck… Confermi?" with the snippet, page and confidence (Sì / Modifica / No).
+  Accepted values skip the regular question and carry "dal deck, p. N"; a value that differs from an earlier answer is
+  shown as a conflict; team and traction are confirmed together and only quoted in the explanations. Read errors are
+  explained and the questions continue.
+- **Results as the agent**: the same profile objects and engine as the forms. For each match: who (or, for investors,
+  an anonymous teaser), why it fits, what doesn't fit (secondary sector, partial ticket, secondary stage, Italy-wide
+  only, generalist), and the double opt-in next step for the current status, from IT/EN templates in
+  `src/i18n/messages/intake.ts`. Local actions: propose (monthly limit 5), set aside, simulate the other side's answer,
+  accept/decline the intro (founder); interested/pass and simulated startup answer (investor). A "no" reads exactly
+  like no answer (tested on the status functions and the explanations). Optional "Perché alcuni non compaiono?".
+- **Implementation**: `src/lib/intakeAgent.ts` is a pure reducer (state holds ids and values only, so the same
+  conversation renders in either language), with 42 unit tests (branching, skip, edit/back, validation, deck
+  confirmations and conflicts, opt-in, explanations, storage, both languages). UI in `src/pages/MatchAgentPage.tsx` and
+  `src/components/match/agent/`. Chips are buttons, focus moves to the new question, the transcript is a polite
+  `role="log"`, the typing animation respects `prefers-reduced-motion` and has "Salta l'animazione".
+- **Storage**: sessionStorage, this tab only (`matchinvstar-agent-startup` / `-investor`), cleared by "Ricomincia".
+  Never deck text: findings and snippets are dropped; the cover sentence is kept only if accepted as the pitch. After a
+  reload during the deck review, the regular questions take over (the deck would need to be added again).
+- **Screenshots**: full scripted conversations, founder with and without deck and investor, IT + EN, desktop + mobile
+  (`scripts/agent-flows.mjs`, `screenshots/match-agent-*`, `screenshots/en-match-agent-*`).
+
+Known limits:
+- The investor form's chips keep option order, so there "the first sector you pick is the main one" isn't strictly
+  true; the agent keeps click order. Not changed in the form (out of scope).
+- Simulated answers are deterministic per id, so a curious user can infer the demo outcome; the wording never says no.
+- The agent pages have no "names" step: profiles use the neutral placeholders ("La tua startup") in intro emails.
+
+Open decisions for Vincenzo:
+- **D21**: sessionStorage for the conversation (tab only) vs memory only like the forms. The privacy page still says
+  only the language preference is stored; add a sentence about this (and D17)?
+- **D22**: should the agent become the default entry ("Sono una startup" → agent), with the form as the alternative?
+- **D23**: typical round sizes per stage that trigger the follow-up check (pre-seed 50k–1,5M, seed 150k–5M,
+  serie A 1M–30M) and the suggested amounts/ticket ranges: placeholders, please confirm.
+- **D24**: keep "Simula la risposta" in the agent results, or leave simulation only to the double opt-in page?
+- **D25**: ask for the startup / founder names in the conversation (for the intro email), or keep them out?

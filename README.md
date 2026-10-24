@@ -10,7 +10,7 @@ Italian startup founders. It routes them to a lawyer at [iltuoavvocato.com](http
 | `/vesting/`  | **Simulatore vesting**: stake, duration, cliff, monthly/quarterly/annual frequency, step chart with a draggable leaver marker, good/bad leaver explanation |
 | `/quiz/`     | **Quali documenti mi servono?**: 7 questions, then a personalized checklist from the 5 documents with priority badges |
 | `/privacy/`  | Privacy notes (no cookies, no tracking, no data sent anywhere; only the language preference is stored) |
-| `/match-investitori/…` | **Match investitori** (prototype, see below): landing, `startup/`, `investitore/`, `doppio-consenso/`, `note-legali/` |
+| `/match-investitori/…` | **Match investitori** (prototype, see below): landing, `startup/`, `investitore/`, `agente/startup/`, `agente/investitore/`, `doppio-consenso/`, `note-legali/` |
 | `/en/…`      | English version of every page (see [Languages](#languages)) |
 | anything else | Styled 404 (English under `/en/…`, Italian otherwise, with the disclaimer) |
 
@@ -127,6 +127,8 @@ dictionary plus a React context.
   | `/match-investitori/` | `/en/investor-match/` |
   | `/match-investitori/startup/` | `/en/investor-match/startup/` |
   | `/match-investitori/investitore/` | `/en/investor-match/investor/` |
+  | `/match-investitori/agente/startup/` | `/en/investor-match/agent/startup/` |
+  | `/match-investitori/agente/investitore/` | `/en/investor-match/agent/investor/` |
   | `/match-investitori/doppio-consenso/` | `/en/investor-match/double-opt-in/` |
   | `/match-investitori/note-legali/` | `/en/investor-match/legal-notes/` |
   | `/match-investitori/varianti/…` (noindex) | `/en/investor-match/variants/…` |
@@ -186,14 +188,40 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
   `MONTHLY_PROPOSAL_LIMIT = 5` proposals a month (placeholder, "valore provvisorio").
 - **Investor flow** (`/match-investitori/investitore/`): settori, fasi, ticket min/max and aree, then anonymous teasers of
   matching startups.
+- **Guided intake, "Parla con l'agente" / "Talk to the agent"** (`/match-investitori/agente/startup/` and
+  `/match-investitori/agente/investitore/`, EN `/en/investor-match/agent/…`; indexed and in the sitemap like the forms).
+  The form stays as **"Compila il modulo" / "Fill in the form"**; a switch at the top of both pages (and links on the
+  landing doors) moves between the two. The agent asks one question at a time in chat bubbles: chips (single and
+  multi select, as buttons with `aria-pressed`), amounts with suggestions that follow the stage (round size for
+  founders, ticket ranges for investors) and formatted read-outs, an optional one-line pitch. Founders can add a PDF
+  deck at any point before the search (button, drag and drop or the sample deck): it is read on the device with the
+  M3 reader and each finding becomes a chat question ("Nel deck (p. 7) leggo che cercate 800.000 €. Confermi l'importo?")
+  with the quoted snippet, page and confidence, and Sì / Modifica / No. Questions the deck answered are skipped; a deck
+  value that differs from an earlier answer is shown as a conflict; "Modifica" re-asks the question with the deck value
+  as a suggestion. A round that is unusual for the stage gets a follow-up ("È corretto?"). Every answer can be changed
+  ("Modifica" on the bubble or in the live profile panel, "Indietro"). The panel (sticky on desktop, collapsible on
+  phones) shows each value with its source ("dal deck, p. 7" / "da te") and the anonymous teaser. At the end the same
+  `StartupProfile` / `Investor` objects as the forms go through the matching engine and the agent presents each match:
+  why it fits, what doesn't, and the double opt-in next step, from IT/EN templates; actions are local only
+  (propose within the monthly limit, set aside, simulate the other side's answer, accept or decline the intro; investors
+  get anonymous teasers, interest/pass and a simulated startup answer). A "no" is never revealed: it reads exactly like
+  no answer yet. Logic: `src/lib/intakeAgent.ts` (pure reducer: questions, plan/skip rules, validation, edit, deck
+  confirmations, opt-in per match, explanation and transcript text; 42 unit tests). UI: `src/pages/MatchAgentPage.tsx`,
+  `src/components/match/agent/`. Keyboard: focus moves to the new question's first control after each answer and to
+  the results when they appear; the transcript is a `role="log"` live region. The typing animation is skipped with
+  `prefers-reduced-motion` or "Salta l'animazione". The conversation is kept in **sessionStorage** for this tab only
+  (`matchinvstar-agent-startup` / `-investor`) and removed by "Ricomincia" / "Start over"; the stored form never
+  contains deck text (no findings, no snippets, the cover sentence only if the founder accepted it as the pitch).
+  `npm run screenshots` scripts full conversations (deck and no deck, founder and investor, IT and EN, desktop and
+  mobile; `scripts/agent-flows.mjs`) and fails on unexpected sessionStorage keys or deck text in storage.
 - **Matching** (`src/lib/matching.ts`): hard filters (fase, settore, area, ticket minimo ≤ round). Then score =
   settore (30) + ticket coverage (30, full from 40% of the round) + fase (20) + area (20), rounded to an integer.
   Ordering is deterministic: score, then ticket part, then sector part, then name, then id. Italian reasons and why-not strings.
 - **Double opt-in** (`src/lib/optin.ts`): `proposta → attesa-startup → intro`, or a closed state on either no.
   `viewFor(state, side)` guarantees that a "no" looks exactly like no answer to the other side (tested).
 - **URL state**: only enumerated values and amounts go in the query string (never names, descriptions or file names).
-  Step state and the monthly counter live in memory. There is no storage and there are no network calls with user
-  data: the only requests are same-origin static assets (pdf.js chunk and worker, and the sample deck when asked for).
+  Step state and the monthly counter live in memory (the guided intake alone uses sessionStorage, see above). There are
+  no network calls with user data: the only requests are same-origin static assets (pdf.js chunk and worker, and the sample deck when asked for).
 
 **A real double opt-in with real investor data requires a backend** (accounts, investor identification, sending
 proposals and emails) **and a privacy and regulatory review** (Regolamento (UE) 2020/1503, Consob, TUF art. 18, GDPR,
