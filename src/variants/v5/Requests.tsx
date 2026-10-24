@@ -39,11 +39,10 @@ export function Requests() {
       </div>
 
       <ol className="v5-req-list">
-        {r.rows.map((row, k) => (
+        {r.rows.map((row) => (
           <li className="vx-req v5-req-row" data-status={row.status} key={row.id}>
-            <span className="v5-req-idx" aria-hidden="true">
-              {pad2(k + 1)}
-            </span>
+            {/* The ledger number comes from a CSS counter, so no row carries its position (a declined row stays identical to a waiting one). */}
+            <span className="v5-req-idx" aria-hidden="true" />
             <div className="v5-req-main">
               <h2 className="v5-req-title">{row.title}</h2>
               <p className="v5-req-detail">{row.detail}</p>

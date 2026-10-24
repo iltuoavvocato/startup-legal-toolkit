@@ -1260,8 +1260,10 @@
 }
 .v5-req-list {
   border-top: 1px solid var(--v5-line);
+  counter-reset: v5-req;
 }
 .v5-req-row {
+  counter-increment: v5-req;
   display: grid;
   grid-template-columns: 2rem minmax(0, 1fr);
   gap: 0.35rem 1rem;
@@ -1273,6 +1275,9 @@
   font: 500 0.75rem/1 var(--v5-mono);
   color: var(--v5-muted);
   padding-top: 0.4rem;
+}
+.v5-req-idx::before {
+  content: counter(v5-req, decimal-leading-zero);
 }
 .v5-req-main {
   min-width: 0;
