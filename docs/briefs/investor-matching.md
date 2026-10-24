@@ -576,3 +576,76 @@ Open decisions for Vincenzo:
   design.
 - **D35**: investor mode of the agent: its "interested / pass" stays local to the conversation (the inbox's investor tab
   shows seeded sample proposals). Route it into the inbox's investor tab too?
+
+## Milestone 7: quality — e2e, accessibility, performance (2026-10-24)
+
+What exists:
+- **E2E** (`npm run e2e` = build + `playwright test`; `npm test` stays unit-only). `@playwright/test` on the system
+  Chrome (`channel: 'chrome'`, no browser download), against the production build served by `scripts/serve-dist.mjs`
+  (`webServer`). Projects `desktop` (1440×900) and `mobile` (Pixel 7); every flow runs in IT and EN. Copy is read from
+  `src/i18n/messages`, so tests follow copy changes. An auto fixture fails any test that makes a request to a
+  non-localhost host or ends with a cookie set (checked to really fail with a deliberate leak and cookie).
+  Specs: founder form (sample deck uploaded through the file input → findings → results → propose → inbox pending →
+  4 × "+7 giorni" → expired, no "no" wording at any step), agent (founder with sample deck → proposal in the shared
+  inbox; investor → interest → start over), directory (filters in the URL, Back/Forward/reload, profile → propose →
+  counter 4/5 in the inbox), export (teaser ↔ full, `.md` download names and disclaimer in both versions, noindex),
+  15 variant screens × 2 languages (banner, fictional label, disclaimer, noindex, one h1) and the compare view (controls
+  → query string → iframes in embed mode), language switcher round trip on all 17 main routes in both directions (only
+  `lang` in localStorage) and with a query string, bilingual 404, lazy page chunks (slow chunk → heading still focused;
+  direct visit → no loading text), keyboard-only (agent chips with Tab/Space/Enter and focus following the
+  conversation; V4 arrow keys and Tab/Enter on the buttons; directory filter sheet: Tab/Shift+Tab stay inside, Escape
+  closes, focus back to "Filtri").
+- **Accessibility**: `@axe-core/playwright` (WCAG 2.0/2.1 A + AA) on all 32 routes × IT/EN, the 404 and the key states
+  (deck findings review, form results, agent mid-flow and results, inbox both tabs and after time travel, export sheet,
+  directory with the sheet open on phones), desktop and mobile. Serious/critical fail the test. **No rule is disabled.**
+  Fixed:
+  - colour contrast: gold italic in `h2` on white/cream sections (home "all'inizio", 2.3:1) now `--gold-heading`
+    #9c7a33 (≥3.3:1, large text); V1 large gold numerals now `--v1-gold-numeral` #9c7a33. Gold on navy is unchanged.
+  - chat transcripts (agent and V3): `role="log"` moved from the `<ol>` to a wrapper `<div>`, so the list keeps list
+    semantics (the `<li>` were invalid).
+  - agent profile panel: the "Modifica" button sits in its own `<dd>` (a `<dl>` group may only hold `dt`/`dd`); same look.
+  - horizontally scrollable regions (equity formula, V2 tables without controls) are focusable (`tabIndex=0`).
+  - directory: a visually hidden `<h2>` above the cards (heading order on phones, where the filters' h2 is in the sheet).
+  - directory filter sheet: explicit focus trap (a modal `<dialog>` alone lets Tab reach the browser chrome).
+- **Performance** (`npm run lighthouse`, reports in `screenshots/lighthouse/`, git-ignored). Cheap wins, no visual change:
+  - every page is its own chunk (`src/routePages.tsx`); shared code grouped into `app` / `ui` / `match` / `deck` chunks.
+    Entry JS 611 kB → 398 kB (187 → 126 kB gzip); home no longer downloads the matching code.
+  - the current page's chunk loads before the first render (no loading flash/shift); the prerendered HTML has
+    `modulepreload` for it (from Vite's manifest, deleted from `dist/` after use); links prefetch on hover/touch/focus;
+    focus after navigation waits for the lazily rendered heading.
+  - Playfair (roman + italic) preloaded: the late swap re-wrapped the hero title and shifted the page (startup form CLS
+    0.215 → 0). Inter is not preloaded (no measurable shift, and it would take bandwidth from the scripts).
+
+Lighthouse 12, local `vite preview`, simulated throttling (mobile = Moto G Power / slow 4G, desktop preset):
+
+| Page | Mobile Perf | A11y | Best pr. | SEO | Desktop Perf | Mobile LCP | CLS |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `/` | 95 | 100 | 100 | 100 | 100 | 2.9 s | 0 |
+| `/match-investitori/` | 93 | 100 | 100 | 100 | 100 | 3.0 s | 0 |
+| `/match-investitori/startup/` | 92 | 100 | 100 | 100 | 100 | 3.2 s | 0 |
+| `/match-investitori/agente/startup/` | 93 | 100 | 100 | 100 | 100 | 2.9 s | 0 |
+| `/match-investitori/investitori/` | 93 | 100 | 100 | 100 | 100 | 3.0 s | 0 |
+| `/en/` | 94 | 100 | 100 | 100 | 100 | 2.9 s | 0 |
+| `/en/investor-match/` | 94 | 100 | 100 | 100 | 100 | 3.0 s | 0 |
+| `/en/investor-match/startup/` | 91 | 100 | 100 | 100 | 100 | 3.2 s | 0 |
+| `/en/investor-match/agent/startup/` | 91 | 100 | 100 | 100 | 100 | 3.2 s | 0 |
+| `/en/investor-match/investors/` | 95 | 100 | 100 | 100 | 100 | 2.7 s | 0 |
+
+Desktop: Accessibility, Best Practices and SEO are 100 on every page above. Before this milestone (IT, mobile): home 91,
+landing 92, startup form 82 (CLS 0.215), agent 91, directory 93 (A11y 99, heading order). Scores move ±2 between runs.
+
+Known limits:
+- Mobile LCP stays around 3 s: the page is rendered by JavaScript (the prerendered HTML only has a static h1 +
+  description), and the `app` chunk carries both languages' dictionaries (~217 kB raw). Splitting the dictionaries
+  per language, or real server-side prerendering of the content, are the next steps if needed.
+- Lighthouse runs against `vite preview` (HTTP/1.1, no compression headers); the real host (Pages/Vercel, HTTP/2 + gzip/
+  brotli) should do as well or better.
+- axe covers what can be checked automatically; there is no screen-reader pass (NVDA/VoiceOver) yet.
+- The e2e suite takes about 3.5 minutes with half the CPU cores (`E2E_WORKERS` to change).
+
+Open decisions for Vincenzo:
+- **D36**: the darker gold (#9c7a33) for italic accents in headings on light backgrounds — fine as a brand variant, or
+  would you rather drop the gold accent on light sections?
+- **D37**: run `npm run e2e` in CI on every PR (GitHub Actions with Chrome)? Not set up: workflows are not touched in
+  this branch.
+- **D38**: worth the per-language dictionary split (see known limits) for faster first load on phones, or is ~92 enough?

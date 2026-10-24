@@ -26,6 +26,8 @@ the result and in the footer). Every "Parla con un avvocato" CTA links to
 - Self-hosted fonts: Inter, Playfair Display and Playfair Display Italic, subset to Latin and converted to WOFF2 (`font-display: swap`)
 - Vitest for unit tests, ESLint 9 (typescript-eslint and react-hooks)
 - playwright-core with the system Google Chrome for screenshots and the OG image
+- @playwright/test + @axe-core/playwright for end-to-end and accessibility tests, Lighthouse (via `npx`) for performance,
+  all on the system Google Chrome (no browser download)
 
 Runtime dependencies: React, react-router and `pdfjs-dist` (bundled, lazy-loaded only when a founder picks a deck in
 the matching prototype). There are no trackers and no cookies, and the site makes **no
@@ -39,8 +41,11 @@ npm install
 npm run dev          # dev server
 npm run build        # tsc -b → vite build → scripts/prerender.mjs (per-route HTML, 404.html, sitemap.xml, robots.txt)
 npm run preview      # serve dist/
-npm test             # vitest run (src/lib/*.test.ts)
+npm test             # vitest run (unit tests only, fast)
 npm run lint         # eslint, zero warnings allowed
+npm run e2e          # build, then Playwright e2e + axe accessibility scans on the production build (desktop + mobile)
+npm run e2e:only     # the same without rebuilding (dist/ must be current); add `-- e2e/a11y.spec.ts` etc. to filter
+npm run lighthouse   # build first; Lighthouse mobile + desktop on 5 pages → screenshots/lighthouse/ (`-- --lang=en`)
 npm run screenshots  # build first; full-page PNGs at 1440×900 and 390×844@2x into screenshots/ (git-ignored)
 npm run og           # re-render public/og-image.png from scripts/og-template.html
 node scripts/make-sample-decks.mjs  # regenerate the two fictional sample decks in public/demo/ (pdf-lib, byte-stable)
@@ -51,6 +56,27 @@ node scripts/make-sample-decks.mjs  # regenerate the two fictional sample decks 
 external requests, any non-GET request (nothing may be uploaded), horizontal overflow, any cookie, a `localStorage` key other than `lang`, or a wrong `<html lang>`.
 It captures English pages too (files prefixed `en-`). At the end it clicks the language switcher and checks the
 equivalent page, the stored preference and the redirect, which happens only from `/`.
+
+### End-to-end, accessibility and performance
+
+- **E2E** (`e2e/*.spec.ts`, config in `playwright.config.ts`): Playwright serves `dist/` with `vite preview`
+  (`scripts/serve-dist.mjs <port>`, default port 4189, `E2E_PORT` to change) and runs every spec in two projects,
+  `desktop` (1440×900) and `mobile` (Pixel 7), with `channel: 'chrome'` (`CHROME_PATH` for another binary). UI copy
+  comes from the app's own dictionaries (`src/i18n/messages`), so the tests follow copy changes in both languages. Every
+  test fails if any request leaves localhost or any cookie is set (auto fixture in `e2e/fixtures.ts`). Specs: founder
+  form with deck upload → findings → results → proposal → inbox → time travel → expired (no "no" revealed); guided agent
+  (founder with deck, investor); directory filters in the URL with Back/Forward and a proposal from a profile; export
+  (teaser/full, `.md` download with the disclaimer); every variant screen and the compare view; the language switcher on
+  every main page, the bilingual 404; lazy page chunks and focus on navigation; keyboard-only checks (agent chips, V4
+  swipe arrows and buttons, directory filter sheet: focus trap, Escape, focus back to the opener). HTML report in
+  `screenshots/e2e-report/`, traces of failures in `node_modules/.e2e-results/`.
+- **Accessibility** (`e2e/a11y.spec.ts`): axe-core (WCAG 2.0/2.1 A + AA) on every route in IT and EN, the 404, and key
+  states (deck findings review, form results, agent mid-flow and results, inbox with proposals on both tabs and after
+  time travel, export sheet, directory with the filter sheet open on phones). Serious and critical violations fail;
+  minor ones are attached to the report. No rule is disabled.
+- **Performance** (`scripts/lighthouse.mjs`): `npx lighthouse@12` with `--chrome-path` (default `/usr/bin/google-chrome`,
+  `CHROME_PATH` to change), headless, against a local preview of `dist/`; JSON + HTML reports and `summary.md` in
+  `screenshots/lighthouse/` (git-ignored). Latest scores are in `docs/briefs/investor-matching.md` (Milestone 7).
 
 Fonts are generated at dev time by `scripts/build-fonts.sh`, which needs Python with `fonttools` and `brotli`. The WOFF2
 files in `src/assets/fonts/` are committed, so a normal build needs no Python.
@@ -76,7 +102,13 @@ Example: `BASE_PATH=/startup-legal-toolkit/ SITE_URL=https://<user>.github.io np
   `src/routes-meta.json`. It sets `<html lang>`, and rewrites `<title>`, description, canonical, hreflang alternates, OG
   and Twitter tags. It also injects a small static fallback (`h1` and description) that React replaces on mount. It also
   writes `404.html` (an SPA fallback with `noindex`), `sitemap.xml` (both languages, with `xhtml:link` alternates) and
-  `robots.txt`. The pure helpers are in `scripts/seo.mjs` and are tested in `src/i18n/seo.test.ts`. At runtime
+  `robots.txt`. The pure helpers are in `scripts/seo.mjs` and are tested in `src/i18n/seo.test.ts`. Each page also gets
+  preload hints (`scripts/preload.mjs`): `modulepreload` for its own JS chunk, read from Vite's build manifest (deleted
+  from `dist/` afterwards), and a font preload for Playfair (roman + italic) so the hero heading doesn't re-wrap.
+- **Code splitting**: every page is its own chunk (`src/routePages.tsx`); shared code is grouped into `app` (React,
+  router, i18n, layout), `ui`, `match` and `deck` chunks (`vite.config.ts`). `main.tsx` loads the current page's chunk
+  before the first render (no loading flash), links prefetch their page on hover/touch/focus, and after a client-side
+  navigation focus moves to the new `#page-title` once it has rendered. At runtime
   `usePageMeta` keeps `lang` and the head tags in sync during client-side navigation.
 
 ## Deploy: GitHub Pages
