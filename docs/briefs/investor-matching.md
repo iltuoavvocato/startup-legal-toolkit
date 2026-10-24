@@ -987,3 +987,48 @@ above it shifts the page, and a hand-copied hero would drift from the real one. 
 the layout and `hydrateRoot`, which is not contained. Skipped, not measured; D38 / real SSR remain the levers.
 
 No new open decisions.
+
+## Milestone 15: responsive edge cases, forced colours, flakiness (2026-10-24)
+
+What exists:
+- **Responsive e2e** `e2e/responsive.spec.ts` (desktop project; the mobile project ignores it): 320×640 (small phone,
+  also the 400% zoom reflow width), 768×1024 (tablet portrait), 1366×768 (small laptop) on every match route (core
+  flow, agent ×2, directory, investor profile, inbox, export, guided demo, how-it-works) and on the founder's findings
+  review and results, IT + EN; the variants gallery and its 25 screens at 320 only. Per page: no element sticks out of
+  the viewport outside a scrolling container and the page doesn't scroll sideways; no button leaves the screen or
+  cuts its label; Shift+Tab from the footer up through `main`, each focused element starts below the sticky header
+  (or, if taller than the space below it, stays partly visible); every target is ≥ 24×24 px or has the WCAG 2.2
+  2.5.8 spacing (inline links in sentences exempt, visually hidden inputs measured by their label). 86 tests,
+  screenshots `screenshots/responsive/{it,en}-<route>-{phone-320,tablet-768,laptop-1366}.png`.
+  Fixed:
+  - the sticky header covered focused controls when tabbing upwards on every page: `html { scroll-padding-top: 5rem }`.
+  - directory at 320: the sort select had `min-width: 12.5rem` beside "Filtri" and the toolbar grid sized to content
+    (overflow hidden by `body { overflow-x: hidden }`, so cut off rather than scrollable): the row wraps, the grid
+    column is `minmax(0, 1fr)`.
+  - inbox at 320: the two tabs (`nowrap`) were 324 px wide and pushed the demo controls out: under 420 px they share
+    the row in two equal columns and their labels wrap.
+  - variants gallery at 320: the "demo guidata" button ran off the screen: under 480 px every `.btn` may wrap its label.
+  - V2 table sort buttons were 20 px tall: now 24 px.
+- **Forced colours** (`@media (forced-colors: active)` blocks at the end of `global.css` and `match.css`): the checked
+  chip (form and agent), the active inbox tab, the current form step and checked options/segmented controls use
+  `SelectedItem`/`SelectedItemText`; done steps get a 2 px solid border and pending ones a dashed border (three states
+  without colour); score, breakdown and counter bars get a `CanvasText` fill and an outlined track; fields whose focus
+  ring was a box-shadow get a real outline; the light wordmark keeps a navy plate (it vanished on the white canvas).
+  E2E `e2e/forced-colors.spec.ts` (investor form, founder results with "Perché questo match?" open, inbox; IT + EN)
+  compares what forced colours leave on selected vs unselected elements and checks the outlines; screenshots
+  `screenshots/forced-colors/{it,en}-{investor-form,founder-results,inbox}.png`.
+- **Flakiness**: three full runs of the suite in a row (632 tests each, 4 skipped by design, no retries locally):
+  run 1 (`npm run e2e`) and run 2 green; run 3 had one failure, `a11y.spec.ts` "axe: agent chat mid-flow and results
+  (it)": colour contrast on the agent's match card measured while the card was still fading in (the agent reveals
+  messages on timers; `scan()` waited a fixed 400 ms). New `settle()` in `e2e/fixtures.ts` waits for the agent's typing
+  queue to empty, fonts, and every finite animation to finish; it replaces the fixed pauses in `a11y.spec.ts` and
+  `variants.spec.ts` (no `waitForTimeout` is left in `e2e/`). The fixed test then passed 3 runs out of 3 on its own, and a fourth full `npm run e2e` after the fix was green (628 passed, 4 skipped).
+
+Known limits:
+- Forced colours are checked in Chromium's emulation with the light palette only; no real Windows high-contrast pass.
+  The variant screens (internal) got no forced-colours work.
+- The ticked box in a checked chip becomes a filled square in forced colours (the tick image is in a brand colour).
+- 200% zoom is covered as reflow at 320 / 768 CSS px; browser text-only zoom isn't tested.
+
+No new open decisions.
+

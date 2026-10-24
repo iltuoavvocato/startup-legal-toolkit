@@ -80,6 +80,15 @@ equivalent page, the stored preference and the redirect, which happens only from
   states (deck findings review, form results, agent mid-flow and results, inbox with proposals on both tabs and after
   time travel, export sheet, directory with the filter sheet open on phones). Serious and critical violations fail;
   minor ones are attached to the report. No rule is disabled.
+- **Responsive and forced colours** (Milestone 15, desktop project only, they set their own viewport/media):
+  `e2e/responsive.spec.ts` opens every match route (and the founder's findings/results) at 320×640, 768×1024 and
+  1366×768, plus the variants gallery and the 25 variant screens at 320, IT + EN, and fails on horizontal overflow,
+  buttons cut off or leaving the screen, the sticky header covering the focused element while tabbing back up the page,
+  or targets under 24×24 px without the WCAG 2.2 2.5.8 spacing; screenshots in `screenshots/responsive/`.
+  `e2e/forced-colors.spec.ts` emulates `forced-colors: active` on the investor form, the founder results and the inbox:
+  the checked chip, current step, active tab and score/progress bars must differ from their neighbours in what forced
+  colours keep, and focus must be a real outline; screenshots in `screenshots/forced-colors/`. Before measuring, specs
+  call `settle()` (`e2e/fixtures.ts`: agent typing queue empty, finite animations finished) instead of a fixed pause.
 - **Performance** (`scripts/lighthouse.mjs`): `npx lighthouse@12` with `--chrome-path` (default `/usr/bin/google-chrome`,
   `CHROME_PATH` to change), headless, against a local preview of `dist/`; JSON + HTML reports and `summary.md` in
   `screenshots/lighthouse/` (git-ignored). Latest scores are in `docs/briefs/investor-matching.md` (Milestone 7).

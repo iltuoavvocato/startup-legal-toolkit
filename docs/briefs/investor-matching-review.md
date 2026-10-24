@@ -1,7 +1,7 @@
 # MatchInvStar: review pack for Vincenzo
 
 A one-page entry point to the investor-matching prototype (branch `feature/investor-matching`). Details and history
-are in [`investor-matching.md`](investor-matching.md) (the brief, Milestones 1–12). Everything below is a front-end
+are in [`investor-matching.md`](investor-matching.md) (the brief, Milestones 1–15). Everything below is a front-end
 demo: no backend, no network calls with user data, fictional data only, IT + EN.
 
 To run it locally: `npm install && npm run build && npx vite preview` → <http://localhost:4173/>. All URLs below are
@@ -227,6 +227,12 @@ Platform and quality
 - axe covers automatic checks only; no screen-reader (NVDA/VoiceOver) pass yet.
 - "Ricomincia" in the error fallback reloads; if the cause isn't stored data, the fallback shows again.
 - The e2e suite takes several minutes on a shared machine; it is not in CI (D37).
+- Responsive (M15): checked at 320 / 768 / 1366 px on every match route (overflow, clipped buttons, focus under the
+  sticky header, 24 px targets); the variant screens only at 320. 200% zoom is covered as reflow, not text-only zoom.
+- Forced colours (M15): checked in Chromium's emulation (light palette) on three screens; no real Windows
+  high-contrast pass; the variant screens got no forced-colours work; a checked chip's tick shows as a filled square.
+- Flakiness (M15): of three full runs, one test failed once (axe measured a card mid fade-in); fixed with `settle()`.
+  The suite has no retries locally, so a loaded machine can still surface timeouts: re-run the spec alone first.
 
 ## 6. Before going live
 
