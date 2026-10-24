@@ -44,3 +44,9 @@ Still not written: it needs the screenshots to be reviewed first. The recommenda
 
 On an unloaded machine: run e2e and screenshots (ports above), fix any visual or a11y breakage, then write the V1–V5
 comparison across the seven screens.
+
+## e2e result (10:43 Europe/Rome, run by the overnight coordinator, E2E_PORT=4289)
+variants-round3 + variants + a11y specs: 452 passed, 5 failed, 5 skipped. NOT merged into feature/investor-matching because of these:
+- V5 requests (it/en, desktop+mobile): "declined proposal looks like an unanswered one" fails. On the founder side the V5 row for a declined proposal still renders differently from an unanswered one. This breaks the opt-in rule, so it must be fixed before merging (compare the V5 row markup in the requests screen with V1).
+- Forced colours: V2 requests, "pressed tab vs the other": in forced-colors mode the pressed and unpressed tabs look the same. Add a border/outline or underline for aria-pressed/aria-selected under @media (forced-colors: active).
+Screenshots for round 3 were not taken.
