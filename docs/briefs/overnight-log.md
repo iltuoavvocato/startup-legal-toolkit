@@ -26,7 +26,9 @@ Draft PR: https://github.com/iltuoavvocato/startup-legal-toolkit/pull/1 (branch 
 
 - 07:37 M13 done: review pack docs/briefs/investor-matching-review.md (all routes, 10-minute walkthrough, decisions D1-D51 with status/defaults, hard-rule compliance checklist with enforcing tests, consolidated known issues, go-live checklist), linked from brief + README; e2e/journey.spec.ts full founder->investor->intro->export story per language with disclaimer checks and request interception. Gate: lint 0, 519 unit, build ok, e2e 536 passed / 4 skipped (2 intentional mobile skips). Commits d1d5e66, 5e92a97.
 
+- 08:01 M14 done: copy guardrail tests over every match dictionary (IT+EN) and demo data (no money/payments/orders/advice/guaranteed returns/success fee; explicit allow-list for negations; all demo emails .example); `npm run check:dist` (in `npm run e2e`) scans the build for external origins, trackers, robots/noindex policy, sitemap and disclaimer; real fix: the prerendered no-JS fallback of every page now includes the disclaimer (scripts/seo.mjs, replaced by React on load). Hero prerender for LCP skipped (app uses createRoot, needs SSR/hydration, not contained). Gate: lint 0, 557 unit, build ok, check:dist ok (89 pages), e2e 536 passed / 4 skipped. Commits 98a0d51, 391dc0a.
+
 ## In progress
-- 07:38 M14 (next): tests that pin the no-money/no-advice copy rules; English-path parity check; misc polish
+- 08:02 M15 (next): small phone/tablet/small laptop viewports, tap targets, forced-colors, flakiness runs
 
 ## Next
