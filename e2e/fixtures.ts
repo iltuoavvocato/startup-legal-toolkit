@@ -78,3 +78,26 @@ export async function openFresh(page: Page, url: string) {
 export async function expectDisclaimer(page: Page, lang: Locale) {
   await expect(page.locator('body')).toContainText(DISCLAIMER[lang]);
 }
+
+/**
+ * Waits until the page is at rest: the agent has no messages still "typing", fonts are loaded and every finite CSS
+ * animation/transition has finished (infinite ones, like spinners, are ignored). Used before measuring colours or
+ * layout instead of a fixed pause, which a loaded machine can outrun.
+ */
+export async function settle(page: Page) {
+  await expect(page.locator('.mi-agent-typing')).toHaveCount(0, { timeout: 20_000 });
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    const frame = () => new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+    for (let quiet = 0; quiet < 3; ) {
+      await frame();
+      const running = document
+        .getAnimations()
+        .filter((a) => a.playState === 'running' && a.effect?.getTiming().iterations !== Infinity);
+      if (running.length) {
+        quiet = 0;
+        await Promise.all(running.map((a) => a.finished.catch(() => null)));
+      } else quiet += 1;
+    }
+  });
+}

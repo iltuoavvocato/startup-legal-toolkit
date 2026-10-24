@@ -4,13 +4,13 @@ import AxeBuilder from '@axe-core/playwright';
 import type { Page, TestInfo } from '@playwright/test';
 import { founderWithDeck } from '../scripts/agent-flows.mjs';
 import { exportStartupTeaser } from '../scripts/export-flows.mjs';
-import { LOCALES, ROUTE_IDS, expect, isMobile, open, openFresh, path, t, test } from './fixtures';
+import { LOCALES, ROUTE_IDS, expect, isMobile, open, openFresh, path, settle, t, test } from './fixtures';
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 async function scan(page: Page, testInfo: TestInfo, include?: string) {
-  // Let entrance transitions finish so colours are measured at rest.
-  await page.waitForTimeout(400);
+  // Colours are measured at rest: no agent message still arriving, entrance transitions finished.
+  await settle(page);
   let builder = new AxeBuilder({ page }).withTags(TAGS);
   if (include) builder = builder.include(include);
   const { violations } = await builder.analyze();

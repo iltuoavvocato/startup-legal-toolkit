@@ -1,7 +1,7 @@
 // Design variants gallery (internal, noindex): every variant screen renders with its prototype banner, the
 // fictional-data label and the disclaimer; the compare view loads two live screens and follows its controls.
 import AxeBuilder from '@axe-core/playwright';
-import { DISCLAIMER, LOCALES, ROUTE_IDS, expect, open, path, t, test } from './fixtures';
+import { DISCLAIMER, LOCALES, ROUTE_IDS, expect, open, path, settle, t, test } from './fixtures';
 import type { RouteId } from '../src/i18n/routes';
 
 const VARIANT_IDS = ROUTE_IDS.filter((id) => /^matchV\d/.test(id));
@@ -33,7 +33,7 @@ for (const lang of LOCALES) {
       const m = t(lang).variants;
       const d = t(lang).directory.dir;
       const axe = async () => {
-        await page.waitForTimeout(400); // entrance transitions finish, colours are measured at rest
+        await settle(page); // entrance transitions finish, colours are measured at rest
         const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
         expect(violations.filter((x) => x.impact === 'serious' || x.impact === 'critical').map((x) => x.id)).toEqual([]);
       };

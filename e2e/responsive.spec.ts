@@ -4,7 +4,7 @@
 // at least 24×24 CSS px or has the spacing WCAG 2.2 2.5.8 allows. Runs in the desktop project only (it sets its own
 // viewports; the mobile project ignores it in playwright.config.ts). Screenshots of each viewport go to screenshots/responsive/.
 import type { Page } from '@playwright/test';
-import { LOCALES, ROUTE_IDS, expect, open, openFresh, path, t, test } from './fixtures';
+import { LOCALES, ROUTE_IDS, expect, open, openFresh, path, settle, t, test } from './fixtures';
 
 const VIEWPORTS = [
   { name: 'phone-320', width: 320, height: 640 },
@@ -173,8 +173,7 @@ async function focusUnderHeader(page: Page, maxSteps = 60) {
 
 async function checkPage(page: Page, label: string, opts: { focus?: boolean } = {}) {
   // Let entrance transitions settle before measuring.
-  await page.evaluate(() => document.fonts.ready);
-  await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity));
+  await settle(page);
   const o = await overflow(page);
   expect(o.offenders, `${label}: elements wider than the viewport`).toEqual([]);
   expect(o.scrollWidth, `${label}: page scrolls horizontally`).toBeLessThanOrEqual(o.vw);
