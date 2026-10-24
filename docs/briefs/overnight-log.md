@@ -20,7 +20,9 @@ Draft PR: https://github.com/iltuoavvocato/startup-legal-toolkit/pull/1 (branch 
 
 - 06:20 M10 done: colliding fictional names renamed (Contoverde->Contafiaba, Aulaviva->Lavagnoro, Voltaria->Ventilume, Lievita->Impastoria, Acceleratore Fucina->Acceleratore Scintillaio; D45: full trademark clearance is Vincenzo's call); stored-state hardening (deep validation, never-throwing reads, bilingual error boundary with 'Ricomincia'); pdf.js feature detection with graceful fallback; privacy page section + 'Cancella i dati della demo' button. Gate: lint 0, 503 unit tests, build ok, e2e 406 passed (new hardening.spec.ts). Commits e940ca6..ddda520.
 
+- 06:55 M11 done: 'Come funziona il matching' / 'How matching works' page (/match-investitori/come-funziona/, /en/investor-match/how-it-works/) with numbers generated from matching.ts/matchConfig and an interactive scoring example; 'Perché questo match?' breakdown on every founder result card; EN/IT copy review (consistent terms, D46-D49). Gate: lint 0, 515 unit tests, build ok, e2e 430 passed / 2 skipped. Commits 197d74a, 2576449.
+
 ## In progress
-- 06:21 M11 (next): 'Come funziona il matching' explainability page + per-result 'Perché questo match?', EN/IT copy review
+- 06:56 M12 (next): extend the variants gallery to the agent chat and directory screens
 
 ## Next
