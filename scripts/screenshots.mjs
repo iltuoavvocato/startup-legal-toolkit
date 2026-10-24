@@ -50,6 +50,7 @@ const PAGES = [
   ['match-directory', 'match-investitori/investitori/'],
   ['match-investor-profile', 'match-investitori/investitori/scheda/?id=i01'],
   ['match-requests', 'match-investitori/richieste/'],
+  ['match-investor-nomatch', 'match-investitori/investitore/?settori=proptech&fasi=serie-a&min=900000&max=1000000&aree=sud-isole'],
   ['en-home', 'en/'],
   ['en-equity', 'en/equity/'],
   ['en-404', 'en/page-that-does-not-exist/'],
@@ -59,6 +60,7 @@ const PAGES = [
   ['en-match-directory', 'en/investor-match/investors/'],
   ['en-match-investor-profile', 'en/investor-match/investors/profile/?id=i01'],
   ['en-match-requests', 'en/investor-match/requests/'],
+  ['en-match-investor-nomatch', 'en/investor-match/investor/?settori=proptech&fasi=serie-a&min=900000&max=1000000&aree=sud-isole'],
   ...VARIANT_PAGES,
 ];
 

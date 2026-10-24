@@ -68,7 +68,9 @@ equivalent page, the stored preference and the redirect, which happens only from
   (founder with deck, investor); directory filters in the URL with Back/Forward and a proposal from a profile; export
   (teaser/full, `.md` download with the disclaimer); every variant screen and the compare view; the language switcher on
   every main page, the bilingual 404; lazy page chunks and focus on navigation; keyboard-only checks (agent chips, V4
-  swipe arrows and buttons, directory filter sheet: focus trap, Escape, focus back to the opener). HTML report in
+  swipe arrows and buttons, directory filter sheet: focus trap, Escape, focus back to the opener; `e2e/polish.spec.ts`:
+  skip link, "/" for the directory search on desktop, "Allarga criteri" on empty results, the propose toast with
+  Escape, chip focus ring, agent restore after reload). HTML report in
   `screenshots/e2e-report/`, traces of failures in `node_modules/.e2e-results/`.
 - **Accessibility** (`e2e/a11y.spec.ts`): axe-core (WCAG 2.0/2.1 A + AA) on every route in IT and EN, the 404, and key
   states (deck findings review, form results, agent mid-flow and results, inbox with proposals on both tabs and after
@@ -296,6 +298,16 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
 - **Matching** (`src/lib/matching.ts`): hard filters (fase, settore, area, ticket minimo ≤ round). Then score =
   settore (30) + ticket coverage (30, full from 40% of the round) + fase (20) + area (20), rounded to an integer.
   Ordering is deterministic: score, then ticket part, then sector part, then name, then id. Italian reasons and why-not strings.
+- **Empty results** (`src/lib/relax.ts`, tested): when nothing fits, the results show the closest misses (fewest failed
+  criteria) with their why-not strings and the single edit that brings in the most matches. Investor side: one click
+  ("Allarga criteri") widens sectors / stages / areas / minimum ticket in the thesis and the URL. Startup side: sector,
+  stage and region are facts, so only a round change is suggested (when the minimum ticket is the only blocker).
+- **Shared UI** (Milestone 8): `ConsentExplainer` ("Come funziona il doppio consenso", 3 illustrated steps, IT/EN) on the
+  landing, both results pages and the inbox; inline-SVG empty states (`EmptyArt`) for the inbox tabs, directory without
+  a profile, export without a profile and a deck with no findings; a `Toast` (`aria-live`, Escape/close, auto-dismiss)
+  after a proposal; "/" focuses the directory search on desktop (`aria-keyshortcuts`, visible hint); agent pages say
+  when a conversation was restored. Motion (chip pop, toast, explainer steps) only under `prefers-reduced-motion:
+  no-preference`.
 - **Double opt-in** (`src/lib/optin.ts`): `proposta → attesa-startup → intro`, or a closed state on either no.
   `viewFor(state, side)` guarantees that a "no" looks exactly like no answer to the other side (tested).
 - **URL state**: only enumerated values and amounts go in the query string (never names, descriptions or file names).

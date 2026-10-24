@@ -649,3 +649,43 @@ Open decisions for Vincenzo:
 - **D37**: run `npm run e2e` in CI on every PR (GitHub Actions with Chrome)? Not set up: workflows are not touched in
   this branch.
 - **D38**: worth the per-language dictionary split (see known limits) for faster first load on phones, or is ~92 enough?
+
+## Milestone 8: UI polish, empty states, keyboard (2026-10-24)
+
+What exists (same look; all copy IT + EN in `src/i18n/messages/polish.ts`):
+- **Audit fixes** (390 / 1440 px, IT + EN screenshots): one primary per view in the inbox ("Simula +7 giorni" is now
+  outline, the empty state's "Sfoglia la directory" stays primary); the export link is hidden in the inbox when there is
+  nothing to export; long names, amounts and chips wrap (`overflow-wrap: anywhere`, tabular figures in the profile
+  chips); one focus ring on every matching control (3px gold, 2px offset, including chips, tabs, toast and empty-state
+  buttons).
+- **Empty / edge states**: no matches → the closest misses with why-not and the single edit that brings the most matches
+  (`src/lib/relax.ts`, 9 unit tests: deterministic, never mutates, the suggestion always adds ≥ 1 match). Investor side:
+  "Allarga criteri" widens the thesis in one click (form, URL and results update; focus moves to the results heading;
+  announced). Startup side: only the round can change ("Porta il round a …") since sector, stage and region are facts.
+  Inbox: illustrated empty card per tab and explanatory text per empty group; directory without a profile; export
+  without a profile; deck read but no findings; agent "Conversazione ripristinata" after a reload. Illustrations are
+  inline SVG with brand tokens, `aria-hidden`.
+- **Keyboard**: the global skip link (already in the layout) is now tested on match pages; "/" focuses the directory
+  search on desktop only (fine pointer, ≥ 900px; ignored while typing or with a dialog open; `aria-keyshortcuts` plus
+  a described hint); Escape closes the filter sheet (as before), the mobile menu (focus back to the menu button) and the
+  toast.
+- **Micro-interactions** (only with `prefers-reduced-motion: no-preference`): chip press and check "pop", "Proposta
+  inviata" fade-in, toast and explainer steps fade up. The toast "Proposta inviata – in attesa del consenso: <nome>.
+  Restano N proposte questo mese." is a polite live region.
+- **`ConsentExplainer`** "Come funziona il doppio consenso" (3 illustrated steps, link to the simulator) on the landing
+  (full), both results pages and the inbox (compact).
+- **Tests**: 467 unit tests (9 new); e2e `e2e/polish.spec.ts` (6 checks × IT/EN × desktop/mobile = 24) and axe on the empty-results and toast
+  states. Screenshots: `screenshots/*match-investor-nomatch-*` (new).
+
+Known limits:
+- With the 36 demo investors the startup side practically never has zero matches; the startup "no matches" path is
+  covered by unit tests and the same component as the investor side.
+- The toast's Escape listener is document-wide; if the filter sheet were open at the same time both would close (they
+  can't be open together today).
+
+Open decisions for Vincenzo:
+- **D39**: "Allarga criteri" picks the edit that adds the most matches (ties: fewer criteria changed, then ticket → area →
+  stage → sector). OK, or should it always prefer the cheapest single criterion?
+- **D40**: should the startup side ever suggest changing more than the round (e.g. "investors in the next region")? Today
+  it doesn't, because sector/stage/region describe the startup.
+- **D41**: keep the "/" shortcut (desktop only) or drop it as power-user noise?

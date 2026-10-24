@@ -4180,12 +4180,12 @@ div.mi-error p {
   margin: 0 0 0.4rem;
 }
 
-.mi-empty-state p {
+.mi-empty-state p:not([class]) {
   margin: 0 0 0.75rem;
   color: var(--text-muted);
 }
 
-.mi-empty-state p:last-child {
+.mi-empty-state p:not([class]):last-child {
   margin-bottom: 0;
 }
 
