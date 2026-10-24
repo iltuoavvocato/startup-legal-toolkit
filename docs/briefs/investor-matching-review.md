@@ -1,7 +1,7 @@
 # MatchInvStar: review pack for Vincenzo
 
 A one-page entry point to the investor-matching prototype (branch `feature/investor-matching`). Details and history
-are in [`investor-matching.md`](investor-matching.md) (the brief, Milestones 1–15). Everything below is a front-end
+are in [`investor-matching.md`](investor-matching.md) (the brief, Milestones 1–17). Everything below is a front-end
 demo: no backend, no network calls with user data, fictional data only, IT + EN.
 
 To run it locally: `npm install && npm run build && npx vite preview` → <http://localhost:4173/>. All URLs below are
@@ -101,7 +101,7 @@ Start in a fresh tab (the demo keeps state in sessionStorage, per tab). Italian 
 Optional: `/match-investitori/investitori/` (filters → URL, Back works), `/match-investitori/note-legali/`,
 `/privacy/` ("Cancella i dati della demo"), and the language switcher on any page (same route in the other language).
 
-## 3. Open decisions D1–D51
+## 3. Open decisions D1–D53
 
 "Default" is what the prototype does today. "M#" = the Milestone section in
 [`investor-matching.md`](investor-matching.md) (D1–D11 are in §13 "Open decisions" and the "Decisioni" table).
@@ -164,6 +164,8 @@ proposed, just confirm.
 | D49 | State that weights aren't tuned per investor? | Implied, not stated | Open | M11 |
 | D50 | Agent chat in the final product: V3 bubbles everywhere, or V4 cards on phones? | V3 desktop, V4 phones | Open | M12 |
 | D51 | Grow the variants gallery further, or freeze? | Freeze at five screens | Open | M12 |
+| D52 | Monthly cap over calendar months or a rolling 30-day window? | Calendar month (D4) | Open | M17 |
+| D53 | Keep the deck's findings (no snippets, no unaccepted tagline) in the tab so a reload resumes the deck review? | Not stored; questions resume | Open | M17 |
 
 ## 4. Hard-rule compliance
 
@@ -198,19 +200,19 @@ Agent
 - The investor form's chips keep option order, so "first picked = main sector" only holds in the agent.
 - Simulated answers are deterministic per id: a curious user can infer the demo outcome (the wording never says no).
 - No names step in the agent (D25): intro emails and the full export stay unnamed from the agent.
-- After a reload during the deck review the regular questions take over (the deck must be added again).
+- After a reload during the deck review the regular questions take over (the deck must be added again). By design the
+  deck's findings are never stored (they hold page snippets and the cover tagline, i.e. deck text), so there is
+  nothing to restore; keeping them would change the privacy promise (D53).
 
 Inbox and opt-in
 - No investor account: the investor tab shows seeded sample teasers; the other side's answers are simulated.
 - Time travel only moves forward; "Azzera la demo" clears everything, profile included.
-- The monthly counter follows calendar months: time travel across a month boundary resets it.
-- The toast's Escape listener is document-wide (harmless today: the toast and the filter sheet can't be open together).
+- The monthly counter follows calendar months (D4, `matchConfig.ts`): time travel across a month boundary resets it.
+  A rolling 30-day window is a product change, left to D52.
 
 Export
 - The full version can name the startup only when the name was typed in the form during this visit.
 - Traction lines stay in the language in which they were accepted.
-- Client-side navigation into the export page keeps the previous page's robots meta (the prerendered HTML is
-  `noindex, nofollow`).
 - Copy uses the Clipboard API; where blocked, the page asks to copy by hand.
 
 Guided demo, how-it-works, variants

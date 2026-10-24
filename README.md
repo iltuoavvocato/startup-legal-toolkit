@@ -102,7 +102,7 @@ files in `src/assets/fonts/` are committed, so a normal build needs no Python.
 |-------------|--------------------------------------|----------|
 | `BASE_PATH` | `/`                                  | Vite `base` and router basename. Use `/<repo>/` for a GitHub Pages project site. |
 | `SITE_URL`  | `https://toolkit.iltuoavvocato.com` (**placeholder**) | Origin for canonical, `og:url`, `og:image`, sitemap and robots. Origin only, no path. |
-| `NOINDEX`   | unset                                | When `true`, every generated HTML page gets `<meta name="robots" content="noindex, nofollow">` and `robots.txt` omits the `Sitemap` line. `robots.txt` still allows crawling, so search engines can see the tag. Any other value (or unset) = no tag. |
+| `NOINDEX`   | unset                                | When `true`, every generated HTML page gets `<meta name="robots" content="noindex, nofollow" data-site-noindex>` (the marker keeps client-side navigation from changing it) and `robots.txt` omits the `Sitemap` line. `robots.txt` still allows crawling, so search engines can see the tag. Any other value (or unset) = no tag. |
 
 Example: `BASE_PATH=/startup-legal-toolkit/ SITE_URL=https://<user>.github.io npm run build`
 
@@ -213,7 +213,7 @@ A **front-end-only prototype** of agentic startup–investor matching with **dou
 investors and startups are fictional and labelled "Dati di esempio" (`src/data/matchDemo.ts`; emails use the reserved
 `.example` domain). The full plan and the default decisions are in `docs/briefs/investor-matching.md`.
 **Review pack**: [`docs/briefs/investor-matching-review.md`](docs/briefs/investor-matching-review.md) (routes, a
-10-minute walkthrough, open decisions D1–D51, hard-rule checklist, known issues, go-live needs).
+10-minute walkthrough, open decisions D1–D53, hard-rule checklist, known issues, go-live needs).
 **Guardrails** (Milestone 14): `src/lib/copyGuardrails.test.ts` fails on payment, money-handling, order,
 investment-advice, guaranteed-return, commission or success-fee phrases in any match dictionary (IT + EN) or the demo
 data, except a short allow-list of negations in `src/lib/copyGuardrails.ts` (so "Non gestiamo denaro" and "nessuna

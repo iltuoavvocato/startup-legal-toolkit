@@ -1,7 +1,7 @@
 # Investor matching: implementation plan (step 1)
 
 > **Reviewing?** Start with [`investor-matching-review.md`](investor-matching-review.md): every route, a 10-minute
-> walkthrough, all open decisions D1–D51, hard-rule compliance, known issues and what is needed before going live.
+> walkthrough, all open decisions D1–D53, hard-rule compliance, known issues and what is needed before going live.
 
 Source brief: `/workspace/cc-matching/brief.md`. Branch `feature/investor-matching`, this worktree only.
 This is a front-end **prototype**: no backend, no network, no storage, and no LLM. The "agent" is a
@@ -1079,3 +1079,32 @@ Known limits:
 - Budgets measure the Italian pages. The EN pages load the same chunks.
 
 No new open decisions.
+
+## Milestone 17: small known-issue fixes (2026-10-24)
+
+What exists:
+- **Robots meta follows the route** (`usePageMeta`, `routeRobots` in `src/i18n/routes.ts`): on every client-side
+  navigation the `<meta name="robots">` is added, changed or removed so the page carries the same directive as its
+  prerendered HTML: export `noindex, nofollow`; requests, investor profile, guided demo `noindex, follow`; variants
+  `noindex, nofollow`; unknown paths (404) `noindex`; public pages none. Before, a directive from the static HTML of
+  the first page was never touched, so landing on a public page and clicking through to the export kept no directive,
+  and landing on a noindex page kept it on public pages. A site-wide `NOINDEX=true` build now marks its tag
+  `data-site-noindex`, and the sync leaves that one alone. Tests: `routes.test.ts` (unit), `navigation.spec.ts`
+  (landing → requests → back) and `export.spec.ts` (results → export → back).
+- **Toast Escape** (`Toast.tsx`): Escape dismisses the toast only when focus is inside it or no other layer is open
+  (`dialog[open]`, `[aria-modal="true"]`, the open mobile menu); events already handled (`defaultPrevented`) are
+  ignored. Test: `polish.spec.ts` opens a modal dialog over the toast: the first Escape closes the dialog only, the
+  second dismisses the toast.
+
+Not done, on purpose:
+- **Deck review after a reload**: the deck's findings are never in sessionStorage (`toStorable` drops them: they hold
+  page snippets and the cover tagline, i.e. deck text, and the privacy page says deck text is never saved). There is
+  nothing to restore without changing that promise, so the fallback stays (regular questions resume). D53.
+- **Monthly cap**: `matchConfig.ts` and D4 define the cap per calendar month; a rolling 30-day window would change a
+  product rule, so it stays as is. D52.
+
+Open decisions:
+- **D52**: monthly cap over calendar months (today) or a rolling 30-day window (no reset at month boundaries, also
+  under time travel)?
+- **D53**: keep the deck's findings, without page snippets and without an unaccepted tagline, in this tab so a reload
+  resumes the deck review? Today: not stored.
