@@ -689,3 +689,56 @@ Open decisions for Vincenzo:
 - **D40**: should the startup side ever suggest changing more than the round (e.g. "investors in the next region")? Today
   it doesn't, because sector/stage/region describe the startup.
 - **D41**: keep the "/" shortcut (desktop only) or drop it as power-user noise?
+
+## Milestone 9: guided demo split screen, one inbox for the agent's investor mode (2026-10-24)
+
+What exists (all copy IT + EN in `src/i18n/messages/guidedDemo.ts`):
+- **Guided demo** `/match-investitori/demo/` (EN `/en/investor-match/demo/`), `noindex, follow`, not in the sitemap,
+  linked from the landing ("Demo guidata") and the variants gallery hero. Startup screen left, investor screen right;
+  under 900px one screen at a time with a Startup / Investitore toggle (it follows the step's focus side). Timeline of
+  6 steps: 1 profile from the fictional sample deck "Vignalume" (EN "Kelpwise"; the real extractor runs on the deck's
+  text in `src/data/sampleDeckText.ts`), 2 the agent's matches (real engine, 36 fictional investors), 3 proposal to the
+  best match (real `propose`, 14-day deadline), 4 the investor sees only the anonymous teaser (real `TeaserCard`),
+  then **branch A** 5a interested → the founder is asked, 6a both yes → intro, names revealed to both (real
+  `IntroEmailPreview`), or **branch B** 5b the investor says no → callout "Il no non viene mai rivelato" with the
+  founder's request card next to the same request if nobody had answered (identical, computed, not hard-coded),
+  6b "Scaduta" one day after the deadline. Controls: Avanti / Indietro, ← → (ignored in fields and radio groups),
+  Avvia / Pausa (6 s per step; no autoplay with `prefers-reduced-motion: reduce`, a note says so), timeline buttons
+  with `aria-current="step"`, branch radios, in-screen buttons (the investor's "Sì / No, grazie" pick the branch, the
+  founder's "Accetta l'intro" goes to 6a; focus moves to the step heading), deep links `?step=N&branch=no`
+  (replaceState, step 1 = clean URL), a polite live region with the step title and caption.
+- **Isolation**: `src/lib/guidedDemo.ts` rebuilds each step by replaying the script on an empty in-memory inbox with
+  the real reducers (`propose`, `answer`, `viewOf`) and a fixed demo clock (1 March 2026), so deep links always show
+  the same days. One request, two perspectives (`viewOf` as founder / as investor). Nothing is written to
+  sessionStorage (asserted in e2e). 19 unit tests (cast from the deck, query round trip, navigation, both branches,
+  the no-reveal invariant at 5b and 6b, the investor never knowing the name before the intro, no names in the store).
+- **D35 → done**: the agent's investor mode goes through the shared inbox. "Mi interessa" / "Non ora" are answers in
+  the inbox's investor tab (`answerTeaserFromAgent`, `agentInvestorStatus` in `src/lib/agentInbox.ts`); a seeded
+  sample teaser for the same startup is answered rather than duplicated; one that expired unanswered reads as new.
+  The startup's simulated answer arrives on the demo clock ("Simula +7 giorni" + link to the investor tab replace
+  "Simula la risposta della startup"); a startup's no reads as waiting, then "no news" after the deadline, exactly like
+  silence (tested day by day against a counterfactual store). The conversation no longer stores a board; older stored
+  conversations drop `board` / `simulated` on restore.
+- **Removed** the unused `directory.dir.profileOff` key (IT + EN).
+- **D38-lite (per-language dictionaries) → skipped**: every message module holds both languages in one file and
+  `makeI18n` / `MESSAGES` are synchronous, used by the layout and every page before first render. Loading only one
+  language means splitting 14 modules into 28 files and making the app shell (and `main.tsx` preload / prerender)
+  await the dictionary: not a contained change for this milestone.
+- **Tests**: 492 unit tests (19 guided demo, 6 agent investor mode); e2e `e2e/guided-demo.spec.ts` (4 checks × IT/EN ×
+  desktop/mobile = 16: branch A to the intro, branch B with the identical cards, arrows, branch switch, deep link,
+  autoplay with a fake clock and pause, none with reduced motion, links from landing and gallery); the route is in the
+  axe and language-switch sweeps automatically. Screenshots: `screenshots/{,en-}match-demo-step{1,4-teaser,5a-interested,6a-intro,5b-declined,6b-expired}-{desktop,mobile}.png`.
+
+Known limits:
+- The demo's investor is always the best match for the sample deck; the startup is named after the sample deck in each
+  language (Vignalume in IT, Kelpwise in EN), so switching language changes the story's startup.
+- When the agent's investor answers first, the inbox's investor tab shows only those requests (the four sample teasers
+  are seeded only into an investor tab with no requests).
+- The demo shows the founder's "Accetta l'intro" only; "Non ora" from the founder (declined-by-you) is not a branch.
+
+Open decisions for Vincenzo:
+- **D42**: guided demo autoplay pace (6 s per step) and whether autoplay should continue into branch B after branch A.
+- **D43**: keep the guided demo noindex (internal / stakeholder tool) or make it a public explainer linked from the
+  home page?
+- **D44**: add a third branch "the founder declines after the investor's yes" (shows the investor's side of the same
+  invariant)?

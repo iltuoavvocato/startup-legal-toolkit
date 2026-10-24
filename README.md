@@ -165,6 +165,7 @@ dictionary plus a React context.
   | `/match-investitori/agente/investitore/` | `/en/investor-match/agent/investor/` |
   | `/match-investitori/doppio-consenso/` | `/en/investor-match/double-opt-in/` |
   | `/match-investitori/note-legali/` | `/en/investor-match/legal-notes/` |
+  | `/match-investitori/demo/` (noindex) | `/en/investor-match/demo/` |
   | `/match-investitori/varianti/…` (noindex) | `/en/investor-match/variants/…` |
 
   The mapping, titles and descriptions live in `src/routes-meta.json`, which the app and the prerender both read.
@@ -240,8 +241,9 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
   **shared requests inbox** (propose within the same monthly counter as the form results and the directory, set aside,
   accept or decline the intro once an investor is interested; the investor's simulated answer arrives on the inbox's
   demo clock, "Simula +7 giorni", and an expired proposal can be sent again; glue in `src/lib/agentInbox.ts`, tested).
-  Investors get anonymous teasers, interest/pass and a simulated startup answer (local to the conversation). A "no" is never revealed: it reads exactly like
-  no answer yet. Logic: `src/lib/intakeAgent.ts` (pure reducer: questions, plan/skip rules, validation, edit, deck
+  Investors get anonymous teasers; their interest / "Non ora" is an answer in the **same inbox's investor tab** (D35):
+  the startup's simulated answer arrives on the demo clock, and after the deadline a silent or declining startup both
+  read as "no news". A "no" is never revealed: it reads exactly like no answer yet. Logic: `src/lib/intakeAgent.ts` (pure reducer: questions, plan/skip rules, validation, edit, deck
   confirmations, opt-in per match, explanation and transcript text; 41 unit tests). UI: `src/pages/MatchAgentPage.tsx`,
   `src/components/match/agent/`. Keyboard: focus moves to the new question's first control after each answer and to
   the results when they appear; the transcript is a `role="log"` live region. The typing animation is skipped with
@@ -295,6 +297,16 @@ investors and startups are fictional and labelled "Dati di esempio" (`src/data/m
   lines; cleared with "Azzera la demo". `npm run screenshots` runs the export flows (IT/EN, desktop/mobile), checks the
   print media (no header, footer, banner or tools; the disclaimer stays) and saves Chrome print-to-PDF files
   (`screenshots/*match-export-*.pdf`, one A4 page each).
+- **Guided demo, "Demo guidata"** (`/match-investitori/demo/`, EN `/en/investor-match/demo/`; noindex, linked from the
+  landing and the variants gallery): the double opt-in story with the startup's screen and the investor's screen side
+  by side (stacked with a Startup / Investitore toggle under 900px), driven by a 6-step timeline: profile read from the
+  fictional sample deck (the real extractor on the deck's text, `src/data/sampleDeckText.ts`), the agent's matches,
+  the proposal, the anonymous teaser, then branch A (interested → the founder accepts → intro, names revealed to both)
+  or branch B (the investor says no → the founder's screen next to the same request with no answer at all, identical,
+  "Il no non viene mai rivelato"; then "scaduta" after the 14-day deadline). Avanti / Indietro, ← → keys, autoplay with
+  pause (none under `prefers-reduced-motion`), in-screen buttons (the investor's yes/no picks the branch), deep links
+  `?step=1…6&branch=no`. Each step is rebuilt by replaying the script with the real `matching` and `inbox` reducers on
+  an **in-memory store** (`src/lib/guidedDemo.ts`, 19 unit tests): the user's own inbox is never read or written.
 - **Matching** (`src/lib/matching.ts`): hard filters (fase, settore, area, ticket minimo ≤ round). Then score =
   settore (30) + ticket coverage (30, full from 40% of the round) + fase (20) + area (20), rounded to an integer.
   Ordering is deterministic: score, then ticket part, then sector part, then name, then id. Italian reasons and why-not strings.
