@@ -100,6 +100,31 @@ export async function extractPages(lib: PdfjsLib, data: Uint8Array, onProgress?:
   }
 }
 
+/**
+ * What the bundled pdf.js 4.x needs from the browser and doesn't polyfill (Promise.withResolvers is used throughout;
+ * the others by the worker transport and the text layer). Returns the names of the missing features, none when the
+ * deck can be read. Older browsers (e.g. Safari before 17.4) get the form without the deck step instead of an error.
+ */
+export function missingPdfFeatures(env: Record<string, unknown> = globalThis as unknown as Record<string, unknown>): string[] {
+  const missing: string[] = [];
+  const P = env.Promise as { withResolvers?: unknown } | undefined;
+  if (typeof P?.withResolvers !== 'function') missing.push('Promise.withResolvers');
+  if (typeof env.structuredClone !== 'function') missing.push('structuredClone');
+  if (typeof env.Worker !== 'function') missing.push('Worker');
+  const RS = env.ReadableStream as { prototype?: { getReader?: unknown } } | undefined;
+  if (typeof RS?.prototype?.getReader !== 'function') missing.push('ReadableStream');
+  const A = env.Array as { prototype?: { at?: unknown } } | undefined;
+  if (typeof A?.prototype?.at !== 'function') missing.push('Array.prototype.at');
+  const B = env.Blob as { prototype?: { arrayBuffer?: unknown } } | undefined;
+  if (typeof B?.prototype?.arrayBuffer !== 'function') missing.push('Blob.arrayBuffer');
+  return missing;
+}
+
+/** True when this browser can read a deck with the bundled pdf.js (false during prerender / without a window). */
+export function canReadDecks(): boolean {
+  return typeof window !== 'undefined' && missingPdfFeatures().length === 0;
+}
+
 let loading: Promise<PdfjsLib> | null = null;
 
 /** Loads pdf.js and its worker (both bundled assets) once, on first use. */
@@ -118,6 +143,7 @@ export function loadPdfjs(): Promise<PdfjsLib> {
 export async function readDeckFile(file: Blob, onProgress?: (page: number, total: number) => void): Promise<string[]> {
   let lib: PdfjsLib;
   try {
+    if (!canReadDecks()) throw new Error('unsupported');
     lib = await loadPdfjs();
   } catch {
     throw new DeckReadError('unreadable');

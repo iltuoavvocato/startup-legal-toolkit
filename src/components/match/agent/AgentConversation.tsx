@@ -3,6 +3,7 @@ import { demoInvestors, demoStartups } from '../../../data/matchDemo';
 import { useI18n } from '../../../i18n/context';
 import { validateDeck } from '../../../lib/deck';
 import { confidenceBand } from '../../../lib/deckExtract';
+import { canReadDecks } from '../../../lib/pdfText';
 import {
   answerText,
   EDITABLE,
@@ -53,6 +54,7 @@ export function AgentConversation({ state, dispatch, read, onDeckFile, onRestart
   const [fileError, setFileError] = useState<string | null>(null);
   const [loadingSample, setLoadingSample] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [deckSupported] = useState(canReadDecks);
 
   const act = (a: Action) => {
     interacted.current = true;
@@ -60,7 +62,7 @@ export function AgentConversation({ state, dispatch, read, onDeckFile, onRestart
     dispatch(a);
   };
 
-  const canAddDeck = state.mode === 'startup' && state.phase === 'intake' && state.deck.status !== 'reading' && state.deck.status !== 'read';
+  const canAddDeck = deckSupported && state.mode === 'startup' && state.phase === 'intake' && state.deck.status !== 'reading' && state.deck.status !== 'read';
 
   const pick = (file: File | undefined) => {
     if (!file) return;
@@ -120,7 +122,12 @@ export function AgentConversation({ state, dispatch, read, onDeckFile, onRestart
     if (canAddDeck) pick(e.dataTransfer.files[0]);
   };
 
-  const deckButtons = (
+  // Without pdf.js support the deck question offers only "Salta", with a note saying why.
+  const deckButtons = !deckSupported ? (
+    <p className="notice mi-deck-unsupported" role="note">
+      {t.hardening.deckUnsupported}
+    </p>
+  ) : (
     <>
       <button type="button" className="mi-agent-chip is-primary" onClick={() => fileInput.current?.click()}>
         {u.pickDeck}

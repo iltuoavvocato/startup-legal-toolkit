@@ -2,7 +2,7 @@ import { useState, type DragEvent } from 'react';
 import { useI18n } from '../../i18n/context';
 import { formatFileSize, MAX_DECK_MB, validateDeck, type DeckMeta } from '../../lib/deck';
 import { countFindings } from '../../lib/deckExtract';
-import { MAX_DECK_PAGES } from '../../lib/pdfText';
+import { canReadDecks, MAX_DECK_PAGES } from '../../lib/pdfText';
 import { LockIcon } from './TeaserCard';
 import type { DeckReadState } from './useDeckReader';
 
@@ -25,6 +25,7 @@ export function DeckDropzone({ id, file, read, onPick, onRemove }: Props) {
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingSample, setLoadingSample] = useState(false);
+  const [supported] = useState(canReadDecks);
 
   const accept = (f: File | undefined) => {
     if (!f) return;
@@ -74,6 +75,20 @@ export function DeckDropzone({ id, file, read, onPick, onRemove }: Props) {
         : read.status === 'ready'
           ? d.read(read.pages, countFindings(read.findings))
           : '';
+
+  if (!supported) {
+    // pdf.js can't run here: no picker, a clear note, and the form works as without a deck.
+    return (
+      <div className="mi-deck">
+        <p className="mi-label" id={`${id}-label`}>
+          {d.label} <span className="mi-muted">{d.optional}</span>
+        </p>
+        <p className="notice mi-deck-unsupported" role="note">
+          {t.hardening.deckUnsupported}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="mi-deck">

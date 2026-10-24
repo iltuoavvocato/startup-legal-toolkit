@@ -3,7 +3,7 @@ import { PDFDocument } from 'pdf-lib';
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { describe, expect, it } from 'vitest';
 import { extractFromDeck } from './deckExtract';
-import { DeckReadError, extractPages, joinTextItems, MAX_DECK_PAGES, textChars } from './pdfText';
+import { canReadDecks, DeckReadError, extractPages, joinTextItems, MAX_DECK_PAGES, missingPdfFeatures, textChars } from './pdfText';
 
 const load = (path: string) => new Uint8Array(readFileSync(path));
 
@@ -91,5 +91,30 @@ describe('extractPages errors', () => {
       getDocument: () => ({ promise: Promise.reject(Object.assign(new Error('No password given'), { name: 'PasswordException' })) }),
     } as unknown as Parameters<typeof extractPages>[0];
     expect(await codeOf(extractPages(fake, new Uint8Array([1])))).toBe('encrypted');
+  });
+});
+
+describe('missingPdfFeatures', () => {
+  const full = {
+    Promise: { withResolvers: () => null },
+    structuredClone: () => null,
+    Worker: function Worker() {},
+    ReadableStream: { prototype: { getReader: () => null } },
+    Array: { prototype: { at: () => null } },
+    Blob: { prototype: { arrayBuffer: () => null } },
+  };
+
+  it('finds nothing missing in a recent browser', () => {
+    expect(missingPdfFeatures(full)).toEqual([]);
+  });
+
+  it('names each missing feature (older Safari, no workers, empty env)', () => {
+    expect(missingPdfFeatures({ ...full, Promise: {} })).toEqual(['Promise.withResolvers']);
+    expect(missingPdfFeatures({ ...full, Worker: undefined, ReadableStream: {} })).toEqual(['Worker', 'ReadableStream']);
+    expect(missingPdfFeatures({})).toEqual(['Promise.withResolvers', 'structuredClone', 'Worker', 'ReadableStream', 'Array.prototype.at', 'Blob.arrayBuffer']);
+  });
+
+  it('is false without a window (prerender, Node)', () => {
+    expect(canReadDecks()).toBe(false);
   });
 });

@@ -99,4 +99,18 @@ for (const lang of LOCALES) {
     expect(left).toEqual({ seeded: [], unrelated: '1', lang });
   });
 
+  test(`no pdf.js support: the deck step degrades to the form with a note (${lang})`, async ({ page }) => {
+    await page.addInitScript(() => {
+      delete (Promise as unknown as { withResolvers?: unknown }).withResolvers;
+    });
+    const note = t(lang).hardening.deckUnsupported;
+    await open(page, path('matchStartup', lang));
+    await expect(page.getByRole('note').filter({ hasText: note })).toBeVisible();
+    await expect(page.locator('input[type=file]')).toHaveCount(0);
+    await open(page, path('matchAgentStartup', lang));
+    await expect(page.getByRole('note').filter({ hasText: note })).toBeVisible();
+    await page.getByRole('button', { name: t(lang).intake.choices.deck.skip }).click();
+    await expect(page.locator('.mi-agent-chip').first()).toBeVisible();
+  });
+
 }
